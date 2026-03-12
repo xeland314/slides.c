@@ -140,6 +140,8 @@ Slider* slider_load(const char *path) {
     Slider *s = calloc(1, sizeof(Slider));
     if (!s) { fclose(fp); return NULL; }
     s->theme = theme_default();
+    strncpy(s->font_family, "Inter", sizeof(s->font_family) - 1);
+    s->font_scale = 1.0;
 
     int n = 0;
     char line[MAX_LINE_LEN];

@@ -52,6 +52,8 @@ struct Slider {
     Slide slides[MAX_SLIDES];
     int   n_slides;
     const Theme *theme;
+    char  font_family[64];
+    double font_scale;
 };
 
 // Cache de imágenes para no recargar en cada frame

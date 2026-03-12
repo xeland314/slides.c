@@ -39,15 +39,14 @@ La implementación actual sigue una filosofía orientada a **slides** (una líne
 
 ```bash
 make
-./slides [-p palette] presentacion.md
+./slides [opciones] presentacion.md
 ```
 
-**Paletas disponibles:**
-- `dark` (Por defecto): El tema azul oscuro original.
-- `rose`: Un tema elegante basado en tonos vino y rosa.
-- `monokai`: Estilo retro-vibrante con fondo oscuro y colores neón.
-- `nord`: Estética nórdica, limpia y profesional basada en tonos fríos.
-- `light`: Tema claro de alto contraste, ideal para lectura en papel.
+**Opciones:**
+- `-p, --palette <name>`: Elegir paleta (`dark`, `rose`, `monokai`, `nord`, `light`).
+- `-f, --font-family <str>`: Definir tipografía (ej. 'Arial', 'JetBrains Mono').
+- `-s, --font-scale <num>`: Escalar tamaño de fuentes (ej. 1.2 para aumentar un 20%).
+- `-h, --help`: Mostrar ayuda.
 
 **Controles:**
 - `->` / `Enter`: Siguiente diapositiva.

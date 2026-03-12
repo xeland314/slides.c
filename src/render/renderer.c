@@ -175,12 +175,19 @@ void slider_render(Slider *s, int index, cairo_t *cr, int win_w, int win_h) {
     const Slide *slide = &s->slides[index];
     double content_w = win_w - MARGIN_X * 2.0;
 
-    PangoLayout *lay_title    = make_layout(cr, "Inter Bold 44",    content_w);
-    PangoLayout *lay_subtitle = make_layout(cr, "Inter 26",         content_w);
-    PangoLayout *lay_body     = make_layout(cr, "Inter 20",         content_w);
-    PangoLayout *lay_bullet   = make_layout(cr, "Inter 20",         content_w - 30);
-    PangoLayout *lay_bullet2  = make_layout(cr, "Inter 18",         content_w - 60);
-    PangoLayout *lay_num      = make_layout(cr, "Inter 13",         200);
+    char f_title[128], f_subtitle[128], f_body[128], f_bullet[128], f_num[128];
+    snprintf(f_title,    sizeof(f_title),    "%s Bold %d", s->font_family, (int)(44 * s->font_scale));
+    snprintf(f_subtitle, sizeof(f_subtitle), "%s %d",      s->font_family, (int)(26 * s->font_scale));
+    snprintf(f_body,     sizeof(f_body),     "%s %d",      s->font_family, (int)(20 * s->font_scale));
+    snprintf(f_bullet,   sizeof(f_bullet),   "%s %d",      s->font_family, (int)(18 * s->font_scale));
+    snprintf(f_num,      sizeof(f_num),      "%s %d",      s->font_family, (int)(13 * s->font_scale));
+
+    PangoLayout *lay_title    = make_layout(cr, f_title,    content_w);
+    PangoLayout *lay_subtitle = make_layout(cr, f_subtitle, content_w);
+    PangoLayout *lay_body     = make_layout(cr, f_body,     content_w);
+    PangoLayout *lay_bullet   = make_layout(cr, f_body,     content_w - 30);
+    PangoLayout *lay_bullet2  = make_layout(cr, f_bullet,   content_w - 60);
+    PangoLayout *lay_num      = make_layout(cr, f_num,      200);
 
     double y = MARGIN_Y;
     int i = 0;

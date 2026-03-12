@@ -7,32 +7,52 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <string.h>
+#include <stdlib.h>
+
+static void print_help(const char *prog) {
+    printf("Uso: %s [opciones] presentacion.md\n\n", prog);
+    printf("Opciones:\n");
+    printf("  -p, --palette <name>    Elegir paleta (dark, rose, monokai, nord, light)\n");
+    printf("  -f, --font-family <str> Definir tipografía (ej. 'Arial', 'JetBrains Mono')\n");
+    printf("  -s, --font-scale <num>  Escalar tamaño de fuentes (ej. 1.2)\n");
+    printf("  -h, --help              Mostrar esta ayuda\n");
+}
 
 int main(int argc, char *argv[]) {
     const char *md_path = NULL;
     const char *palette_name = NULL;
+    const char *font_family = NULL;
+    double font_scale = 1.0;
 
     for (int i = 1; i < argc; i++) {
         if (strcmp(argv[i], "--palette") == 0 || strcmp(argv[i], "-p") == 0) {
             if (i + 1 < argc) palette_name = argv[++i];
+        } else if (strcmp(argv[i], "--font-family") == 0 || strcmp(argv[i], "-f") == 0) {
+            if (i + 1 < argc) font_family = argv[++i];
+        } else if (strcmp(argv[i], "--font-scale") == 0 || strcmp(argv[i], "-s") == 0) {
+            if (i + 1 < argc) font_scale = atof(argv[++i]);
+        } else if (strcmp(argv[i], "--help") == 0 || strcmp(argv[i], "-h") == 0) {
+            print_help(argv[0]);
+            return 0;
         } else {
             md_path = argv[i];
         }
     }
 
     if (!md_path) {
-        fprintf(stderr, "Uso: %s [-p palette] presentacion.md\n", argv[0]);
+        print_help(argv[0]);
         return 1;
     }
 
     Slider *s = slider_load(md_path);
     if (!s) return 1;
-    if (palette_name) {
-        s->theme = theme_find(palette_name);
-    }
+    if (palette_name) s->theme = theme_find(palette_name);
+    if (font_family) strncpy(s->font_family, font_family, sizeof(s->font_family) - 1);
+    if (font_scale > 0.1) s->font_scale = font_scale;
+
     int n_slides = slider_get_count(s);
-    fprintf(stderr, "[slides] %d slide(s) cargados desde %s (tema: %s)\n", 
-            n_slides, md_path, s->theme->name);
+    fprintf(stderr, "[slides] %d slide(s) cargados desde %s (tema: %s, font: %s, scale: %.1f)\n", 
+            n_slides, md_path, s->theme->name, s->font_family, s->font_scale);
 
     Display *disp = XOpenDisplay(NULL);
     if (!disp) { fputs("No se pudo abrir display\n", stderr); return 1; }
