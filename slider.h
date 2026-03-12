@@ -39,4 +39,15 @@ int slider_get_count(Slider *s);
  */
 void slider_render(Slider *s, int index, cairo_t *cr, int win_w, int win_h);
 
+/**
+ * @brief Exports a specific slide to a PNG file.
+ * @param s The Slider object.
+ * @param index The index of the slide to export (0-based).
+ * @param path The output path (e.g., "slide_1.png").
+ * @param w Width of the output image.
+ * @param h Height of the output image.
+ * @return 0 on success, non-zero on error.
+ */
+int slider_export_png(Slider *s, int index, const char *path, int w, int h);
+
 #endif // SLIDER_H

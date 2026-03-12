@@ -46,6 +46,8 @@ make
 - `-p, --palette <name>`: Elegir paleta (`dark`, `rose`, `monokai`, `nord`, `light`).
 - `-f, --font-family <str>`: Definir tipografía (ej. 'Arial', 'JetBrains Mono').
 - `-s, --font-scale <num>`: Escalar tamaño de fuentes (ej. 1.2 para aumentar un 20%).
+- `-e, --export`: Exportar todas las slides a archivos PNG (1080x1080).
+- `-sl, --slide <num>`: Exportar solo una slide específica (0-index).
 - `-h, --help`: Mostrar ayuda.
 
 **Controles:**

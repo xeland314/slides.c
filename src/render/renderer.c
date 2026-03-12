@@ -302,3 +302,24 @@ void slider_render(Slider *s, int index, cairo_t *cr, int win_w, int win_h) {
     g_object_unref(lay_title); g_object_unref(lay_subtitle); g_object_unref(lay_body);
     g_object_unref(lay_bullet); g_object_unref(lay_bullet2); g_object_unref(lay_num);
 }
+
+int slider_export_png(Slider *s, int index, const char *path, int w, int h) {
+    if (!s || index < 0 || index >= s->n_slides) return -1;
+    
+    cairo_surface_t *sfc = cairo_image_surface_create(CAIRO_FORMAT_RGB24, w, h);
+    cairo_t *cr = cairo_create(sfc);
+    
+    // Pintar fondo
+    set_color(cr, s->theme->bg_r, s->theme->bg_g, s->theme->bg_b);
+    cairo_paint(cr);
+    
+    // Renderizar slide
+    slider_render(s, index, cr, w, h);
+    
+    cairo_status_t status = cairo_surface_write_to_png(sfc, path);
+    
+    cairo_destroy(cr);
+    cairo_surface_destroy(sfc);
+    
+    return (status == CAIRO_STATUS_SUCCESS) ? 0 : -1;
+}
