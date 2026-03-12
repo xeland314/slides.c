@@ -47,9 +47,11 @@ static void set_color(cairo_t *cr, double r, double g, double b) {
     cairo_set_source_rgb(cr, r, g, b);
 }
 
-static void md_to_markup(const char *in, char *out, size_t out_size) {
+void md_to_markup(const char *in, char *out, size_t out_size) {
     size_t wi = 0;
     const char *p = in;
+    int bold = 0;
+    int italic = 0;
 
 #define WRITE(s) do { \
     size_t _l = strlen(s); \
@@ -57,62 +59,36 @@ static void md_to_markup(const char *in, char *out, size_t out_size) {
 } while(0)
 
     while (*p) {
-        if (*p == '&') { WRITE("&amp;");  p++; continue; }
-        if (*p == '<') { WRITE("&lt;");   p++; continue; }
-        if (*p == '>') { WRITE("&gt;");   p++; continue; }
+        if (*p == '&') { WRITE("&amp;"); p++; continue; }
+        if (*p == '<') { WRITE("&lt;"); p++; continue; }
+        if (*p == '>') { WRITE("&gt;"); p++; continue; }
 
-        if ((p[0] == '*' && p[1] == '*') || (p[0] == '_' && p[1] == '_')) {
-            char delim[3] = { p[0], p[1], '\0' };
-            const char *end = strstr(p + 2, delim);
-            if (end) {
-                WRITE("<b>");
-                for (const char *q = p + 2; q < end; q++) {
-                    if (*q == '&') WRITE("&amp;");
-                    else if (*q == '<') WRITE("&lt;");
-                    else if (*q == '>') WRITE("&gt;");
-                    else { if (wi < out_size - 1) out[wi++] = *q; }
-                }
-                WRITE("</b>");
-                p = end + 2;
-                continue;
-            }
+        // Triple (Bold + Italic)
+        if (strncmp(p, "***", 3) == 0 || strncmp(p, "___", 3) == 0) {
+            if (!bold && !italic) { WRITE("<b><i>"); bold = 1; italic = 1; }
+            else if (bold && italic) { WRITE("</i></b>"); bold = 0; italic = 0; }
+            p += 3; continue;
         }
-
-        if (p[0] == '*' && p[1] != '*') {
-            const char *end = strchr(p + 1, '*');
-            if (end && end > p + 1) {
-                WRITE("<i>");
-                for (const char *q = p + 1; q < end; q++) {
-                    if (*q == '&') WRITE("&amp;");
-                    else if (*q == '<') WRITE("&lt;");
-                    else if (*q == '>') WRITE("&gt;");
-                    else { if (wi < out_size - 1) out[wi++] = *q; }
-                }
-                WRITE("</i>");
-                p = end + 1;
-                continue;
-            }
+        // Bold
+        if (strncmp(p, "**", 2) == 0 || strncmp(p, "__", 2) == 0) {
+            if (!bold) { WRITE("<b>"); bold = 1; }
+            else { WRITE("</b>"); bold = 0; }
+            p += 2; continue;
         }
-
-        if (p[0] == '_' && p[1] != '_') {
-            const char *end = strchr(p + 1, '_');
-            if (end && end > p + 1) {
-                WRITE("<i>");
-                for (const char *q = p + 1; q < end; q++) {
-                    if (*q == '&') WRITE("&amp;");
-                    else if (*q == '<') WRITE("&lt;");
-                    else if (*q == '>') WRITE("&gt;");
-                    else { if (wi < out_size - 1) out[wi++] = *q; }
-                }
-                WRITE("</i>");
-                p = end + 1;
-                continue;
-            }
+        // Italic
+        if (*p == '*' || *p == '_') {
+            if (!italic) { WRITE("<i>"); italic = 1; }
+            else { WRITE("</i>"); italic = 0; }
+            p++; continue;
         }
 
         if (wi < out_size - 1) out[wi++] = *p;
         p++;
     }
+    // Cerrar tags si quedaron abiertos por error en el MD
+    if (italic) WRITE("</i>");
+    if (bold) WRITE("</b>");
+    
     out[wi] = '\0';
 #undef WRITE
 }
