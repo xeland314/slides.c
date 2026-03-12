@@ -45,6 +45,9 @@ make
 **Paletas disponibles:**
 - `dark` (Por defecto): El tema azul oscuro original.
 - `rose`: Un tema elegante basado en tonos vino y rosa.
+- `monokai`: Estilo retro-vibrante con fondo oscuro y colores neón.
+- `nord`: Estética nórdica, limpia y profesional basada en tonos fríos.
+- `light`: Tema claro de alto contraste, ideal para lectura en papel.
 
 **Controles:**
 - `->` / `Enter`: Siguiente diapositiva.
