@@ -76,6 +76,7 @@ typedef enum {
     LINE_IMAGE,       // !ruta.png
     LINE_TABLE_ROW,   // | col | col | ...
     LINE_TABLE_SEP,   // | --- | --- | ... (separador de header)
+    LINE_BLOCKQUOTE,  // > texto
 } LineType;
 
 typedef struct {

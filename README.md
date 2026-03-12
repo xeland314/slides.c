@@ -23,7 +23,7 @@ La implementación actual sigue una filosofía orientada a **slides** (una líne
 | **Imágenes** | ✅ | Carga de PNGs con auto-escalado y cache. |
 | **Tablas (GFM)** | ✅ | Renderizado completo con headers y filas alternas. |
 | **Párrafos** | ✅ | Texto normal con soporte de wrapping automático. |
-| **Blockquotes** | ❌ | No implementado (común en documentos, raro en slides). |
+| **Blockquotes** | ✅ | Implementado con barra lateral acentuada y texto en color secundario. |
 | **Código (Blocks/Inline)** | ❌ | Pendiente de implementación (requiere fuente monoespaciada). |
 | **Enlaces [text](url)** | ❌ | No implementado (X11 no gestiona clicks en texto por defecto). |
 | **Anidamiento Complejo** | ⚠️ | Limitado por el parser lineal; no soporta listas dentro de tablas. |

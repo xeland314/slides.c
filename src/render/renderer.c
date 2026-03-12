@@ -229,6 +229,25 @@ void slider_render(Slider *s, int index, cairo_t *cr, int win_w, int win_h) {
             set_color(cr, COL_BODY_R, COL_BODY_G, COL_BODY_B);
             y += render_pango(cr, lay_body, sl->text, MARGIN_X, y);
             y += 8.0; i++; break;
+        case LINE_BLOCKQUOTE: {
+            double b_x = MARGIN_X + 10.0;
+            double t_x = b_x + 25.0;
+            set_color(cr, COL_ACCENT_R, COL_ACCENT_G, COL_ACCENT_B);
+            cairo_set_line_width(cr, 4.0);
+            char markup[MAX_LINE_LEN * 4];
+            md_to_markup(sl->text, markup, sizeof(markup));
+            pango_layout_set_markup(lay_body, markup, -1);
+            int tw, th;
+            pango_layout_get_pixel_size(lay_body, &tw, &th);
+            cairo_move_to(cr, b_x, y);
+            cairo_line_to(cr, b_x, y + (double)th);
+            cairo_stroke(cr);
+            set_color(cr, COL_SUB_R, COL_SUB_G, COL_SUB_B);
+            cairo_move_to(cr, t_x, y);
+            pango_cairo_show_layout(cr, lay_body);
+            y += (double)th + 12.0;
+            i++; break;
+        }
         case LINE_BULLET1:
             set_color(cr, COL_BULLET_R, COL_BULLET_G, COL_BULLET_B);
             cairo_arc(cr, MARGIN_X + 8, y + 11, 4, 0, 2 * M_PI);

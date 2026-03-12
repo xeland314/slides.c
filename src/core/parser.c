@@ -79,6 +79,12 @@ static void parse_line(const char *raw, SlideLine *out) {
         strncpy(out->text, s + 2, MAX_LINE_LEN - 1);
         return;
     }
+    // Blockquote
+    if (strncmp(s, "> ", 2) == 0) {
+        out->type = LINE_BLOCKQUOTE;
+        strncpy(out->text, s + 2, MAX_LINE_LEN - 1);
+        return;
+    }
     // Imagen
     if (s[0] == '!') {
         out->type = LINE_IMAGE;
