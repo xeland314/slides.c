@@ -52,6 +52,7 @@ void md_to_markup(const char *in, char *out, size_t out_size) {
     const char *p = in;
     int bold = 0;
     int italic = 0;
+    int code = 0;
 
 #define WRITE(s) do { \
     size_t _l = strlen(s); \
@@ -62,6 +63,18 @@ void md_to_markup(const char *in, char *out, size_t out_size) {
         if (*p == '&') { WRITE("&amp;"); p++; continue; }
         if (*p == '<') { WRITE("&lt;"); p++; continue; }
         if (*p == '>') { WRITE("&gt;"); p++; continue; }
+
+        // Inline Code (tiene prioridad y anula otros formatos dentro)
+        if (*p == '`') {
+            if (!code) { WRITE("<tt>"); code = 1; }
+            else { WRITE("</tt>"); code = 0; }
+            p++; continue;
+        }
+
+        if (code) {
+            if (wi < out_size - 1) out[wi++] = *p;
+            p++; continue;
+        }
 
         // Triple (Bold + Italic)
         if (strncmp(p, "***", 3) == 0 || strncmp(p, "___", 3) == 0) {

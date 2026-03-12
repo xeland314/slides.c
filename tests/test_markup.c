@@ -37,41 +37,46 @@ void test_escaping(void) {
     TEST_CHECK(strcmp(out, "A &amp; B &lt; C") == 0);
 }
 
+void test_inline_code(void) {
+    char out[256];
+    md_to_markup("Usa `printf()`", out, sizeof(out));
+    TEST_CHECK(strcmp(out, "Usa <tt>printf()</tt>") == 0);
+
+    md_to_markup("`**no bold**`", out, sizeof(out));
+    TEST_CHECK(strcmp(out, "<tt>**no bold**</tt>") == 0);
+}
+
 // --- Test Dinámico (Fuzzing) ---
 
 void test_fuzzing_markup(void) {
-    const char *tokens[] = {"*", "**", "***", "_", "__", "___", "&", "<", ">", " ", "abc", "123"};
+    const char *tokens[] = {"*", "**", "***", "_", "__", "___", "&", "<", ">", "`", " ", "abc", "123"};
     int n_tokens = sizeof(tokens) / sizeof(tokens[0]);
     char input[512];
-    char output[2048]; // Buffer grande para evitar desbordamiento legítimo del algoritmo
+    char output[2048];
 
     srand(time(NULL));
 
-    // Ejecutamos 10,000 iteraciones aleatorias
     for (int i = 0; i < 10000; i++) {
         input[0] = '\0';
-        int len = rand() % 20; // Longitud de 0 a 20 tokens
+        int len = rand() % 20;
         for (int j = 0; j < len; j++) {
             strcat(input, tokens[rand() % n_tokens]);
         }
 
-        // Propiedad 1: No debe crashear
         md_to_markup(input, output, sizeof(output));
 
-        // Propiedad 2: El output debe ser nulo-terminado (implícito en strcat/strcpy)
-        // Propiedad 3: Los caracteres < y > deben estar solo en tags conocidos o escapados
         const char *p = output;
         while (*p) {
             if (*p == '<') {
-                // Solo permitimos tags conocidos: <b>, <i>, </b>, </i>
                 int is_valid_tag = (strncmp(p, "<b>", 3) == 0 || strncmp(p, "<i>", 3) == 0 ||
-                                    strncmp(p, "</b>", 4) == 0 || strncmp(p, "</i>", 4) == 0);
+                                    strncmp(p, "<tt>", 4) == 0 ||
+                                    strncmp(p, "</b>", 4) == 0 || strncmp(p, "</i>", 4) == 0 ||
+                                    strncmp(p, "</tt>", 5) == 0);
                 if (!is_valid_tag) {
                     TEST_CHECK_(is_valid_tag, "Tag inválido generado en iteración %d: %s (Input: %s)", i, p, input);
                 }
             }
             if (*p == '&') {
-                // Debe estar escapado como &amp;, &lt; o &gt;
                 int is_escaped = (strncmp(p, "&amp;", 5) == 0 || strncmp(p, "&lt;", 4) == 0 || strncmp(p, "&gt;", 4) == 0);
                 if (!is_escaped) {
                     TEST_CHECK_(is_escaped, "Ampersand no escapado en iteración %d: %s (Input: %s)", i, p, input);
@@ -88,7 +93,7 @@ TEST_LIST = {
     { "combined_bold_italic", test_combined_bold_italic },
     { "nested_complex", test_nested_complex },
     { "escaping", test_escaping },
+    { "inline_code", test_inline_code },
     { "fuzzing_markup", test_fuzzing_markup },
     { NULL, NULL }
 };
-
