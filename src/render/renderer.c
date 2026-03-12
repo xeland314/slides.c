@@ -106,7 +106,7 @@ static double render_pango(cairo_t *cr, PangoLayout *lay,
 }
 
 static double render_table(cairo_t *cr, PangoLayout *lay_body,
-                            SlideLine *lines, int start, int count,
+                            Slider *s, SlideLine *lines, int start, int count,
                             double x, double y, double max_w) {
     if (count == 0) return 0.0;
     int max_cols = 0, header_row = -1;
@@ -128,13 +128,13 @@ static double render_table(cairo_t *cr, PangoLayout *lay_body,
         if (sl->type != LINE_TABLE_ROW) continue;
         int is_header = (header_row > 0 && i == 0);
 
-        if (is_header) set_color(cr, COL_TABLE_HDR_R, COL_TABLE_HDR_G, COL_TABLE_HDR_B);
-        else if (data_row % 2 == 0) set_color(cr, COL_TABLE_ROW_R, COL_TABLE_ROW_G, COL_TABLE_ROW_B);
-        else set_color(cr, COL_TABLE_ALT_R, COL_TABLE_ALT_G, COL_TABLE_ALT_B);
+        if (is_header) set_color(cr, s->theme->table_hdr_r, s->theme->table_hdr_g, s->theme->table_hdr_b);
+        else if (data_row % 2 == 0) set_color(cr, s->theme->table_row_r, s->theme->table_row_g, s->theme->table_row_b);
+        else set_color(cr, s->theme->table_alt_r, s->theme->table_alt_g, s->theme->table_alt_b);
 
         cairo_rectangle(cr, x, cur_y, max_w, row_h);
         cairo_fill(cr);
-        set_color(cr, COL_TABLE_BDR_R, COL_TABLE_BDR_G, COL_TABLE_BDR_B);
+        set_color(cr, s->theme->table_bdr_r, s->theme->table_bdr_g, s->theme->table_bdr_b);
         cairo_set_line_width(cr, 0.5);
         for (int c = 0; c <= max_cols; c++) {
             double cx = x + c * col_w;
@@ -146,8 +146,8 @@ static double render_table(cairo_t *cr, PangoLayout *lay_body,
         cairo_line_to(cr, x + max_w, cur_y + row_h);
         cairo_stroke(cr);
 
-        if (is_header) set_color(cr, COL_BULLET_R, COL_BULLET_G, COL_BULLET_B);
-        else set_color(cr, COL_BODY_R, COL_BODY_G, COL_BODY_B);
+        if (is_header) set_color(cr, s->theme->bullet_r, s->theme->bullet_g, s->theme->bullet_b);
+        else set_color(cr, s->theme->body_r, s->theme->body_g, s->theme->body_b);
 
         for (int c = 0; c < sl->ncols && c < max_cols; c++) {
             pango_layout_set_width(lay_body, (int)((col_w - 12.0) * PANGO_SCALE));
@@ -162,7 +162,7 @@ static double render_table(cairo_t *cr, PangoLayout *lay_body,
         cur_y += row_h;
         if (!is_header) data_row++;
     }
-    set_color(cr, COL_TABLE_BDR_R, COL_TABLE_BDR_G, COL_TABLE_BDR_B);
+    set_color(cr, s->theme->table_bdr_r, s->theme->table_bdr_g, s->theme->table_bdr_b);
     cairo_set_line_width(cr, 1.0);
     cairo_rectangle(cr, x, y, max_w, cur_y - y);
     cairo_stroke(cr);
@@ -189,26 +189,26 @@ void slider_render(Slider *s, int index, cairo_t *cr, int win_w, int win_h) {
         switch (sl->type) {
         case LINE_EMPTY: y += 12.0; i++; break;
         case LINE_TITLE:
-            set_color(cr, COL_TITLE_R, COL_TITLE_G, COL_TITLE_B);
+            set_color(cr, s->theme->title_r, s->theme->title_g, s->theme->title_b);
             y += render_pango(cr, lay_title, sl->text, MARGIN_X, y);
-            set_color(cr, COL_ACCENT_R, COL_ACCENT_G, COL_ACCENT_B);
+            set_color(cr, s->theme->accent_r, s->theme->accent_g, s->theme->accent_b);
             cairo_set_line_width(cr, 2.5);
             cairo_move_to(cr, MARGIN_X, y + 8);
             cairo_line_to(cr, MARGIN_X + content_w, y + 8);
             cairo_stroke(cr);
             y += 22.0; i++; break;
         case LINE_SUBTITLE:
-            set_color(cr, COL_SUB_R, COL_SUB_G, COL_SUB_B);
+            set_color(cr, s->theme->sub_r, s->theme->sub_g, s->theme->sub_b);
             y += render_pango(cr, lay_subtitle, sl->text, MARGIN_X, y);
             y += 14.0; i++; break;
         case LINE_BODY:
-            set_color(cr, COL_BODY_R, COL_BODY_G, COL_BODY_B);
+            set_color(cr, s->theme->body_r, s->theme->body_g, s->theme->body_b);
             y += render_pango(cr, lay_body, sl->text, MARGIN_X, y);
             y += 8.0; i++; break;
         case LINE_BLOCKQUOTE: {
             double b_x = MARGIN_X + 10.0;
             double t_x = b_x + 25.0;
-            set_color(cr, COL_ACCENT_R, COL_ACCENT_G, COL_ACCENT_B);
+            set_color(cr, s->theme->accent_r, s->theme->accent_g, s->theme->accent_b);
             cairo_set_line_width(cr, 4.0);
             char markup[MAX_LINE_LEN * 4];
             md_to_markup(sl->text, markup, sizeof(markup));
@@ -218,26 +218,26 @@ void slider_render(Slider *s, int index, cairo_t *cr, int win_w, int win_h) {
             cairo_move_to(cr, b_x, y);
             cairo_line_to(cr, b_x, y + (double)th);
             cairo_stroke(cr);
-            set_color(cr, COL_SUB_R, COL_SUB_G, COL_SUB_B);
+            set_color(cr, s->theme->sub_r, s->theme->sub_g, s->theme->sub_b);
             cairo_move_to(cr, t_x, y);
             pango_cairo_show_layout(cr, lay_body);
             y += (double)th + 12.0;
             i++; break;
         }
         case LINE_BULLET1:
-            set_color(cr, COL_BULLET_R, COL_BULLET_G, COL_BULLET_B);
+            set_color(cr, s->theme->bullet_r, s->theme->bullet_g, s->theme->bullet_b);
             cairo_arc(cr, MARGIN_X + 8, y + 11, 4, 0, 2 * M_PI);
             cairo_fill(cr);
-            set_color(cr, COL_BODY_R, COL_BODY_G, COL_BODY_B);
+            set_color(cr, s->theme->body_r, s->theme->body_g, s->theme->body_b);
             y += render_pango(cr, lay_bullet, sl->text, MARGIN_X + 22.0, y) + 6.0;
             i++; break;
         case LINE_BULLET2: {
             double bx = MARGIN_X + 38, by = y + 10;
-            set_color(cr, COL_ACCENT_R, COL_ACCENT_G, COL_ACCENT_B);
+            set_color(cr, s->theme->accent_r, s->theme->accent_g, s->theme->accent_b);
             cairo_move_to(cr, bx, by - 4); cairo_line_to(cr, bx + 4, by);
             cairo_line_to(cr, bx, by + 4); cairo_line_to(cr, bx - 4, by);
             cairo_close_path(cr); cairo_fill(cr);
-            set_color(cr, COL_BODY_R, COL_BODY_G, COL_BODY_B);
+            set_color(cr, s->theme->body_r, s->theme->body_g, s->theme->body_b);
             y += render_pango(cr, lay_bullet2, sl->text, MARGIN_X + 52.0, y) + 4.0;
             i++; break;
         }
@@ -266,19 +266,19 @@ void slider_render(Slider *s, int index, cairo_t *cr, int win_w, int win_h) {
         case LINE_TABLE_SEP: {
             int j = i;
             while (j < slide->nlines && (slide->lines[j].type == LINE_TABLE_ROW || slide->lines[j].type == LINE_TABLE_SEP)) j++;
-            y += render_table(cr, lay_body, (SlideLine *)slide->lines, i, j - i, MARGIN_X, y, content_w) + 14.0;
+            y += render_table(cr, lay_body, s, (SlideLine *)slide->lines, i, j - i, MARGIN_X, y, content_w) + 14.0;
             i = j; break;
         }
         default: i++; break;
         }
     }
     char num_buf[32]; snprintf(num_buf, sizeof(num_buf), "%d / %d", index + 1, s->n_slides);
-    set_color(cr, COL_NUM_R, COL_NUM_G, COL_NUM_B);
+    set_color(cr, s->theme->num_r, s->theme->num_g, s->theme->num_b);
     pango_layout_set_width(lay_num, 200 * PANGO_SCALE); pango_layout_set_alignment(lay_num, PANGO_ALIGN_RIGHT);
     render_pango(cr, lay_num, num_buf, win_w - MARGIN_X - 200, win_h - 32.0);
     double prog = (s->n_slides > 1) ? (double)index / (s->n_slides - 1) : 1.0;
-    set_color(cr, 0.10, 0.14, 0.35); cairo_rectangle(cr, 0, win_h - 4, win_w, 4); cairo_fill(cr);
-    set_color(cr, COL_ACCENT_R, COL_ACCENT_G, COL_ACCENT_B); cairo_rectangle(cr, 0, win_h - 4, win_w * prog, 4); cairo_fill(cr);
+    set_color(cr, s->theme->bg_r * 1.5, s->theme->bg_g * 1.5, s->theme->bg_b * 1.5); cairo_rectangle(cr, 0, win_h - 4, win_w, 4); cairo_fill(cr);
+    set_color(cr, s->theme->accent_r, s->theme->accent_g, s->theme->accent_b); cairo_rectangle(cr, 0, win_h - 4, win_w * prog, 4); cairo_fill(cr);
     g_object_unref(lay_title); g_object_unref(lay_subtitle); g_object_unref(lay_body);
     g_object_unref(lay_bullet); g_object_unref(lay_bullet2); g_object_unref(lay_num);
 }

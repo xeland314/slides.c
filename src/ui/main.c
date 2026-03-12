@@ -6,17 +6,33 @@
 #include <cairo/cairo-xlib.h>
 #include <stdio.h>
 #include <unistd.h>
+#include <string.h>
 
 int main(int argc, char *argv[]) {
-    if (argc < 2) {
-        fprintf(stderr, "Uso: %s presentacion.md\n", argv[0]);
+    const char *md_path = NULL;
+    const char *palette_name = NULL;
+
+    for (int i = 1; i < argc; i++) {
+        if (strcmp(argv[i], "--palette") == 0 || strcmp(argv[i], "-p") == 0) {
+            if (i + 1 < argc) palette_name = argv[++i];
+        } else {
+            md_path = argv[i];
+        }
+    }
+
+    if (!md_path) {
+        fprintf(stderr, "Uso: %s [-p palette] presentacion.md\n", argv[0]);
         return 1;
     }
 
-    Slider *s = slider_load(argv[1]);
+    Slider *s = slider_load(md_path);
     if (!s) return 1;
+    if (palette_name) {
+        s->theme = theme_find(palette_name);
+    }
     int n_slides = slider_get_count(s);
-    fprintf(stderr, "[slides] %d slide(s) cargados desde %s\n", n_slides, argv[1]);
+    fprintf(stderr, "[slides] %d slide(s) cargados desde %s (tema: %s)\n", 
+            n_slides, md_path, s->theme->name);
 
     Display *disp = XOpenDisplay(NULL);
     if (!disp) { fputs("No se pudo abrir display\n", stderr); return 1; }
@@ -86,7 +102,7 @@ int main(int argc, char *argv[]) {
             if (ev.type == ClientMessage) if ((Atom)ev.xclient.data.l[0] == wm_delete) running = 0;
         }
         if (dirty) {
-            cairo_set_source_rgb(cr, COL_BG_R, COL_BG_G, COL_BG_B);
+            cairo_set_source_rgb(cr, s->theme->bg_r, s->theme->bg_g, s->theme->bg_b);
             cairo_paint(cr);
             slider_render(s, current, cr, win_w, win_h);
             cairo_set_source_surface(cr_flip, sfc_back, 0, 0);

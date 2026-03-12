@@ -39,8 +39,12 @@ La implementación actual sigue una filosofía orientada a **slides** (una líne
 
 ```bash
 make
-./slides presentacion.md
+./slides [-p palette] presentacion.md
 ```
+
+**Paletas disponibles:**
+- `dark` (Por defecto): El tema azul oscuro original.
+- `rose`: Un tema elegante basado en tonos vino y rosa.
 
 **Controles:**
 - `->` / `Enter`: Siguiente diapositiva.

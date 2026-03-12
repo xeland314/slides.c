@@ -139,6 +139,7 @@ Slider* slider_load(const char *path) {
 
     Slider *s = calloc(1, sizeof(Slider));
     if (!s) { fclose(fp); return NULL; }
+    s->theme = theme_default();
 
     int n = 0;
     char line[MAX_LINE_LEN];
