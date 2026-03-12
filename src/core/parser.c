@@ -51,7 +51,7 @@ static int is_table_sep2(const char *line) {
     return has_dash;
 }
 
-static void parse_line(const char *raw, SlideLine *out) {
+void parse_line(const char *raw, SlideLine *out) {
     char buf[MAX_LINE_LEN];
     strncpy(buf, raw, MAX_LINE_LEN - 1);
     buf[MAX_LINE_LEN - 1] = '\0';
