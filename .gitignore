@@ -8,3 +8,6 @@ libslider.so
 slides_ada
 dart/build/
 python/__pycache__/
+slides.exe
+slider.dll
+libslider.a
