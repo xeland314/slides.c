@@ -6,3 +6,5 @@ run_tests_parser
 run_tests_markup
 libslider.so
 slides_ada
+dart/build/
+python/__pycache__/
