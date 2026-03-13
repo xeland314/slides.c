@@ -173,3 +173,30 @@ void slider_free(Slider *s) {
 int slider_get_count(Slider *s) {
     return s ? s->n_slides : 0;
 }
+
+void slider_set_theme(Slider *s, const char *theme_name) {
+    if (s) s->theme = theme_find(theme_name);
+}
+
+void slider_set_font_family(Slider *s, const char *font_family) {
+    if (s && font_family) {
+        strncpy(s->font_family, font_family, sizeof(s->font_family) - 1);
+        s->font_family[sizeof(s->font_family) - 1] = '\0';
+    }
+}
+
+void slider_set_font_scale(Slider *s, double font_scale) {
+    if (s && font_scale > 0.1) s->font_scale = font_scale;
+}
+
+const char* slider_get_theme_name(Slider *s) {
+    return (s && s->theme) ? s->theme->name : "unknown";
+}
+
+const char* slider_get_font_family(Slider *s) {
+    return s ? s->font_family : "sans";
+}
+
+double slider_get_font_scale(Slider *s) {
+    return s ? s->font_scale : 1.0;
+}

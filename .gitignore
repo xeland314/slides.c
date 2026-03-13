@@ -4,3 +4,5 @@ run_tests
 run_tests_integration
 run_tests_parser
 run_tests_markup
+libslider.so
+slides_ada

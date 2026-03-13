@@ -50,4 +50,48 @@ void slider_render(Slider *s, int index, cairo_t *cr, int win_w, int win_h);
  */
 int slider_export_png(Slider *s, int index, const char *path, int w, int h);
 
+// ── Property accessors ───────────────────────────────────────────────────────
+
+/**
+ * @brief Sets the visual theme for the slides.
+ * @param s The Slider object.
+ * @param theme_name Name of the theme (e.g., "dark", "rose", "monokai", "nord", "light").
+ */
+void slider_set_theme(Slider *s, const char *theme_name);
+
+/**
+ * @brief Sets the font family used for rendering text.
+ * @param s The Slider object.
+ * @param font_family Pango-compatible font family name (e.g., "Arial", "Inter").
+ */
+void slider_set_font_family(Slider *s, const char *font_family);
+
+/**
+ * @brief Sets the global font scale factor.
+ * @param s The Slider object.
+ * @param font_scale Scale factor (1.0 is default, > 0.1).
+ */
+void slider_set_font_scale(Slider *s, double font_scale);
+
+/**
+ * @brief Gets the name of the currently active theme.
+ * @param s The Slider object.
+ * @return The theme name string.
+ */
+const char* slider_get_theme_name(Slider *s);
+
+/**
+ * @brief Gets the current font family name.
+ * @param s The Slider object.
+ * @return The font family string.
+ */
+const char* slider_get_font_family(Slider *s);
+
+/**
+ * @brief Gets the current font scale factor.
+ * @param s The Slider object.
+ * @return The font scale factor.
+ */
+double slider_get_font_scale(Slider *s);
+
 #endif // SLIDER_H
