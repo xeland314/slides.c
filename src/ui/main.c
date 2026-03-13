@@ -44,6 +44,9 @@ int main(int argc, char *argv[]) {
             }
         } else if (strcmp(argv[i], "--slide") == 0 || strcmp(argv[i], "-sl") == 0) {
             if (i + 1 < argc) target_slide = atoi(argv[++i]);
+        } else if (strcmp(argv[i], "--version") == 0 || strcmp(argv[i], "-v") == 0) {
+            printf("c-slides v1.0.0\n");
+            return 0;
         } else if (strcmp(argv[i], "--help") == 0 || strcmp(argv[i], "-h") == 0) {
             print_help(argv[0]);
             return 0;
