@@ -13,7 +13,8 @@ static void print_help(const char *prog) {
     printf("  -p, --palette <name>    Elegir paleta (dark, rose, monokai, nord, light)\n");
     printf("  -f, --font-family <str> Definir tipografía (ej. 'Arial', 'JetBrains Mono')\n");
     printf("  -s, --font-scale <num>  Escalar tamaño de fuentes (ej. 1.2)\n");
-    printf("  -e, --export            Exportar slides a PNG (1080x1080)\n");
+    printf("  -e, --export            Exportar slides a PNG\n");
+    printf("  -er, --export-res <WxH> Resolución de exportación (ej. 1920x1080, default 1080x1080)\n");
     printf("  -sl, --slide <num>      Seleccionar slide específico para exportar (0-index)\n");
     printf("  -h, --help              Mostrar esta ayuda\n");
 }
@@ -25,6 +26,8 @@ int main(int argc, char *argv[]) {
     double font_scale = 1.0;
     int export_png = 0;
     int target_slide = -1;
+    int export_w = 1080;
+    int export_h = 1080;
 
     for (int i = 1; i < argc; i++) {
         if (strcmp(argv[i], "--palette") == 0 || strcmp(argv[i], "-p") == 0) {
@@ -35,6 +38,10 @@ int main(int argc, char *argv[]) {
             if (i + 1 < argc) font_scale = atof(argv[++i]);
         } else if (strcmp(argv[i], "--export") == 0 || strcmp(argv[i], "-e") == 0) {
             export_png = 1;
+        } else if (strcmp(argv[i], "--export-res") == 0 || strcmp(argv[i], "-er") == 0) {
+            if (i + 1 < argc) {
+                sscanf(argv[++i], "%dx%d", &export_w, &export_h);
+            }
         } else if (strcmp(argv[i], "--slide") == 0 || strcmp(argv[i], "-sl") == 0) {
             if (i + 1 < argc) target_slide = atoi(argv[++i]);
         } else if (strcmp(argv[i], "--help") == 0 || strcmp(argv[i], "-h") == 0) {
@@ -73,8 +80,8 @@ int main(int argc, char *argv[]) {
         for (int i = start; i < end; i++) {
             char filename[1024];
             snprintf(filename, sizeof(filename), "slide_%d.png", i + 1);
-            if (slider_export_png(s, i, filename, 1080, 1080) == 0) {
-                printf("Exportado: %s\n", filename);
+            if (slider_export_png(s, i, filename, export_w, export_h) == 0) {
+                printf("Exportado: %s (%dx%d)\n", filename, export_w, export_h);
             } else {
                 fprintf(stderr, "Fallo al exportar: %s\n", filename);
             }
