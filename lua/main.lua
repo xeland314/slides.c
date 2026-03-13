@@ -1,7 +1,16 @@
 local ffi = require("ffi")
 
--- Cargar la librería
-local lib = ffi.load("../libslider.so")
+-- 1. Detección de OS y carga de librería
+local is_windows = package.config:sub(1,1) == "\\"
+local lib_name = is_windows and "../slider.dll" or "../libslider.so"
+
+-- Se intenta cargar la librería
+local status, lib = pcall(ffi.load, lib_name)
+if not status then
+    print("Error: No se pudo cargar la librería en: " .. lib_name)
+    print("Asegúrate de haber ejecutado 'make' en el directorio raíz.")
+    os.exit(1)
+end
 
 -- Declaraciones de C
 ffi.cdef[[
@@ -31,6 +40,7 @@ local function print_help()
     print("  -h, --help              Mostrar esta ayuda")
 end
 
+-- Lógica de argumentos
 local md_path = nil
 local palette = nil
 local font_family = nil
@@ -52,9 +62,11 @@ while i <= #arg do
         export_png = true
     elseif arg[i] == "-er" or arg[i] == "--export-res" then
         i = i + 1
-        local w, h = arg[i]:match("(%d+)x(%d+)")
-        export_w = tonumber(w) or 1080
-        export_h = tonumber(h) or 1080
+        if arg[i] then
+            local w, h = arg[i]:match("(%d+)x(%d+)")
+            export_w = tonumber(w) or 1080
+            export_h = tonumber(h) or 1080
+        end
     elseif arg[i] == "-sl" or arg[i] == "--slide" then
         i = i + 1; target_slide = tonumber(arg[i]) or -1
     elseif arg[i] == "-h" or arg[i] == "--help" then
@@ -77,6 +89,7 @@ if slider == nil then
     os.exit(1)
 end
 
+-- Aplicar settings
 if palette then lib.slider_set_theme(slider, palette) end
 if font_family then lib.slider_set_font_family(slider, font_family) end
 if font_scale ~= 1.0 then lib.slider_set_font_scale(slider, font_scale) end
@@ -108,7 +121,8 @@ if export_png then
     os.exit(0)
 end
 
-print("Iniciando backend Linux (X11) desde Lua...")
+local backend_name = is_windows and "Win32" or "Linux (X11)"
+print("Iniciando backend " .. backend_name .. " desde Lua...")
 local ret = lib.backend_run(slider)
 
 lib.slider_free(slider)
