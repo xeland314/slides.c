@@ -2,7 +2,7 @@ CC = gcc
 CFLAGS = -Wall -Wextra $(shell pkg-config --cflags x11 cairo pangocairo)
 LIBS = $(shell pkg-config --libs x11 cairo pangocairo) -lm
 
-SRC = src/core/parser.c src/core/themes.c src/render/renderer.c src/ui/main.c
+SRC = src/core/parser.c src/core/themes.c src/render/renderer.c src/ui/backend_x11.c src/ui/main.c
 OBJ = $(SRC:.c=.o)
 TARGET = slides
 RUN_TESTS_MARKUP = run_tests_markup
