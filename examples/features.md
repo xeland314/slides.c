@@ -8,7 +8,7 @@ Este archivo muestra todo lo que puedes hacer:
 - **Énfasis**: *Itálica*, **Negrita**, ***Ambos***
 - **Imágenes**: Se ajustan automáticamente
 
-!../logo.png
+!logo.png
 
 ---
 
