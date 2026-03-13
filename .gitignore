@@ -11,3 +11,9 @@ python/__pycache__/
 slides.exe
 slider.dll
 libslider.a
+*.ali
+slides_ada.exe
+dist/
+slides_go.exe
+.zig-cache/
+zig-out/

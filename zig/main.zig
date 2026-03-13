@@ -1,4 +1,5 @@
 const std = @import("std");
+const builtin = @import("builtin");
 const c = @cImport({
     @cInclude("slider.h");
     @cInclude("src/ui/backend.h");
@@ -43,7 +44,7 @@ pub fn main() !void {
         } else if (std.mem.eql(u8, arg, "-er") or std.mem.eql(u8, arg, "--export-res")) {
             i += 1;
             if (i < args.len) {
-                var it = std.mem.split(u8, args[i], "x");
+                var it = std.mem.splitSequence(u8, args[i], "x");
                 if (it.next()) |w_str| export_w = std.fmt.parseInt(i32, w_str, 10) catch 1080;
                 if (it.next()) |h_str| export_h = std.fmt.parseInt(i32, h_str, 10) catch 1080;
             }
@@ -89,7 +90,7 @@ pub fn main() !void {
         const end = if (target_slide >= 0) target_slide + 1 else n_slides;
 
         if (start < 0 or start >= n_slides) {
-            std.debug.print("Error: Slide {} fuera de rango (0-{})\n", .{target_slide, n_slides - 1});
+            std.debug.print("Error: Slide {} fuera de rango\n", .{target_slide});
             return;
         }
 
@@ -107,7 +108,13 @@ pub fn main() !void {
         return;
     }
 
-    std.debug.print("Iniciando backend Linux (X11) desde Zig...\n", .{});
+    const os_name = switch (builtin.os.tag) {
+        .windows => "Win32",
+        .linux => "Linux (X11)",
+        else => "Desconocido",
+    };
+
+    std.debug.print("Iniciando backend {s} desde Zig...\n", .{os_name});
     const ret = c.backend_run(slider);
     if (ret != 0) std.process.exit(@intCast(ret));
 }
