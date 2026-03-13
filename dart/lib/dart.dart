@@ -3,6 +3,4 @@
 /// More dartdocs go here.
 library;
 
-export 'src/dart_base.dart';
-
-// TODO: Export any libraries intended for clients of this package.
+export 'c_slides_bindings.dart';

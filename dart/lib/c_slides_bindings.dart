@@ -1,6 +1,5 @@
 import 'dart:ffi' as ffi;
 import 'package:ffi/ffi.dart';
-import 'dart:io';
 
 // Definición del tipo opaco Slider
 base class Slider extends ffi.Opaque {}

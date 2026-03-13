@@ -15,12 +15,30 @@ void printHelp() {
   print('  -h, --help              Mostrar esta ayuda');
 }
 
+/// Configura el entorno según el SO y devuelve el path de la librería.
+String getLibraryPath() {
+  final String libName;
+  
+  if (Platform.isWindows) {
+    libName = 'slider.dll';
+    // Opcional: Agregar el bin de MSYS2 al PATH si no está
+    // Aunque en Dart es más complejo que os.add_dll_directory,
+    // lo ideal es que el usuario tenga MinGW64/bin en el PATH del sistema.
+  } else {
+    libName = 'libslider.so';
+  }
+
+  // Buscar en el directorio raíz (asumiendo que ejecutamos desde la carpeta dart/)
+  return File('../$libName').absolute.path;
+}
+
 void main(List<String> args) {
   if (args.isEmpty) {
     printHelp();
     return;
   }
 
+  // Parsing de argumentos (mantenemos tu lógica que funciona bien)
   String? mdPath;
   String? paletteName;
   String? fontFamily;
@@ -64,11 +82,10 @@ void main(List<String> args) {
     return;
   }
 
-  // Cargar librería. Buscamos en el directorio raíz.
-  final libPath = File('../libslider.so').absolute.path;
+  final libPath = getLibraryPath();
   if (!File(libPath).existsSync()) {
-    print('Error: No se encuentra libslider.so en $libPath');
-    print('Ejecuta "make libslider.so" en el directorio raíz.');
+    print('Error: No se encuentra la librería en $libPath');
+    print('Asegúrate de haber compilado el proyecto en el directorio raíz.');
     return;
   }
 
@@ -83,6 +100,7 @@ void main(List<String> args) {
     return;
   }
 
+  // Aplicar configuraciones
   if (paletteName != null) {
     final pPtr = paletteName.toNativeUtf8();
     cslides.sliderSetTheme(slider, pPtr);
@@ -114,7 +132,7 @@ void main(List<String> args) {
     final end = (targetSlide >= 0) ? targetSlide + 1 : nSlides;
 
     if (start < 0 || start >= nSlides) {
-      print('Error: Slide $targetSlide fuera de rango (0-${nSlides - 1})');
+      print('Error: Slide $targetSlide fuera de rango.');
       cslides.sliderFree(slider);
       return;
     }
@@ -134,7 +152,9 @@ void main(List<String> args) {
     return;
   }
 
-  print('Iniciando backend Linux (X11) desde Dart...');
+  final platformBackend = Platform.isWindows ? 'Win32' : 'Linux (X11)';
+  print('Iniciando backend $platformBackend desde Dart...');
+  
   final ret = cslides.backendRun(slider);
   
   cslides.sliderFree(slider);
