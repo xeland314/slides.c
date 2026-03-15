@@ -66,6 +66,24 @@ void test_parse_table(void) {
     TEST_CHECK(sl.type == LINE_TABLE_SEP);
 }
 
+void test_parse_task_list(void) {
+    SlideLine sl;
+    // Unchecked
+    parse_line("- [ ] Tarea pendiente", &sl);
+    TEST_CHECK(sl.type == LINE_TASK_UNCHECKED);
+    TEST_CHECK(strcmp(sl.text, "Tarea pendiente") == 0);
+
+    // Checked
+    parse_line("- [x] Tarea completada", &sl);
+    TEST_CHECK(sl.type == LINE_TASK_CHECKED);
+    TEST_CHECK(strcmp(sl.text, "Tarea completada") == 0);
+
+    // Checked uppercase
+    parse_line("- [X] Tarea completada 2", &sl);
+    TEST_CHECK(sl.type == LINE_TASK_CHECKED);
+    TEST_CHECK(strcmp(sl.text, "Tarea completada 2") == 0);
+}
+
 TEST_LIST = {
     { "parse_title", test_parse_title },
     { "parse_subtitle", test_parse_subtitle },
@@ -73,5 +91,6 @@ TEST_LIST = {
     { "parse_bullets", test_parse_bullets },
     { "parse_image", test_parse_image },
     { "parse_table", test_parse_table },
+    { "parse_task_list", test_parse_task_list },
     { NULL, NULL }
 };

@@ -122,6 +122,17 @@ void parse_line(const char *raw, SlideLine *out) {
         strncpy(out->text, content, MAX_LINE_LEN - 1);
         return;
     }
+    // Checkbox (Task List)
+    if (strncmp(s, "- [ ] ", 6) == 0) {
+        out->type = LINE_TASK_UNCHECKED;
+        strncpy(out->text, s + 6, MAX_LINE_LEN - 1);
+        return;
+    }
+    if (strncmp(s, "- [x] ", 6) == 0 || strncmp(s, "- [X] ", 6) == 0) {
+        out->type = LINE_TASK_CHECKED;
+        strncpy(out->text, s + 6, MAX_LINE_LEN - 1);
+        return;
+    }
     // Viñeta
     if (strncmp(s, "- ", 2) == 0) {
         out->type = LINE_BULLET1;

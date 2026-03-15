@@ -36,6 +36,8 @@ typedef enum {
     LINE_CODE_START,  // ```
     LINE_CODE_END,    // ```
     LINE_CODE,        // dentro de ```
+    LINE_TASK_UNCHECKED, // - [ ] texto
+    LINE_TASK_CHECKED,   // - [x] texto
 } LineType;
 
 typedef struct {

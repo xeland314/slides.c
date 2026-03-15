@@ -25,6 +25,18 @@ Este archivo muestra todo lo que puedes hacer:
 
 ---
 
+# Checklists
+## Task Lists Support
+
+Ahora puedes gestionar tus tareas:
+
+- [x] Implementar soporte de checklists
+- [x] Renderizar glifos de cajas
+- [ ] Soporte para sub-checklists (pendiente)
+- [ ] Exportar a PDF con iconos vectoriales
+
+---
+
 # Conclusión
 ## Manténlo simple
 

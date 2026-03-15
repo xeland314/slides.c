@@ -290,6 +290,26 @@ void slider_render(Slider *s, int index, cairo_t *cr, int win_w, int win_h) {
             set_color(cr, s->theme->body_r, s->theme->body_g, s->theme->body_b);
             y += render_pango(cr, lay_bullet, sl->text, MARGIN_X + 22.0, y) + 6.0;
             i++; break;
+        case LINE_TASK_UNCHECKED:
+        case LINE_TASK_CHECKED: {
+            double sz = 18.0;
+            double bx = MARGIN_X + 2, by = y + 2;
+            // Dibujar caja
+            set_color(cr, s->theme->accent_r, s->theme->accent_g, s->theme->accent_b);
+            cairo_set_line_width(cr, 1.5);
+            cairo_rectangle(cr, bx, by, sz, sz);
+            cairo_stroke(cr);
+            if (sl->type == LINE_TASK_CHECKED) {
+                // Dibujar Checkmark
+                cairo_move_to(cr, bx + 4, by + 9);
+                cairo_line_to(cr, bx + 8, by + 13);
+                cairo_line_to(cr, bx + 14, by + 5);
+                cairo_stroke(cr);
+            }
+            set_color(cr, s->theme->body_r, s->theme->body_g, s->theme->body_b);
+            y += render_pango(cr, lay_bullet, sl->text, MARGIN_X + 30.0, y) + 6.0;
+            i++; break;
+        }
         case LINE_BULLET2: {
             double bx = MARGIN_X + 38, by = y + 10;
             set_color(cr, s->theme->accent_r, s->theme->accent_g, s->theme->accent_b);
