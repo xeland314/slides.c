@@ -15,7 +15,14 @@ static const Theme THEME_DARK = {
     .table_hdr_r = 0.10, .table_hdr_g = 0.18, .table_hdr_b = 0.45,
     .table_row_r = 0.06, .table_row_g = 0.09, .table_row_b = 0.25,
     .table_alt_r = 0.08, .table_alt_g = 0.12, .table_alt_b = 0.32,
-    .table_bdr_r = 0.20, .table_bdr_g = 0.28, .table_bdr_b = 0.55
+    .table_bdr_r = 0.20, .table_bdr_g = 0.28, .table_bdr_b = 0.55,
+    // Code
+    .code_bg_r = 0.02, .code_bg_g = 0.03, .code_bg_b = 0.09,
+    .code_txt_r = 0.90, .code_txt_g = 0.90, .code_txt_b = 0.90,
+    .code_kw_r = 0.40, .code_kw_g = 0.70, .code_kw_b = 1.00,
+    .code_com_r = 0.40, .code_com_g = 0.45, .code_com_b = 0.50,
+    .code_str_r = 0.60, .code_str_g = 0.85, .code_str_b = 0.40,
+    .code_sym_r = 0.90, .code_sym_g = 0.90, .code_sym_b = 0.90
 };
 
 // ── Rose (Vino/Rosa) ─────────────────────────────────────────────────────────
@@ -31,7 +38,14 @@ static const Theme THEME_ROSE = {
     .table_hdr_r = 0.30, .table_hdr_g = 0.10, .table_hdr_b = 0.15,
     .table_row_r = 0.20, .table_row_g = 0.08, .table_row_b = 0.10,
     .table_alt_r = 0.25, .table_alt_g = 0.10, .table_alt_b = 0.12,
-    .table_bdr_r = 0.40, .table_bdr_g = 0.20, .table_bdr_b = 0.25
+    .table_bdr_r = 0.40, .table_bdr_g = 0.20, .table_bdr_b = 0.25,
+    // Code
+    .code_bg_r = 0.10, .code_bg_g = 0.03, .code_bg_b = 0.05,
+    .code_txt_r = 0.95, .code_txt_g = 0.85, .code_txt_b = 0.88,
+    .code_kw_r = 1.00, .code_kw_g = 0.40, .code_kw_b = 0.60,
+    .code_com_r = 0.50, .code_com_g = 0.40, .code_com_b = 0.42,
+    .code_str_r = 1.00, .code_str_g = 0.70, .code_str_b = 0.20,
+    .code_sym_r = 0.95, .code_sym_g = 0.80, .code_sym_b = 0.85
 };
 
 // ── Monokai (Vibrante) ────────────────────────────────────────────────────────
@@ -47,7 +61,14 @@ static const Theme THEME_MONOKAI = {
     .table_hdr_r = 0.25, .table_hdr_g = 0.26, .table_hdr_b = 0.23,
     .table_row_r = 0.18, .table_row_g = 0.19, .table_row_b = 0.16,
     .table_alt_r = 0.22, .table_alt_g = 0.23, .table_alt_b = 0.20,
-    .table_bdr_r = 0.36, .table_bdr_g = 0.36, .table_bdr_b = 0.33
+    .table_bdr_r = 0.36, .table_bdr_g = 0.36, .table_bdr_b = 0.33,
+    // Code
+    .code_bg_r = 0.08, .code_bg_g = 0.09, .code_bg_b = 0.07,
+    .code_txt_r = 0.97, .code_txt_g = 0.97, .code_txt_b = 0.95,
+    .code_kw_r = 0.98, .code_kw_g = 0.15, .code_kw_b = 0.45,
+    .code_com_r = 0.46, .code_com_g = 0.46, .code_com_b = 0.43,
+    .code_str_r = 0.90, .code_str_g = 0.86, .code_str_b = 0.45,
+    .code_sym_r = 0.65, .code_sym_g = 0.89, .code_sym_b = 0.18
 };
 
 // ── Nord (Ártico) ─────────────────────────────────────────────────────────────
@@ -63,7 +84,14 @@ static const Theme THEME_NORD = {
     .table_hdr_r = 0.23, .table_hdr_g = 0.26, .table_hdr_b = 0.32,
     .table_row_r = 0.18, .table_row_g = 0.20, .table_row_b = 0.25,
     .table_alt_r = 0.21, .table_alt_g = 0.23, .table_alt_b = 0.29,
-    .table_bdr_r = 0.30, .table_bdr_g = 0.34, .table_bdr_b = 0.42
+    .table_bdr_r = 0.30, .table_bdr_g = 0.34, .table_bdr_b = 0.42,
+    // Code
+    .code_bg_r = 0.15, .code_bg_g = 0.17, .code_bg_b = 0.22,
+    .code_txt_r = 0.85, .code_txt_g = 0.88, .code_txt_b = 0.93,
+    .code_kw_r = 0.51, .code_kw_g = 0.63, .code_kw_b = 0.76,
+    .code_com_r = 0.30, .code_com_g = 0.34, .code_com_b = 0.42,
+    .code_str_r = 0.64, .code_str_g = 0.75, .code_str_b = 0.55,
+    .code_sym_r = 0.93, .code_sym_g = 0.94, .code_sym_b = 0.96
 };
 
 // ── Light (Papel) ─────────────────────────────────────────────────────────────
@@ -79,7 +107,14 @@ static const Theme THEME_LIGHT = {
     .table_hdr_r = 0.85, .table_hdr_g = 0.85, .table_hdr_b = 0.85,
     .table_row_r = 0.96, .table_row_g = 0.96, .table_row_b = 0.96,
     .table_alt_r = 0.92, .table_alt_g = 0.92, .table_alt_b = 0.92,
-    .table_bdr_r = 0.80, .table_bdr_g = 0.80, .table_bdr_b = 0.80
+    .table_bdr_r = 0.80, .table_bdr_g = 0.80, .table_bdr_b = 0.80,
+    // Code
+    .code_bg_r = 0.90, .code_bg_g = 0.90, .code_bg_b = 0.90,
+    .code_txt_r = 0.20, .code_txt_g = 0.20, .code_txt_b = 0.20,
+    .code_kw_r = 0.00, .code_kw_g = 0.48, .code_kw_b = 0.80,
+    .code_com_r = 0.50, .code_com_g = 0.50, .code_com_b = 0.50,
+    .code_str_r = 0.30, .code_str_g = 0.60, .code_str_b = 0.30,
+    .code_sym_r = 0.20, .code_sym_g = 0.20, .code_sym_b = 0.20
 };
 
 static const Theme* ALL_THEMES[] = { 

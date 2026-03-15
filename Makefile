@@ -26,7 +26,7 @@ CFLAGS += $(shell pkg-config --cflags $(PKGS))
 LIBS = $(shell pkg-config --libs $(PKGS)) $(PLATFORM_LIBS)
 
 # Fuentes y Objetos
-CORE_COMMON_SRC = src/core/parser.c src/core/themes.c src/render/renderer.c
+CORE_COMMON_SRC = src/core/parser.c src/core/themes.c src/core/highlighter.c src/render/renderer.c
 CORE_SRC = $(CORE_COMMON_SRC) $(BACKEND_SRC)
 CORE_OBJ = $(CORE_SRC:.c=.o)
 
@@ -40,6 +40,7 @@ TARGET_LIB = $(TARGET_DLL)
 RUN_TESTS_MARKUP = run_tests_markup
 RUN_TESTS_PARSER = run_tests_parser
 RUN_TESTS_INTEGRATION = run_tests_integration
+RUN_TESTS_HIGHLIGHTER = run_tests_highlighter
 
 all: $(TARGET) $(TARGET_ADA) $(TARGET_LIB)
 
@@ -56,19 +57,23 @@ $(TARGET_ADA): $(CORE_OBJ)
 	gnatmake -aIada/ -D ada/ -o $(TARGET_ADA) ada/slides_main.adb -largs $(CORE_OBJ) $(LIBS)
 
 # --- Reglas de tests ---
-test: test_markup test_parser test_integration
+test: test_markup test_parser test_integration test_highlighter
 
-test_markup: tests/test_markup.o src/render/renderer.o
-	$(CC) tests/test_markup.o src/render/renderer.o -o $(RUN_TESTS_MARKUP) $(LIBS)
+test_markup: tests/test_markup.o src/render/renderer.o src/core/highlighter.o src/core/themes.o
+	$(CC) tests/test_markup.o src/render/renderer.o src/core/highlighter.o src/core/themes.o -o $(RUN_TESTS_MARKUP) $(LIBS)
 	./$(RUN_TESTS_MARKUP)
 
-test_parser: tests/test_parser.o src/core/parser.o src/core/themes.o
-	$(CC) tests/test_parser.o src/core/parser.o src/core/themes.o -o $(RUN_TESTS_PARSER) $(LIBS)
+test_parser: tests/test_parser.o src/core/parser.o src/core/themes.o src/core/highlighter.o
+	$(CC) tests/test_parser.o src/core/parser.o src/core/themes.o src/core/highlighter.o -o $(RUN_TESTS_PARSER) $(LIBS)
 	./$(RUN_TESTS_PARSER)
 
-test_integration: tests/test_integration.o src/core/parser.o src/core/themes.o src/render/renderer.o
-	$(CC) tests/test_integration.o src/core/parser.o src/core/themes.o src/render/renderer.o -o $(RUN_TESTS_INTEGRATION) $(LIBS)
+test_integration: tests/test_integration.o src/core/parser.o src/core/themes.o src/core/highlighter.o src/render/renderer.o
+	$(CC) tests/test_integration.o src/core/parser.o src/core/themes.o src/core/highlighter.o src/render/renderer.o -o $(RUN_TESTS_INTEGRATION) $(LIBS)
 	./$(RUN_TESTS_INTEGRATION)
+
+test_highlighter: tests/test_highlighter.o src/core/highlighter.o src/core/themes.o
+	$(CC) tests/test_highlighter.o src/core/highlighter.o src/core/themes.o -o $(RUN_TESTS_HIGHLIGHTER) $(LIBS)
+	./$(RUN_TESTS_HIGHLIGHTER)
 
 # --- Reglas de compilación genéricas ---
 tests/%.o: tests/%.c

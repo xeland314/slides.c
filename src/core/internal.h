@@ -33,6 +33,9 @@ typedef enum {
     LINE_TABLE_ROW,   // | col | col | ...
     LINE_TABLE_SEP,   // | --- | --- | ... (separador de header)
     LINE_BLOCKQUOTE,  // > texto
+    LINE_CODE_START,  // ```
+    LINE_CODE_END,    // ```
+    LINE_CODE,        // dentro de ```
 } LineType;
 
 typedef struct {

@@ -145,19 +145,48 @@ Slider* slider_load(const char *path) {
 
     int n = 0;
     char line[MAX_LINE_LEN];
+    int in_code = 0;
 
     while (fgets(line, sizeof(line), fp) && n < MAX_SLIDES) {
         // Separador de slide
         char trimmed[MAX_LINE_LEN];
         strncpy(trimmed, line, MAX_LINE_LEN - 1);
         char *t = trim(trimmed);
-        if (strcmp(t, "---") == 0) {
+        
+        if (!in_code && strcmp(t, "---") == 0) {
             n++;
             continue;
         }
+
+        // Code block triple backticks
+        if (strncmp(t, "```", 3) == 0) {
+            Slide *cur = &s->slides[n];
+            if (cur->nlines < MAX_LINES) {
+                if (!in_code) {
+                    cur->lines[cur->nlines].type = LINE_CODE_START;
+                    strncpy(cur->lines[cur->nlines].text, t + 3, MAX_LINE_LEN - 1);
+                    in_code = 1;
+                } else {
+                    cur->lines[cur->nlines].type = LINE_CODE_END;
+                    cur->lines[cur->nlines].text[0] = '\0';
+                    in_code = 0;
+                }
+                cur->nlines++;
+            }
+            continue;
+        }
+
         Slide *cur = &s->slides[n];
         if (cur->nlines < MAX_LINES) {
-            parse_line(line, &cur->lines[cur->nlines]);
+            if (in_code) {
+                cur->lines[cur->nlines].type = LINE_CODE;
+                // Quitar solo el \n al final
+                char *p = line + strlen(line) - 1;
+                while (p >= line && (*p == '\r' || *p == '\n')) *p-- = '\0';
+                strncpy(cur->lines[cur->nlines].text, line, MAX_LINE_LEN - 1);
+            } else {
+                parse_line(line, &cur->lines[cur->nlines]);
+            }
             cur->nlines++;
         }
     }

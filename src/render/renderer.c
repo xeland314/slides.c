@@ -1,5 +1,6 @@
 #include "../../slider.h"
 #include "../core/internal.h"
+#include "../core/highlighter.h"
 #include <pango/pangocairo.h>
 #include <math.h>
 #include <string.h>
@@ -183,17 +184,53 @@ static double render_table(cairo_t *cr, PangoLayout *lay_body,
     return cur_y - y;
 }
 
+static double render_code_block(cairo_t *cr, PangoLayout *lay_code,
+                               Slider *s, SlideLine *lines, int start, int count,
+                               double x, double y, double max_w) {
+    if (count <= 0) return 0.0;
+
+    // Calcular altura total primero
+    double line_h = 24.0 * s->font_scale;
+    double total_h = (count - 2) * line_h + 20.0; // -2 por START y END
+    if (total_h < 20.0) total_h = 20.0;
+
+    // Fondo del bloque
+    set_color(cr, s->theme->code_bg_r, s->theme->code_bg_g, s->theme->code_bg_b);
+    cairo_rectangle(cr, x, y, max_w, total_h);
+    cairo_fill(cr);
+
+    // Color de texto por defecto para lo que no tenga span
+    set_color(cr, s->theme->code_txt_r, s->theme->code_txt_g, s->theme->code_txt_b);
+
+    double cur_y = y + 10.0;
+    for (int i = 0; i < count; i++) {
+        SlideLine *sl = &lines[start + i];
+        if (sl->type == LINE_CODE_START || sl->type == LINE_CODE_END) continue;
+
+        char markup[MAX_LINE_LEN * 8];
+        highlighter_highlight(sl->text, s->theme, markup, sizeof(markup));
+        pango_layout_set_markup(lay_code, markup, -1);
+        
+        cairo_move_to(cr, x + 15.0, cur_y);
+        pango_cairo_show_layout(cr, lay_code);
+        cur_y += line_h;
+    }
+
+    return total_h;
+}
+
 void slider_render(Slider *s, int index, cairo_t *cr, int win_w, int win_h) {
     if (!s || index < 0 || index >= s->n_slides) return;
     const Slide *slide = &s->slides[index];
     double content_w = win_w - MARGIN_X * 2.0;
 
-    char f_title[128], f_subtitle[128], f_body[128], f_bullet[128], f_num[128];
+    char f_title[128], f_subtitle[128], f_body[128], f_bullet[128], f_num[128], f_code[128];
     snprintf(f_title,    sizeof(f_title),    "%s Bold %d", s->font_family, (int)(44 * s->font_scale));
     snprintf(f_subtitle, sizeof(f_subtitle), "%s %d",      s->font_family, (int)(26 * s->font_scale));
     snprintf(f_body,     sizeof(f_body),     "%s %d",      s->font_family, (int)(20 * s->font_scale));
     snprintf(f_bullet,   sizeof(f_bullet),   "%s %d",      s->font_family, (int)(18 * s->font_scale));
     snprintf(f_num,      sizeof(f_num),      "%s %d",      s->font_family, (int)(13 * s->font_scale));
+    snprintf(f_code,     sizeof(f_code),     "Monospace %d",             (int)(16 * s->font_scale));
 
     PangoLayout *lay_title    = make_layout(cr, f_title,    content_w);
     PangoLayout *lay_subtitle = make_layout(cr, f_subtitle, content_w);
@@ -201,6 +238,7 @@ void slider_render(Slider *s, int index, cairo_t *cr, int win_w, int win_h) {
     PangoLayout *lay_bullet   = make_layout(cr, f_body,     content_w - 30);
     PangoLayout *lay_bullet2  = make_layout(cr, f_bullet,   content_w - 60);
     PangoLayout *lay_num      = make_layout(cr, f_num,      200);
+    PangoLayout *lay_code     = make_layout(cr, f_code,     content_w - 30);
 
     double y = MARGIN_Y;
     int i = 0;
@@ -289,6 +327,13 @@ void slider_render(Slider *s, int index, cairo_t *cr, int win_w, int win_h) {
             y += render_table(cr, lay_body, s, (SlideLine *)slide->lines, i, j - i, MARGIN_X, y, content_w) + 14.0;
             i = j; break;
         }
+        case LINE_CODE_START: {
+            int j = i;
+            while (j < slide->nlines && slide->lines[j].type != LINE_CODE_END) j++;
+            if (j < slide->nlines) j++; // Incluir LINE_CODE_END
+            y += render_code_block(cr, lay_code, s, (SlideLine *)slide->lines, i, j - i, MARGIN_X, y, content_w) + 14.0;
+            i = j; break;
+        }
         default: i++; break;
         }
     }
@@ -301,6 +346,7 @@ void slider_render(Slider *s, int index, cairo_t *cr, int win_w, int win_h) {
     set_color(cr, s->theme->accent_r, s->theme->accent_g, s->theme->accent_b); cairo_rectangle(cr, 0, win_h - 4, win_w * prog, 4); cairo_fill(cr);
     g_object_unref(lay_title); g_object_unref(lay_subtitle); g_object_unref(lay_body);
     g_object_unref(lay_bullet); g_object_unref(lay_bullet2); g_object_unref(lay_num);
+    g_object_unref(lay_code);
 }
 
 int slider_export_png(Slider *s, int index, const char *path, int w, int h) {

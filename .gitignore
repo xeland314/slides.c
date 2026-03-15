@@ -17,3 +17,8 @@ dist/
 slides_go.exe
 .zig-cache/
 zig-out/
+zig/zig-cache/
+bin/
+slides-mingw-w64-x86_64.zip
+slides-linux-x86_64.zip
+run_tests_highlighter

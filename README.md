@@ -36,7 +36,7 @@ La implementación actual sigue una filosofía orientada a **slides** (una líne
 | **Tablas (GFM)** | ✅ | Renderizado completo con headers y filas alternas. |
 | **Párrafos** | ✅ | Texto normal con soporte de wrapping automático. |
 | **Blockquotes** | ✅ | Implementado con barra lateral acentuada y texto en color secundario. |
-| **Código (Blocks/Inline)** | ✅ | Soporte de fuentes monoespaciadas configurables. |
+| **Código (Blocks/Inline)** | ✅ | Soporte de fuentes monoespaciadas y resaltado de sintaxis general (keywords, strings, symbols, comments). |
 | **Enlaces [text](url)** | ❌ | No implementado (X11 no gestiona clicks en texto por defecto). |
 | **Anidamiento Complejo** | ⚠️ | Limitado por el parser lineal; no soporta listas dentro de tablas. |
 

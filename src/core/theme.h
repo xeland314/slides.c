@@ -18,6 +18,13 @@ typedef struct {
     double table_row_r, table_row_g, table_row_b;
     double table_alt_r, table_alt_g, table_alt_b;
     double table_bdr_r, table_bdr_g, table_bdr_b;
+    // Code Blocks
+    double code_bg_r,   code_bg_g,   code_bg_b;
+    double code_txt_r,  code_txt_g,  code_txt_b;   // Default text
+    double code_kw_r,   code_kw_g,   code_kw_b;    // Keywords
+    double code_com_r,  code_com_g,  code_com_b;   // Comments
+    double code_str_r,  code_str_g,  code_str_b;   // Strings
+    double code_sym_r,  code_sym_g,  code_sym_b;   // Symbols {} [] ()
 } Theme;
 
 // Obtener tema por nombre
