@@ -22,7 +22,7 @@ int backend_run(Slider *s) {
     Window win = XCreateSimpleWindow(disp, RootWindow(disp, scr), wx, wy, WIN_W, WIN_H, 0, 0, 0);
 
     XStoreName(disp, win, "C-Slides"); // Podríamos pasar el título
-    XSelectInput(disp, win, KeyPressMask | ButtonPressMask | StructureNotifyMask);
+    XSelectInput(disp, win, KeyPressMask | ButtonPressMask | StructureNotifyMask | ExposureMask);
     Atom wm_delete = XInternAtom(disp, "WM_DELETE_WINDOW", False);
     XSetWMProtocols(disp, win, &wm_delete, 1);
     Atom wm_state  = XInternAtom(disp, "_NET_WM_STATE", False);
@@ -75,6 +75,9 @@ int backend_run(Slider *s) {
                     cr = cairo_create(sfc_back); cr_flip = cairo_create(sfc_screen);
                     dirty = 1;
                 }
+            }
+            if (ev.type == Expose) {
+                dirty = 1;
             }
             if (ev.type == ClientMessage) if ((Atom)ev.xclient.data.l[0] == wm_delete) running = 0;
         }
