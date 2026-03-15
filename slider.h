@@ -50,6 +50,16 @@ void slider_render(Slider *s, int index, cairo_t *cr, int win_w, int win_h);
  */
 int slider_export_png(Slider *s, int index, const char *path, int w, int h);
 
+/**
+ * @brief Exports all slides to a single PDF file.
+ * @param s The Slider object.
+ * @param path The output path (e.g., "presentation.pdf").
+ * @param w Width of the output pages.
+ * @param h Height of the output pages.
+ * @return 0 on success, non-zero on error.
+ */
+int slider_export_pdf(Slider *s, const char *path, int w, int h);
+
 // ── Property accessors ───────────────────────────────────────────────────────
 
 /**
