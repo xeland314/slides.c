@@ -84,6 +84,15 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
     case WM_RBUTTONDOWN: // Click derecho -> Avanzar
         if (g_current_slide < g_n_slides - 1) { g_current_slide++; dirty = 1; }
         break;
+    case WM_MOUSEWHEEL: {
+        short delta = (short)HIWORD(wParam);
+        if (delta > 0) { // Scroll arriba -> Retroceder
+            if (g_current_slide > 0) { g_current_slide--; dirty = 1; }
+        } else if (delta < 0) { // Scroll abajo -> Avanzar
+            if (g_current_slide < g_n_slides - 1) { g_current_slide++; dirty = 1; }
+        }
+        break;
+    }
     case WM_KEYDOWN:
         switch (wParam) {
         case VK_ESCAPE: PostQuitMessage(0); return 0;

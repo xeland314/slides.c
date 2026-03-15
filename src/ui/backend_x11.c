@@ -60,8 +60,12 @@ int backend_run(Slider *s) {
                 }
             }
             if (ev.type == ButtonPress) {
-                if (ev.xbutton.button == Button1) { if (current > 0) { current--; dirty = 1; } }
-                else if (ev.xbutton.button == Button3) { if (current < n_slides - 1) { current++; dirty = 1; } }
+                if (ev.xbutton.button == Button1 || ev.xbutton.button == Button4) { 
+                    if (current > 0) { current--; dirty = 1; } 
+                }
+                else if (ev.xbutton.button == Button3 || ev.xbutton.button == Button5) { 
+                    if (current < n_slides - 1) { current++; dirty = 1; } 
+                }
             }
             if (ev.type == ConfigureNotify) {
                 int nw = ev.xconfigure.width, nh = ev.xconfigure.height;
