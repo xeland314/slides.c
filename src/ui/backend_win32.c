@@ -8,10 +8,17 @@ static Slider *g_slider = NULL;
 static int g_current_slide = 0;
 static int g_n_slides = 0;
 static int g_fullscreen = 0;
+static DWORD g_start_time = 0;
+static DWORD g_slide_start_time = 0;
 
 // Estructura para recordar la posición de la ventana antes de ir a fullscreen
 static RECT g_prev_rect;
 static DWORD g_prev_style;
+
+static double get_slide_time_ms(void) {
+    if (g_slide_start_time == 0) g_slide_start_time = GetTickCount();
+    return (double)(GetTickCount() - g_slide_start_time);
+}
 
 static void toggle_fullscreen(HWND hwnd) {
     if (!g_fullscreen) {
@@ -50,7 +57,7 @@ static void render_frame(HDC hdc, int w, int h) {
     cairo_set_source_rgb(cr, t->bg_r, t->bg_g, t->bg_b);
     cairo_paint(cr);
 
-    slider_render(g_slider, g_current_slide, cr, w, h);
+    slider_render(g_slider, g_current_slide, cr, w, h, get_slide_time_ms());
 
     cairo_destroy(cr);
     cairo_surface_destroy(surface);
@@ -78,18 +85,23 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
         EndPaint(hwnd, &ps);
         return 0;
     }
+    case WM_TIMER:
+        if (g_slider && g_slider->slides[g_current_slide].has_anim) {
+            InvalidateRect(hwnd, NULL, FALSE);
+        }
+        return 0;
     case WM_LBUTTONDOWN: // Click izquierdo -> Retroceder
-        if (g_current_slide > 0) { g_current_slide--; dirty = 1; }
+        if (g_current_slide > 0) { g_current_slide--; dirty = 1; g_slide_start_time = GetTickCount(); }
         break;
     case WM_RBUTTONDOWN: // Click derecho -> Avanzar
-        if (g_current_slide < g_n_slides - 1) { g_current_slide++; dirty = 1; }
+        if (g_current_slide < g_n_slides - 1) { g_current_slide++; dirty = 1; g_slide_start_time = GetTickCount(); }
         break;
     case WM_MOUSEWHEEL: {
         short delta = (short)HIWORD(wParam);
         if (delta > 0) { // Scroll arriba -> Retroceder
-            if (g_current_slide > 0) { g_current_slide--; dirty = 1; }
+            if (g_current_slide > 0) { g_current_slide--; dirty = 1; g_slide_start_time = GetTickCount(); }
         } else if (delta < 0) { // Scroll abajo -> Avanzar
-            if (g_current_slide < g_n_slides - 1) { g_current_slide++; dirty = 1; }
+            if (g_current_slide < g_n_slides - 1) { g_current_slide++; dirty = 1; g_slide_start_time = GetTickCount(); }
         }
         break;
     }
@@ -98,13 +110,13 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
         case VK_ESCAPE: PostQuitMessage(0); return 0;
         case 'Q': PostQuitMessage(0); return 0;
         case VK_RIGHT: case VK_SPACE: case VK_RETURN: case VK_NEXT:
-            if (g_current_slide < g_n_slides - 1) { g_current_slide++; dirty = 1; }
+            if (g_current_slide < g_n_slides - 1) { g_current_slide++; dirty = 1; g_slide_start_time = GetTickCount(); }
             break;
         case VK_LEFT: case VK_BACK: case VK_PRIOR:
-            if (g_current_slide > 0) { g_current_slide--; dirty = 1; }
+            if (g_current_slide > 0) { g_current_slide--; dirty = 1; g_slide_start_time = GetTickCount(); }
             break;
-        case VK_HOME: g_current_slide = 0; dirty = 1; break;
-        case VK_END: g_current_slide = g_n_slides - 1; dirty = 1; break;
+        case VK_HOME: g_current_slide = 0; dirty = 1; g_slide_start_time = GetTickCount(); break;
+        case VK_END: g_current_slide = g_n_slides - 1; dirty = 1; g_slide_start_time = GetTickCount(); break;
         case 'F': case VK_F11:
             toggle_fullscreen(hwnd);
             dirty = 1;
@@ -128,6 +140,8 @@ int backend_run(Slider *s) {
     g_slider = s;
     g_n_slides = slider_get_count(s);
     g_current_slide = 0;
+    g_start_time = GetTickCount();
+    g_slide_start_time = g_start_time;
 
     const char CLASS_NAME[] = "CSlidesWinClass";
     HINSTANCE hInstance = GetModuleHandle(NULL);
@@ -149,11 +163,16 @@ int backend_run(Slider *s) {
 
     if (hwnd == NULL) return 1;
 
+    // Timer para animaciones (16ms ~ 60fps)
+    SetTimer(hwnd, 1, 16, NULL);
+
     MSG msg = {0};
     while (GetMessage(&msg, NULL, 0, 0)) {
         TranslateMessage(&msg);
         DispatchMessage(&msg);
     }
+    
+    KillTimer(hwnd, 1);
 
     return 0;
 }

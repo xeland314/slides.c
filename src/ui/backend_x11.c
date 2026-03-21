@@ -6,6 +6,13 @@
 #include <cairo/cairo-xlib.h>
 #include <stdio.h>
 #include <unistd.h>
+#include <time.h>
+
+static double get_time_ms(void) {
+    struct timespec ts;
+    clock_gettime(CLOCK_MONOTONIC, &ts);
+    return (double)ts.tv_sec * 1000.0 + (double)ts.tv_nsec / 1000000.0;
+}
 
 int backend_run(Slider *s) {
     if (!s) return 1;
@@ -37,6 +44,9 @@ int backend_run(Slider *s) {
 
     int current = 0, running = 1, dirty = 1, fullscreen = 0;
     int n_slides = slider_get_count(s);
+    
+    double start_time = get_time_ms();
+    double slide_start_time = start_time;
 
     while (running) {
         while (XPending(disp)) {
@@ -46,11 +56,11 @@ int backend_run(Slider *s) {
                 KeySym ks = XLookupKeysym(&ev.xkey, 0);
                 if (ks == XK_q || ks == XK_Escape) running = 0;
                 else if (ks == XK_Right || ks == XK_Return || ks == XK_space || ks == XK_Next) {
-                    if (current < n_slides - 1) { current++; dirty = 1; }
+                    if (current < n_slides - 1) { current++; dirty = 1; slide_start_time = get_time_ms(); }
                 } else if (ks == XK_Left || ks == XK_BackSpace || ks == XK_Prior) {
-                    if (current > 0) { current--; dirty = 1; }
-                } else if (ks == XK_Home) { current = 0; dirty = 1; }
-                else if (ks == XK_End) { current = n_slides - 1; dirty = 1; }
+                    if (current > 0) { current--; dirty = 1; slide_start_time = get_time_ms(); }
+                } else if (ks == XK_Home) { current = 0; dirty = 1; slide_start_time = get_time_ms(); }
+                else if (ks == XK_End) { current = n_slides - 1; dirty = 1; slide_start_time = get_time_ms(); }
                 else if (ks == XK_f || ks == XK_F11) {
                     XEvent fev = {0}; fev.type = ClientMessage; fev.xclient.window = win;
                     fev.xclient.message_type = wm_state; fev.xclient.format = 32;
@@ -61,10 +71,10 @@ int backend_run(Slider *s) {
             }
             if (ev.type == ButtonPress) {
                 if (ev.xbutton.button == Button1 || ev.xbutton.button == Button4) { 
-                    if (current > 0) { current--; dirty = 1; } 
+                    if (current > 0) { current--; dirty = 1; slide_start_time = get_time_ms(); } 
                 }
                 else if (ev.xbutton.button == Button3 || ev.xbutton.button == Button5) { 
-                    if (current < n_slides - 1) { current++; dirty = 1; } 
+                    if (current < n_slides - 1) { current++; dirty = 1; slide_start_time = get_time_ms(); } 
                 }
             }
             if (ev.type == ConfigureNotify) {
@@ -85,22 +95,28 @@ int backend_run(Slider *s) {
             }
             if (ev.type == ClientMessage) if ((Atom)ev.xclient.data.l[0] == wm_delete) running = 0;
         }
+
+        // Si hay animación, forzamos dirty para redibujar
+        // Nota: s->slides[current].has_anim se actualiza en slider_render, 
+        // así que la primera vez puede no estar seteado hasta que se renderice.
+        // Pero está bien, al cambiar de slide dirty=1, se renderiza, se detecta anim, 
+        // y en el siguiente loop entra aquí.
+        if (s->slides[current].has_anim) dirty = 1;
+
         if (dirty) {
-            // Accedemos al tema a través del struct público Slider (que modificamos antes en internal.h)
-            // Nota: Slider es opaco en slider.h, pero aquí necesitamos acceso a s->theme.
-            // Solución: backend_x11.c necesita incluir internal.h (ya lo hace)
-            // y hacer cast o usar acceso directo si internal.h expone la struct.
-            // internal.h expone struct Slider, así que s->theme es válido.
-            
+            double now = get_time_ms() - slide_start_time;
             cairo_set_source_rgb(cr, s->theme->bg_r, s->theme->bg_g, s->theme->bg_b);
             cairo_paint(cr);
-            slider_render(s, current, cr, win_w, win_h);
+            slider_render(s, current, cr, win_w, win_h, now);
             cairo_set_source_surface(cr_flip, sfc_back, 0, 0);
             cairo_paint(cr_flip);
             XFlush(disp);
             dirty = 0;
         }
-        usleep(8000);
+        
+        // Si hay animación, dormimos menos para mantener fluidez (~60fps = 16ms)
+        if (s->slides[current].has_anim) usleep(16000);
+        else usleep(50000); // 50ms para reposo (20fps check input)
     }
 
     cairo_destroy(cr); cairo_destroy(cr_flip);

@@ -36,8 +36,9 @@ int slider_get_count(Slider *s);
  * @param cr The Cairo context to render into.
  * @param win_w The width of the target area.
  * @param win_h The height of the target area.
+ * @param time_ms Current time in milliseconds (for animations).
  */
-void slider_render(Slider *s, int index, cairo_t *cr, int win_w, int win_h);
+void slider_render(Slider *s, int index, cairo_t *cr, int win_w, int win_h, double time_ms);
 
 /**
  * @brief Exports a specific slide to a PNG file.

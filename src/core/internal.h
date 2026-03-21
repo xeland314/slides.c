@@ -3,6 +3,7 @@
 
 #include <cairo/cairo.h>
 #include "theme.h"
+#include <stdbool.h>
 
 // ── Configuración ─────────────────────────────────────────────────────────────
 
@@ -51,6 +52,7 @@ typedef struct {
 typedef struct {
     SlideLine lines[MAX_LINES];
     int       nlines;
+    bool      has_anim;
 } Slide;
 
 struct Slider {
@@ -63,8 +65,11 @@ struct Slider {
 
 // Cache de imágenes para no recargar en cada frame
 typedef struct {
-    char             path[512];
-    cairo_surface_t *surface;
+    char              path[512];
+    int               n_frames;
+    cairo_surface_t **surfaces; // Array de superficies
+    int              *delays;   // Array de delays en ms
+    int               total_duration;
 } ImgCache;
 
 #endif // INTERNAL_H

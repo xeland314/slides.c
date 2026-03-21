@@ -7,28 +7,143 @@
 #include <string.h>
 #include <stdio.h>
 
+#define STB_IMAGE_IMPLEMENTATION
+#define STBI_NO_LINEAR // No necesitamos HDR flotante para slides simples
+#include "../stb_image.h"
+
 static ImgCache img_cache[MAX_IMG_CACHE];
 static int      img_cache_count = 0;
 
 // ── Cache de imágenes ─────────────────────────────────────────────────────────
 
-static cairo_surface_t *get_image(const char *path) {
+// Convierte datos raw RGBA de stb_image a ARGB32 premultiplicado de Cairo
+static cairo_surface_t *create_cairo_surface_from_stbi(unsigned char *data, int w, int h, int channels) {
+    if (!data) return NULL;
+    int stride = cairo_format_stride_for_width(CAIRO_FORMAT_ARGB32, w);
+    unsigned char *surface_data = malloc(stride * h);
+    if (!surface_data) return NULL;
+
+    for (int y = 0; y < h; y++) {
+        uint32_t *row = (uint32_t *)(surface_data + y * stride);
+        for (int x = 0; x < w; x++) {
+            unsigned char *src = data + (y * w + x) * channels;
+            uint8_t r = 0, g = 0, b = 0, a = 255;
+            
+            if (channels == 1) { // Grey
+                r = g = b = src[0];
+            } else if (channels == 2) { // Grey + Alpha
+                r = g = b = src[0];
+                a = src[1];
+            } else if (channels == 3) { // RGB
+                r = src[0]; g = src[1]; b = src[2];
+            } else if (channels == 4) { // RGBA
+                r = src[0]; g = src[1]; b = src[2]; a = src[3];
+            }
+
+            // Pre-multiply alpha
+            if (a != 255) {
+                r = (r * a) / 255;
+                g = (g * a) / 255;
+                b = (b * a) / 255;
+            }
+
+            // Cairo usa formato nativo (ARBG o BGRA dependiendo de endianness), 
+            // pero CAIRO_FORMAT_ARGB32 generalmente espera 0xAARRGGBB en little-endian (B G R A en memoria)
+            // En x86 (little endian):
+            // byte 0: B, byte 1: G, byte 2: R, byte 3: A
+            row[x] = (a << 24) | (r << 16) | (g << 8) | b;
+        }
+    }
+
+    cairo_surface_t *s = cairo_image_surface_create_for_data(
+        surface_data, CAIRO_FORMAT_ARGB32, w, h, stride
+    );
+    
+    if (cairo_surface_status(s) != CAIRO_STATUS_SUCCESS) {
+        free(surface_data);
+        return NULL;
+    }
+
+    // Attach user data to free memory when surface is destroyed
+    static cairo_user_data_key_t key;
+    cairo_surface_set_user_data(s, &key, surface_data, free);
+
+    return s;
+}
+
+static ImgCache *get_image_cache(const char *path) {
     for (int i = 0; i < img_cache_count; i++)
         if (strcmp(img_cache[i].path, path) == 0)
-            return img_cache[i].surface;
+            return &img_cache[i];
 
     if (img_cache_count >= MAX_IMG_CACHE) return NULL;
 
-    cairo_surface_t *s = cairo_image_surface_create_from_png(path);
-    if (cairo_surface_status(s) != CAIRO_STATUS_SUCCESS) {
-        fprintf(stderr, "No se pudo cargar imagen: %s\n", path);
-        cairo_surface_destroy(s);
-        return NULL;
+    ImgCache *cache = &img_cache[img_cache_count];
+    strncpy(cache->path, path, 511);
+    
+    // Detectar si es GIF por extensión (simple check)
+    int len = strlen(path);
+    int is_gif = (len > 4 && strcasecmp(path + len - 4, ".gif") == 0);
+
+    if (is_gif) {
+        FILE *f = fopen(path, "rb");
+        if (!f) { fprintf(stderr, "No se pudo abrir GIF: %s\n", path); return NULL; }
+        
+        fseek(f, 0, SEEK_END);
+        long fsize = ftell(f);
+        fseek(f, 0, SEEK_SET);
+        
+        unsigned char *buffer = malloc(fsize);
+        if (fread(buffer, 1, fsize, f) != (size_t)fsize) {
+            fclose(f); free(buffer); return NULL;
+        }
+        fclose(f);
+
+        int *delays = NULL;
+        int x, y, z, comp;
+        // stbi_load_gif_from_memory devuelve un buffer grande con todos los frames apilados
+        unsigned char *data = stbi_load_gif_from_memory(buffer, fsize, &delays, &x, &y, &z, &comp, 4);
+        free(buffer);
+
+        if (!data) {
+            fprintf(stderr, "Error cargando GIF: %s (%s)\n", path, stbi_failure_reason());
+            return NULL;
+        }
+
+        cache->n_frames = z;
+        cache->delays = delays; // stbi asigna esto, debemos liberarlo luego (o dejarlo en cache)
+        cache->surfaces = malloc(sizeof(cairo_surface_t*) * z);
+        cache->total_duration = 0;
+
+        int frame_size = x * y * 4;
+        for (int i = 0; i < z; i++) {
+            cache->surfaces[i] = create_cairo_surface_from_stbi(data + i * frame_size, x, y, 4);
+            cache->total_duration += delays[i];
+        }
+        
+        // stbi_load_gif_from_memory devuelve un solo bloque para todos los datos, 
+        // pero create_cairo_surface_from_stbi hace copias.
+        stbi_image_free(data);
+
+    } else {
+        int w, h, c;
+        unsigned char *data = stbi_load(path, &w, &h, &c, 4); // Forzar 4 canales
+        if (!data) {
+            fprintf(stderr, "No se pudo cargar imagen: %s (%s)\n", path, stbi_failure_reason());
+            return NULL;
+        }
+
+        cache->n_frames = 1;
+        cache->surfaces = malloc(sizeof(cairo_surface_t*));
+        cache->surfaces[0] = create_cairo_surface_from_stbi(data, w, h, 4);
+        cache->delays = NULL;
+        cache->total_duration = 0;
+        
+        stbi_image_free(data);
     }
-    strncpy(img_cache[img_cache_count].path, path, 511);
-    img_cache[img_cache_count].surface = s;
+
     img_cache_count++;
-    return s;
+    return cache;
 }
 
 // ── Utilidades de render ──────────────────────────────────────────────────────
@@ -220,10 +335,15 @@ static double render_code_block(cairo_t *cr, PangoLayout *lay_code,
     return total_h;
 }
 
-void slider_render(Slider *s, int index, cairo_t *cr, int win_w, int win_h) {
+void slider_render(Slider *s, int index, cairo_t *cr, int win_w, int win_h, double time_ms) {
     if (!s || index < 0 || index >= s->n_slides) return;
-    const Slide *slide = &s->slides[index];
+    Slide *slide = &s->slides[index];
     double content_w = win_w - MARGIN_X * 2.0;
+    
+    // Resetear flag de animación en cada render para recalcularlo si es necesario
+    // O mejor: lo asumimos falso y si encontramos un gif lo ponemos a true.
+    // Esto es importante para el backend.
+    slide->has_anim = false;
 
     char f_title[128], f_subtitle[128], f_body[128], f_bullet[128], f_num[128], f_code[128];
     snprintf(f_title,    sizeof(f_title),    "%s Bold %d", s->font_family, (int)(44 * s->font_scale));
@@ -321,17 +441,38 @@ void slider_render(Slider *s, int index, cairo_t *cr, int win_w, int win_h) {
             i++; break;
         }
         case LINE_IMAGE: {
-            cairo_surface_t *img = get_image(sl->text);
-            if (img) {
-                int iw = cairo_image_surface_get_width(img), ih = cairo_image_surface_get_height(img);
-                double avail_h = win_h - y - MARGIN_Y - 40.0, scale = 1.0;
-                if (iw > content_w) scale = content_w / iw;
-                if (ih * scale > avail_h) scale = avail_h / ih;
-                double dw = iw * scale, dh = ih * scale;
-                cairo_save(cr); cairo_translate(cr, MARGIN_X + (content_w - dw) / 2.0, y);
-                cairo_scale(cr, scale, scale); cairo_set_source_surface(cr, img, 0, 0);
-                cairo_paint(cr); cairo_restore(cr);
-                y += dh + 14.0;
+            ImgCache *imgc = get_image_cache(sl->text);
+            if (imgc && imgc->surfaces) {
+                if (imgc->n_frames > 1) slide->has_anim = true;
+                
+                cairo_surface_t *img_sfc = NULL;
+                if (imgc->n_frames == 1) {
+                    img_sfc = imgc->surfaces[0];
+                } else if (imgc->n_frames > 1 && imgc->total_duration > 0) {
+                    int t = (int)time_ms % imgc->total_duration;
+                    int acc = 0;
+                    for (int k = 0; k < imgc->n_frames; k++) {
+                        acc += imgc->delays[k];
+                        if (acc > t) {
+                            img_sfc = imgc->surfaces[k];
+                            break;
+                        }
+                    }
+                    if (!img_sfc) img_sfc = imgc->surfaces[0];
+                }
+
+                if (img_sfc) {
+                    int iw = cairo_image_surface_get_width(img_sfc);
+                    int ih = cairo_image_surface_get_height(img_sfc);
+                    double avail_h = win_h - y - MARGIN_Y - 40.0, scale = 1.0;
+                    if (iw > content_w) scale = content_w / iw;
+                    if (ih * scale > avail_h) scale = avail_h / ih;
+                    double dw = iw * scale, dh = ih * scale;
+                    cairo_save(cr); cairo_translate(cr, MARGIN_X + (content_w - dw) / 2.0, y);
+                    cairo_scale(cr, scale, scale); cairo_set_source_surface(cr, img_sfc, 0, 0);
+                    cairo_paint(cr); cairo_restore(cr);
+                    y += dh + 14.0;
+                }
             } else {
                 set_color(cr, 0.15, 0.18, 0.38); cairo_rectangle(cr, MARGIN_X, y, content_w, 80); cairo_fill(cr);
                 set_color(cr, COL_LABEL_R, COL_LABEL_G, COL_LABEL_B);
@@ -380,8 +521,8 @@ int slider_export_png(Slider *s, int index, const char *path, int w, int h) {
     set_color(cr, s->theme->bg_r, s->theme->bg_g, s->theme->bg_b);
     cairo_paint(cr);
     
-    // Renderizar slide
-    slider_render(s, index, cr, w, h);
+    // Renderizar slide (tiempo 0 para exportación estática)
+    slider_render(s, index, cr, w, h, 0.0);
     
     cairo_status_t status = cairo_surface_write_to_png(sfc, path);
     
@@ -406,8 +547,8 @@ int slider_export_pdf(Slider *s, const char *path, int w, int h) {
         set_color(cr, s->theme->bg_r, s->theme->bg_g, s->theme->bg_b);
         cairo_paint(cr);
 
-        // Renderizar slide
-        slider_render(s, i, cr, w, h);
+        // Renderizar slide (tiempo 0)
+        slider_render(s, i, cr, w, h, 0.0);
 
         // Nueva página si no es la última
         cairo_show_page(cr);
