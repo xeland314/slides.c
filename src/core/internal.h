@@ -39,11 +39,13 @@ typedef enum {
     LINE_CODE,        // dentro de ```
     LINE_TASK_UNCHECKED, // - [ ] texto
     LINE_TASK_CHECKED,   // - [x] texto
+    LINE_NUM_LIST,       // 1. o a) texto
 } LineType;
 
 typedef struct {
     LineType type;
     char     text[MAX_LINE_LEN];  // contenido sin prefijo
+    char     marker[16];          // indicador de lista (1., a), etc)
     // Para tablas: columnas parseadas
     char     cols[16][256];
     int      ncols;

@@ -461,6 +461,12 @@ void slider_render(Slider *s, int index, cairo_t *cr, int win_w, int win_h, doub
             set_color(cr, s->theme->body_r, s->theme->body_g, s->theme->body_b);
             y += render_pango(cr, lay_bullet, sl->text, MARGIN_X + 22.0, y) + 6.0;
             i++; break;
+        case LINE_NUM_LIST:
+            set_color(cr, s->theme->bullet_r, s->theme->bullet_g, s->theme->bullet_b);
+            render_pango(cr, lay_bullet, sl->marker, MARGIN_X + 2.0, y);
+            set_color(cr, s->theme->body_r, s->theme->body_g, s->theme->body_b);
+            y += render_pango(cr, lay_bullet, sl->text, MARGIN_X + 40.0, y) + 6.0;
+            i++; break;
         case LINE_TASK_UNCHECKED:
         case LINE_TASK_CHECKED: {
             double sz = 18.0;

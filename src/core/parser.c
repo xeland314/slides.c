@@ -133,6 +133,25 @@ void parse_line(const char *raw, SlideLine *out) {
         strncpy(out->text, s + 6, MAX_LINE_LEN - 1);
         return;
     }
+
+    // Listas numeradas/letras: (1. a) i. etc)
+    char *dot = strpbrk(s, ".)");
+    if (dot && (dot - s) < 4) { // El prefijo es corto
+        // Solo si empieza con letra o número
+        if ((*s >= '0' && *s <= '9') || (*s >= 'a' && *s <= 'z') || (*s >= 'A' && *s <= 'Z')) {
+            // Verificar que sea tipo "1. " o "a) "
+            if (*(dot + 1) == ' ' || *(dot + 1) == '\t') {
+                out->type = LINE_NUM_LIST;
+                int marker_len = (int)(dot - s + 1);
+                if (marker_len > 15) marker_len = 15;
+                strncpy(out->marker, s, marker_len);
+                out->marker[marker_len] = '\0';
+                strncpy(out->text, trim(dot + 1), MAX_LINE_LEN - 1);
+                return;
+            }
+        }
+    }
+
     // Viñeta
     if (strncmp(s, "- ", 2) == 0) {
         out->type = LINE_BULLET1;
