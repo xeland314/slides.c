@@ -37,11 +37,6 @@ TARGET = $(TARGET_EXE)
 TARGET_ADA = slides_ada
 TARGET_LIB = $(TARGET_DLL)
 
-RUN_TESTS_MARKUP = run_tests_markup
-RUN_TESTS_PARSER = run_tests_parser
-RUN_TESTS_INTEGRATION = run_tests_integration
-RUN_TESTS_HIGHLIGHTER = run_tests_highlighter
-
 all: $(TARGET) $(TARGET_ADA) $(TARGET_LIB)
 
 # Ejecutable principal
@@ -56,34 +51,16 @@ $(TARGET_LIB): $(CORE_OBJ)
 $(TARGET_ADA): $(CORE_OBJ)
 	gnatmake -aIada/ -D ada/ -o $(TARGET_ADA) ada/slides_main.adb -largs $(CORE_OBJ) $(LIBS)
 
-# --- Reglas de tests ---
-test: test_markup test_parser test_integration test_highlighter
-
-test_markup: tests/test_markup.o src/render/renderer.o src/core/highlighter.o src/core/themes.o
-	$(CC) tests/test_markup.o src/render/renderer.o src/core/highlighter.o src/core/themes.o -o $(RUN_TESTS_MARKUP) $(LIBS)
-	./$(RUN_TESTS_MARKUP)
-
-test_parser: tests/test_parser.o src/core/parser.o src/core/themes.o src/core/highlighter.o
-	$(CC) tests/test_parser.o src/core/parser.o src/core/themes.o src/core/highlighter.o -o $(RUN_TESTS_PARSER) $(LIBS)
-	./$(RUN_TESTS_PARSER)
-
-test_integration: tests/test_integration.o src/core/parser.o src/core/themes.o src/core/highlighter.o src/render/renderer.o
-	$(CC) tests/test_integration.o src/core/parser.o src/core/themes.o src/core/highlighter.o src/render/renderer.o -o $(RUN_TESTS_INTEGRATION) $(LIBS)
-	./$(RUN_TESTS_INTEGRATION)
-
-test_highlighter: tests/test_highlighter.o src/core/highlighter.o src/core/themes.o
-	$(CC) tests/test_highlighter.o src/core/highlighter.o src/core/themes.o -o $(RUN_TESTS_HIGHLIGHTER) $(LIBS)
-	./$(RUN_TESTS_HIGHLIGHTER)
+# --- Reglas de tests (Python) ---
+test: $(TARGET_LIB)
+	python3 python/run_all_tests.py
 
 # --- Reglas de compilación genéricas ---
-tests/%.o: tests/%.c
-	$(CC) $(CFLAGS) -c $< -o $@
-
 %.o: %.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
 clean:
-	$(RM) $(CORE_OBJ) $(MAIN_OBJ) tests/*.o $(TARGET_EXE) slides $(TARGET_ADA) $(TARGET_DLL) libslider.so $(RUN_TESTS_MARKUP) $(RUN_TESTS_PARSER) $(RUN_TESTS_INTEGRATION)
+	$(RM) $(CORE_OBJ) $(MAIN_OBJ) $(TARGET_EXE) slides $(TARGET_ADA) $(TARGET_DLL) libslider.so
 	$(RM) ada/*.o ada/*.ali
 
-.PHONY: all clean test test_markup test_parser test_integration
+.PHONY: all clean test
