@@ -10,7 +10,8 @@
 static void print_help(const char *prog) {
     printf("Uso: %s [opciones] presentacion.md\n\n", prog);
     printf("Opciones:\n");
-    printf("  -p, --palette <name>    Elegir paleta (dark, rose, monokai, nord, light)\n");
+    printf("  -p, --palette <name>    Elegir paleta (dark, rose, monokai, nord, light, blue, ambercat,\n");
+    printf("                          dracula, gruvbox, catppuccin, tokyo-night)\n");
     printf("  -f, --font-family <str> Definir tipografía (ej. 'Arial', 'JetBrains Mono')\n");
     printf("  -s, --font-scale <num>  Escalar tamaño de fuentes (ej. 1.2)\n");
     printf("  -e, --export <type>     Exportar slides a 'pdf' o 'png'\n");
