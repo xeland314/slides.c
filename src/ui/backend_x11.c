@@ -43,7 +43,9 @@ int backend_run(Slider *s) {
     cairo_t *cr_flip = cairo_create(sfc_screen);
 
     int current = 0, running = 1, dirty = 1, fullscreen = 0, last_printed_slide = -1;
+    int overview_active = 0;
     int n_slides = slider_get_count(s);
+    #define OVERVIEW_COLS 4
     
     double start_time = get_time_ms();
     double slide_start_time = start_time;
@@ -54,7 +56,24 @@ int backend_run(Slider *s) {
             XNextEvent(disp, &ev);
             if (ev.type == KeyPress) {
                 KeySym ks = XLookupKeysym(&ev.xkey, 0);
-                if (ks == XK_q || ks == XK_Escape) running = 0;
+                if (ks == XK_Tab) {
+                    overview_active = !overview_active;
+                    if (overview_active) s->transition_type = TRANS_NONE;
+                    dirty = 1;
+                } else if (overview_active) {
+                    if (ks == XK_Escape) {
+                        overview_active = 0; s->transition_type = TRANS_NONE; dirty = 1;
+                    } else if (ks == XK_Right || ks == XK_Down) {
+                        if (current < n_slides - 1) { current++; dirty = 1; }
+                    } else if (ks == XK_Left || ks == XK_Up) {
+                        if (current > 0) { current--; dirty = 1; }
+                    } else if (ks == XK_Home) { current = 0; dirty = 1; }
+                    else if (ks == XK_End) { current = n_slides - 1; dirty = 1; }
+                    else if (ks == XK_Return || ks == XK_space) {
+                        overview_active = 0; s->transition_type = TRANS_NONE;
+                        slide_start_time = get_time_ms(); dirty = 1;
+                    }
+                } else if (ks == XK_q || ks == XK_Escape) running = 0;
                 else if (ks == XK_Right || ks == XK_Return || ks == XK_space || ks == XK_Next) {
                     if (current < n_slides - 1) {
                         s->transition_from = current;
@@ -86,7 +105,21 @@ int backend_run(Slider *s) {
                 }
             }
             if (ev.type == ButtonPress) {
-                if (ev.xbutton.button == Button1 || ev.xbutton.button == Button4) {
+                if (overview_active) {
+                    int cols = OVERVIEW_COLS;
+                    double tw = (double)win_w / cols;
+                    double th = (double)win_h / ( (n_slides + cols - 1) / cols );
+                    int col = ev.xbutton.x / tw;
+                    int row = (ev.xbutton.y - 30) / (th - 30);
+                    if (ev.xbutton.y < 30) row = -1;
+                    int idx = row * cols + col;
+                    if (row >= 0 && col >= 0 && col < cols && idx >= 0 && idx < n_slides) {
+                        if (idx != current) { current = idx; slide_start_time = get_time_ms(); }
+                        overview_active = 0; s->transition_type = TRANS_NONE; dirty = 1;
+                    } else {
+                        overview_active = 0; s->transition_type = TRANS_NONE; dirty = 1;
+                    }
+                } else if (ev.xbutton.button == Button1 || ev.xbutton.button == Button4) {
                     if (current > 0) {
                         s->transition_from = current;
                         s->transition_type = s->slides[current - 1].transition;
@@ -125,14 +158,76 @@ int backend_run(Slider *s) {
         if (s->slides[current].has_anim || elapsed < TRANSITION_DEFAULT_MS) dirty = 1;
 
         if (dirty) {
-            if (current != last_printed_slide) {
+            if (!overview_active && current != last_printed_slide) {
                 slider_print_notes(s, current);
                 last_printed_slide = current;
             }
             double now = get_time_ms() - slide_start_time;
             cairo_set_source_rgb(cr, s->theme->bg_r, s->theme->bg_g, s->theme->bg_b);
             cairo_paint(cr);
-            slider_render(s, current, cr, win_w, win_h, now);
+
+            if (overview_active) {
+                int n = n_slides;
+                int cols = OVERVIEW_COLS;
+                int rows = (n + cols - 1) / cols;
+                double tw = (double)win_w / cols;
+                double th = (double)win_h / rows;
+
+                cairo_set_source_rgb(cr, 0.08, 0.08, 0.1);
+                cairo_paint(cr);
+
+                cairo_select_font_face(cr, "sans-serif", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
+                cairo_set_font_size(cr, 16);
+                cairo_set_source_rgb(cr, 0.6, 0.6, 0.65);
+                cairo_move_to(cr, 12, 22);
+                cairo_show_text(cr, "OVERVIEW  [TAB toggle, ESC exit, click to select]");
+
+                for (int i = 0; i < n; i++) {
+                    int col = i % cols;
+                    int row = i / cols;
+                    double cx = col * tw;
+                    double cy = row * th + 30;
+                    double cell_h = th - 30;
+                    if (cell_h < 20) cell_h = th;
+
+                    double sx = (tw - 8) / win_w;
+                    double sy = (cell_h - 20) / win_h;
+                    double scl = (sx < sy) ? sx : sy;
+                    double ox = cx + (tw - win_w * scl) / 2;
+                    double oy = cy + 4;
+
+                    cairo_save(cr);
+                    cairo_translate(cr, ox, oy);
+                    cairo_scale(cr, scl, scl);
+                    cairo_rectangle(cr, 0, 0, win_w, win_h);
+                    cairo_clip(cr);
+                    slider_render(s, i, cr, win_w, win_h, 0.0);
+                    cairo_restore(cr);
+
+                    cairo_rectangle(cr, cx + 2, cy + 2, tw - 4, cell_h - 4);
+                    if (i == current) {
+                        cairo_set_source_rgb(cr, 1, 0.84, 0);
+                        cairo_set_line_width(cr, 3);
+                    } else {
+                        cairo_set_source_rgb(cr, 0.3, 0.3, 0.35);
+                        cairo_set_line_width(cr, 1);
+                    }
+                    cairo_stroke(cr);
+
+                    char label[32];
+                    snprintf(label, sizeof(label), "%d / %d", i + 1, n);
+                    cairo_select_font_face(cr, "sans-serif", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL);
+                    cairo_set_font_size(cr, 11);
+                    cairo_set_source_rgb(cr, 0.55, 0.55, 0.6);
+                    cairo_text_extents_t te;
+                    cairo_text_extents(cr, label, &te);
+                    cairo_move_to(cr, cx + (tw - te.width) / 2, cy + cell_h - 6);
+                    cairo_show_text(cr, label);
+                }
+            } else {
+                slider_render(s, current, cr, win_w, win_h, now);
+            }
+
             cairo_set_source_surface(cr_flip, sfc_back, 0, 0);
             cairo_paint(cr_flip);
             XFlush(disp);
@@ -140,7 +235,8 @@ int backend_run(Slider *s) {
         }
         
         // Mantener fluidez durante animaciones o transiciones (~60fps = 16ms)
-        if (s->slides[current].has_anim || elapsed < TRANSITION_DEFAULT_MS) usleep(16000);
+        int in_overview = overview_active;
+        if (s->slides[current].has_anim || elapsed < TRANSITION_DEFAULT_MS || in_overview) usleep(16000);
         else usleep(50000);
     }
 

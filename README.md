@@ -157,7 +157,10 @@ Los argumentos CLI sobrescriben la configuración de frontmatter.
 | `Home` | Primera diapositiva |
 | `End` | Última diapositiva |
 | `F` `F11` | Pantalla completa (toggle) |
-| `Q` `Esc` | Salir |
+| `Tab` | Vista general (mini-mapa de todas las slides) |
+| `→` `←` `↑` `↓` `Enter` | Navegar y seleccionar en vista general |
+| `Esc` | Salir / Cerrar vista general |
+| `Q` | Salir |
 
 Ratón: clic izquierdo/rueda-arriba = anterior, clic derecho/rueda-abajo = siguiente.
 

@@ -12,6 +12,9 @@ static int g_fullscreen = 0;
 static DWORD g_start_time = 0;
 static DWORD g_slide_start_time = 0;
 static int g_last_printed_slide = -1;
+static int g_overview_active = 0;
+
+#define OVERVIEW_COLS 4
 
 // Estructura para recordar la posición de la ventana antes de ir a fullscreen
 static RECT g_prev_rect;
@@ -69,8 +72,86 @@ static void navigate_to(int new_slide, int *dirty, HWND hwnd) {
     }
 }
 
+static void render_overview(HDC hdc, int w, int h) {
+    cairo_surface_t *surface = cairo_win32_surface_create(hdc);
+    cairo_t *cr = cairo_create(surface);
+
+    int n = slider_get_count(g_slider);
+    if (n == 0) { cairo_destroy(cr); cairo_surface_destroy(surface); return; }
+
+    int cols = OVERVIEW_COLS;
+    int rows = (n + cols - 1) / cols;
+    double tw = (double)w / cols;
+    double th = (double)h / rows;
+
+    // Darker background for overview
+    cairo_set_source_rgb(cr, 0.08, 0.08, 0.1);
+    cairo_paint(cr);
+
+    // Title
+    cairo_select_font_face(cr, "sans-serif", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
+    cairo_set_font_size(cr, 16);
+    cairo_set_source_rgb(cr, 0.6, 0.6, 0.65);
+    cairo_move_to(cr, 12, 22);
+    cairo_show_text(cr, "OVERVIEW  [TAB toggle, ESC exit, click to select]");
+
+    for (int i = 0; i < n; i++) {
+        int col = i % cols;
+        int row = i / cols;
+        double cx = col * tw;
+        double cy = row * th + 30; // offset for title
+        double cell_h = th - 30;
+        if (cell_h < 20) cell_h = th;
+
+        double sx = (tw - 8) / w;
+        double sy = (cell_h - 20) / h;
+        double s = (sx < sy) ? sx : sy;
+        double ox = cx + (tw - w * s) / 2;
+        double oy = cy + 4;
+
+        cairo_save(cr);
+        cairo_translate(cr, ox, oy);
+        cairo_scale(cr, s, s);
+        cairo_rectangle(cr, 0, 0, w, h);
+        cairo_clip(cr);
+        slider_render(g_slider, i, cr, w, h, 0.0);
+        cairo_restore(cr);
+
+        // Border
+        cairo_rectangle(cr, cx + 2, cy + 2, tw - 4, cell_h - 4);
+        if (i == g_current_slide) {
+            cairo_set_source_rgb(cr, 1, 0.84, 0);
+            cairo_set_line_width(cr, 3);
+        } else {
+            cairo_set_source_rgb(cr, 0.3, 0.3, 0.35);
+            cairo_set_line_width(cr, 1);
+        }
+        cairo_stroke(cr);
+
+        // Slide number label
+        char label[32];
+        snprintf(label, sizeof(label), "%d / %d", i + 1, n);
+        cairo_select_font_face(cr, "sans-serif", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL);
+        cairo_set_font_size(cr, 11);
+        cairo_set_source_rgb(cr, 0.55, 0.55, 0.6);
+        cairo_text_extents_t te;
+        cairo_text_extents(cr, label, &te);
+        cairo_move_to(cr, cx + (tw - te.width) / 2, cy + cell_h - 6);
+        cairo_show_text(cr, label);
+    }
+
+    cairo_destroy(cr);
+    cairo_surface_destroy(surface);
+}
+
 static void render_frame(HDC hdc, int w, int h) {
     if (!g_slider) return;
+
+    if (g_overview_active) {
+        render_overview(hdc, w, h);
+        return;
+    }
+
     cairo_surface_t *surface = cairo_win32_surface_create(hdc);
     cairo_t *cr = cairo_create(surface);
 
@@ -144,12 +225,54 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
         }
         return 0;
     }
-    case WM_LBUTTONDOWN:
+    case WM_LBUTTONDOWN: {
+        if (g_overview_active) {
+            RECT rect;
+            GetClientRect(hwnd, &rect);
+            int mw = rect.right, mh = rect.bottom;
+            int n = slider_get_count(g_slider);
+            int cols = OVERVIEW_COLS;
+            int rows = (n + cols - 1) / cols;
+            double tw = (double)mw / cols;
+            double th = (double)mh / rows;
+            int x = LOWORD(lParam);
+            int y = HIWORD(lParam);
+            int col = (int)(x / tw);
+            int row = (int)((y - 30) / (th - 30));
+            if (y < 30) row = -1;
+            if (row >= 0 && col >= 0 && col < cols) {
+                int idx = row * cols + col;
+                if (idx >= 0 && idx < n) {
+                    if (idx != g_current_slide) {
+                        g_current_slide = idx;
+                        g_slide_start_time = GetTickCount();
+                        g_last_printed_slide = -1;
+                        slider_print_notes(g_slider, g_current_slide);
+                    }
+                    g_overview_active = 0;
+                    g_slider->transition_type = TRANS_NONE;
+                    InvalidateRect(hwnd, NULL, FALSE);
+                    return 0;
+                }
+            }
+            g_overview_active = 0;
+            g_slider->transition_type = TRANS_NONE;
+            InvalidateRect(hwnd, NULL, FALSE);
+            return 0;
+        }
         navigate_to(g_current_slide - 1, &dirty, hwnd);
         break;
-    case WM_RBUTTONDOWN:
+    }
+    case WM_RBUTTONDOWN: {
+        if (g_overview_active) {
+            g_overview_active = 0;
+            g_slider->transition_type = TRANS_NONE;
+            InvalidateRect(hwnd, NULL, FALSE);
+            return 0;
+        }
         navigate_to(g_current_slide + 1, &dirty, hwnd);
         break;
+    }
     case WM_MOUSEWHEEL: {
         short delta = (short)HIWORD(wParam);
         if (delta > 0) {
@@ -160,6 +283,39 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
         break;
     }
     case WM_KEYDOWN:
+        if (wParam == VK_TAB) {
+            g_overview_active = !g_overview_active;
+            if (g_overview_active) g_slider->transition_type = TRANS_NONE;
+            InvalidateRect(hwnd, NULL, FALSE);
+            return 0;
+        }
+        if (g_overview_active) {
+            if (wParam == VK_ESCAPE) {
+                g_overview_active = 0;
+                g_slider->transition_type = TRANS_NONE;
+                InvalidateRect(hwnd, NULL, FALSE);
+                return 0;
+            }
+            int new_slide = g_current_slide;
+            if (wParam == VK_RIGHT || wParam == VK_DOWN) new_slide++;
+            else if (wParam == VK_LEFT || wParam == VK_UP) new_slide--;
+            else if (wParam == VK_HOME) new_slide = 0;
+            else if (wParam == VK_END) new_slide = g_n_slides - 1;
+            else if (wParam == VK_RETURN || wParam == VK_SPACE) {
+                g_overview_active = 0;
+                g_slider->transition_type = TRANS_NONE;
+                g_slide_start_time = GetTickCount();
+                g_last_printed_slide = -1;
+                slider_print_notes(g_slider, g_current_slide);
+                InvalidateRect(hwnd, NULL, FALSE);
+                return 0;
+            }
+            if (new_slide >= 0 && new_slide < g_n_slides && new_slide != g_current_slide) {
+                g_current_slide = new_slide;
+                InvalidateRect(hwnd, NULL, FALSE);
+            }
+            return 0;
+        }
         switch (wParam) {
         case VK_ESCAPE: PostQuitMessage(0); return 0;
         case 'Q': PostQuitMessage(0); return 0;
