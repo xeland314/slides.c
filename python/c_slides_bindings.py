@@ -57,6 +57,29 @@ class Theme(ctypes.Structure):
 
 class CSlides:
     def __init__(self, lib_path):
+        import platform
+        # Convert path extensions and prefixes dynamically for compatibility
+        if platform.system() == "Windows":
+            if lib_path.endswith(".so"):
+                lib_path = lib_path[:-3] + ".dll"
+            if not os.path.exists(lib_path):
+                dir_name = os.path.dirname(lib_path)
+                base_name = os.path.basename(lib_path)
+                if base_name.startswith("lib"):
+                    alt_path = os.path.join(dir_name, base_name[3:])
+                    if os.path.exists(alt_path):
+                        lib_path = alt_path
+        elif platform.system() != "Windows":
+            if lib_path.endswith(".dll"):
+                lib_path = lib_path[:-4] + ".so"
+            if not os.path.exists(lib_path):
+                dir_name = os.path.dirname(lib_path)
+                base_name = os.path.basename(lib_path)
+                if not base_name.startswith("lib"):
+                    alt_path = os.path.join(dir_name, "lib" + base_name)
+                    if os.path.exists(alt_path):
+                        lib_path = alt_path
+
         if not os.path.exists(lib_path):
             raise FileNotFoundError(f"Librería no encontrada en {lib_path}")
         
