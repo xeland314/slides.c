@@ -478,13 +478,30 @@ void slider_render(Slider *s, int index, cairo_t *cr, int win_w, int win_h, doub
             y += (double)th + 12.0 * s->font_scale;
             i++; break;
         }
-        case LINE_BULLET1:
+        case LINE_BULLET1: {
+            char markup[MAX_LINE_LEN * 4];
+            md_to_markup(sl->text, markup, sizeof(markup));
+            pango_layout_set_markup(lay_bullet, markup, -1);
+            
+            PangoLayoutIter *iter = pango_layout_get_iter(lay_bullet);
+            PangoRectangle logical_rect;
+            pango_layout_iter_get_line_extents(iter, NULL, &logical_rect);
+            pango_layout_iter_free(iter);
+            double line_h = (double)logical_rect.height / PANGO_SCALE;
+            double bullet_y = y + line_h / 2.0;
+
             set_color(cr, s->theme->bullet_r, s->theme->bullet_g, s->theme->bullet_b);
-            cairo_arc(cr, MARGIN_X + 8.0 * s->font_scale, y + 11.0 * s->font_scale, 4.0 * s->font_scale, 0, 2 * M_PI);
+            cairo_arc(cr, MARGIN_X + 8.0 * s->font_scale, bullet_y, 4.0 * s->font_scale, 0, 2 * M_PI);
             cairo_fill(cr);
+            
             set_color(cr, s->theme->body_r, s->theme->body_g, s->theme->body_b);
-            y += render_pango(cr, lay_bullet, sl->text, MARGIN_X + 22.0 * s->font_scale, y) + 6.0 * s->font_scale;
+            int tw, th;
+            pango_layout_get_pixel_size(lay_bullet, &tw, &th);
+            cairo_move_to(cr, MARGIN_X + 22.0 * s->font_scale, y);
+            pango_cairo_show_layout(cr, lay_bullet);
+            y += (double)th + 6.0 * s->font_scale;
             i++; break;
+        }
         case LINE_NUM_LIST:
             set_color(cr, s->theme->bullet_r, s->theme->bullet_g, s->theme->bullet_b);
             render_pango(cr, lay_bullet, sl->marker, MARGIN_X + 2.0 * s->font_scale, y);
@@ -493,8 +510,21 @@ void slider_render(Slider *s, int index, cairo_t *cr, int win_w, int win_h, doub
             i++; break;
         case LINE_TASK_UNCHECKED:
         case LINE_TASK_CHECKED: {
+            char markup[MAX_LINE_LEN * 4];
+            md_to_markup(sl->text, markup, sizeof(markup));
+            pango_layout_set_markup(lay_bullet, markup, -1);
+            
+            PangoLayoutIter *iter = pango_layout_get_iter(lay_bullet);
+            PangoRectangle logical_rect;
+            pango_layout_iter_get_line_extents(iter, NULL, &logical_rect);
+            pango_layout_iter_free(iter);
+            double line_h = (double)logical_rect.height / PANGO_SCALE;
+            double center_y = y + line_h / 2.0;
+
             double sz = 18.0 * s->font_scale;
-            double bx = MARGIN_X + 2.0 * s->font_scale, by = y + 2.0 * s->font_scale;
+            double bx = MARGIN_X + 2.0 * s->font_scale;
+            double by = center_y - sz / 2.0;
+
             // Dibujar caja
             set_color(cr, s->theme->accent_r, s->theme->accent_g, s->theme->accent_b);
             cairo_set_line_width(cr, 1.5 * s->font_scale);
@@ -507,18 +537,41 @@ void slider_render(Slider *s, int index, cairo_t *cr, int win_w, int win_h, doub
                 cairo_line_to(cr, bx + 14.0 * s->font_scale, by + 5.0 * s->font_scale);
                 cairo_stroke(cr);
             }
+            
             set_color(cr, s->theme->body_r, s->theme->body_g, s->theme->body_b);
-            y += render_pango(cr, lay_bullet, sl->text, MARGIN_X + 30.0 * s->font_scale, y) + 6.0 * s->font_scale;
+            int tw, th;
+            pango_layout_get_pixel_size(lay_bullet, &tw, &th);
+            cairo_move_to(cr, MARGIN_X + 30.0 * s->font_scale, y);
+            pango_cairo_show_layout(cr, lay_bullet);
+            y += (double)th + 6.0 * s->font_scale;
             i++; break;
         }
         case LINE_BULLET2: {
-            double bx = MARGIN_X + 38.0 * s->font_scale, by = y + 10.0 * s->font_scale;
+            char markup[MAX_LINE_LEN * 4];
+            md_to_markup(sl->text, markup, sizeof(markup));
+            pango_layout_set_markup(lay_bullet2, markup, -1);
+            
+            PangoLayoutIter *iter = pango_layout_get_iter(lay_bullet2);
+            PangoRectangle logical_rect;
+            pango_layout_iter_get_line_extents(iter, NULL, &logical_rect);
+            pango_layout_iter_free(iter);
+            double line_h = (double)logical_rect.height / PANGO_SCALE;
+            double bullet_y = y + line_h / 2.0;
+
+            double bx = MARGIN_X + 38.0 * s->font_scale;
             set_color(cr, s->theme->accent_r, s->theme->accent_g, s->theme->accent_b);
-            cairo_move_to(cr, bx, by - 4.0 * s->font_scale); cairo_line_to(cr, bx + 4.0 * s->font_scale, by);
-            cairo_line_to(cr, bx, by + 4.0 * s->font_scale); cairo_line_to(cr, bx - 4.0 * s->font_scale, by);
+            cairo_move_to(cr, bx, bullet_y - 4.0 * s->font_scale); 
+            cairo_line_to(cr, bx + 4.0 * s->font_scale, bullet_y);
+            cairo_line_to(cr, bx, bullet_y + 4.0 * s->font_scale); 
+            cairo_line_to(cr, bx - 4.0 * s->font_scale, bullet_y);
             cairo_close_path(cr); cairo_fill(cr);
+            
             set_color(cr, s->theme->body_r, s->theme->body_g, s->theme->body_b);
-            y += render_pango(cr, lay_bullet2, sl->text, MARGIN_X + 52.0 * s->font_scale, y) + 4.0 * s->font_scale;
+            int tw, th;
+            pango_layout_get_pixel_size(lay_bullet2, &tw, &th);
+            cairo_move_to(cr, MARGIN_X + 52.0 * s->font_scale, y);
+            pango_cairo_show_layout(cr, lay_bullet2);
+            y += (double)th + 4.0 * s->font_scale;
             i++; break;
         }
         case LINE_IMAGE: {
