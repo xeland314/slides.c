@@ -112,4 +112,12 @@ double slider_get_font_scale(Slider *s);
  */
 void slider_print_notes(Slider *s, int index);
 
+/**
+ * @brief Overrides a single color in the current theme.
+ * @param s The Slider object.
+ * @param key Color key ("bg", "title", "body", "text", "accent").
+ * @param hex Hex color string (e.g., "#ff6b6b").
+ */
+void slider_set_color(Slider *s, const char *key, const char *hex);
+
 #endif // SLIDER_H

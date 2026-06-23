@@ -164,6 +164,8 @@ void parse_line(const char *raw, SlideLine *out) {
     strncpy(out->text, s, MAX_LINE_LEN - 1);
 }
 
+static void theme_assign(Slider *s, const Theme *t);
+
 Slider* slider_load(const char *path) {
     struct stat st;
     long long mtime = 0;
@@ -185,7 +187,7 @@ Slider* slider_load(const char *path) {
 
     Slider *s = calloc(1, sizeof(Slider));
     if (!s) { fclose(fp); return NULL; }
-    s->theme = theme_default();
+    theme_assign(s, theme_default());
     strncpy(s->font_family, "Inter", sizeof(s->font_family) - 1);
     s->font_scale = 1.0;
     strncpy(s->filepath, path, sizeof(s->filepath) - 1);
@@ -211,13 +213,36 @@ Slider* slider_load(const char *path) {
                     char *key = trim(t);
                     char *val = trim(colon + 1);
                     if (strcmp(key, "theme") == 0 || strcmp(key, "palette") == 0) {
-                        s->theme = theme_find(val);
+                        theme_assign(s, theme_find(val));
                     } else if (strcmp(key, "font") == 0 || strcmp(key, "font-family") == 0) {
                         strncpy(s->font_family, val, sizeof(s->font_family) - 1);
                         s->font_family[sizeof(s->font_family) - 1] = '\0';
                     } else if (strcmp(key, "scale") == 0 || strcmp(key, "font-scale") == 0) {
                         double sc = atof(val);
                         if (sc > 0.1) s->font_scale = sc;
+                    } else if (strcmp(key, "colors") == 0 && val[0] == '\0') {
+                        while (fgets(line, sizeof(line), fp)) {
+                            strncpy(trimmed, line, MAX_LINE_LEN - 1);
+                            t = trim(trimmed);
+                            if (t[0] == '\0' || t[0] == '-') break;
+                            char *c = strchr(t, ':');
+                            if (!c) break;
+                            *c = '\0';
+                            char *ck = trim(t);
+                            char *cv = trim(c + 1);
+                            // Strip surrounding double quotes (from YAML)
+                            if (cv[0] == '"') {
+                                int len = (int)strlen(cv);
+                                if (len > 1 && cv[len-1] == '"') cv[len-1] = '\0';
+                                cv++;
+                            }
+                            slider_set_color(s, ck, cv);
+                        }
+                        if (t && t[0] == '-') {
+                            if (strcmp(t, "---") == 0) break;
+                            continue;
+                        }
+                        break;
                     }
                 }
             }
@@ -395,8 +420,41 @@ int slider_get_count(Slider *s) {
     return s ? s->n_slides : 0;
 }
 
+static void theme_assign(Slider *s, const Theme *t) {
+    if (t) {
+        s->theme_storage = *t;
+        s->theme = &s->theme_storage;
+    }
+}
+
 void slider_set_theme(Slider *s, const char *theme_name) {
-    if (s) s->theme = theme_find(theme_name);
+    if (s) theme_assign(s, theme_find(theme_name));
+}
+
+static int parse_hex_color(const char *hex, double *r, double *g, double *b) {
+    if (!hex || hex[0] != '#') return 0;
+    unsigned int ri, gi, bi;
+    if (sscanf(hex + 1, "%2x%2x%2x", &ri, &gi, &bi) != 3) return 0;
+    *r = ri / 255.0;
+    *g = gi / 255.0;
+    *b = bi / 255.0;
+    return 1;
+}
+
+void slider_set_color(Slider *s, const char *key, const char *hex) {
+    if (!s || !key || !hex) return;
+    double r, g, b;
+    if (!parse_hex_color(hex, &r, &g, &b)) return;
+    if (strcmp(key, "bg") == 0) {
+        s->theme_storage.bg_r = r; s->theme_storage.bg_g = g; s->theme_storage.bg_b = b;
+    } else if (strcmp(key, "title") == 0) {
+        s->theme_storage.title_r = r; s->theme_storage.title_g = g; s->theme_storage.title_b = b;
+    } else if (strcmp(key, "body") == 0 || strcmp(key, "text") == 0) {
+        s->theme_storage.body_r = r; s->theme_storage.body_g = g; s->theme_storage.body_b = b;
+    } else if (strcmp(key, "accent") == 0) {
+        s->theme_storage.accent_r = r; s->theme_storage.accent_g = g; s->theme_storage.accent_b = b;
+        s->theme_storage.bullet_r = r; s->theme_storage.bullet_g = g; s->theme_storage.bullet_b = b;
+    }
 }
 
 void slider_set_font_family(Slider *s, const char *font_family) {

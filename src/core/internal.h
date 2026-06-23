@@ -75,6 +75,7 @@ struct Slider {
     Slide slides[MAX_SLIDES];
     int   n_slides;
     const Theme *theme;
+    Theme  theme_storage;  // mutable copy for color overrides
     char  font_family[64];
     double font_scale;
     char  filepath[512];

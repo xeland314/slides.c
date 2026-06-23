@@ -209,7 +209,8 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
                     Slider *new_s = slider_load(g_slider->filepath);
                     if (new_s) {
                         // Conservar propiedades de CLI
-                        new_s->theme = g_slider->theme;
+                        new_s->theme_storage = g_slider->theme_storage;
+                        new_s->theme = &new_s->theme_storage;
                         strncpy(new_s->font_family, g_slider->font_family, sizeof(new_s->font_family) - 1);
                         new_s->font_scale = g_slider->font_scale;
 

@@ -17,6 +17,10 @@ static void print_help(const char *prog) {
     printf("  -e, --export <type>     Exportar slides a 'pdf' o 'png'\n");
     printf("  -er, --export-res <WxH> Resolución de exportación (ej. 1920x1080, default 1080x1080)\n");
     printf("  -sl, --slide <num>      Seleccionar slide específico para exportar (0-index)\n");
+    printf("  --bg <hex>              Color de fondo (ej. '#0f0f23')\n");
+    printf("  --title <hex>           Color de títulos (ej. '#ff6b6b')\n");
+    printf("  --text <hex>            Color de texto (ej. '#c0caf5')\n");
+    printf("  --accent <hex>          Color de acento (ej. '#7aa2f7')\n");
     printf("  -h, --help              Mostrar esta ayuda\n");
 }
 
@@ -25,6 +29,7 @@ int main(int argc, char *argv[]) {
     const char *palette_name = NULL;
     const char *font_family = NULL;
     double font_scale = -1.0;
+    const char *color_bg = NULL, *color_title = NULL, *color_text = NULL, *color_accent = NULL;
     int export_png = 0;
     int export_pdf = 0;
     int target_slide = -1;
@@ -57,6 +62,14 @@ int main(int argc, char *argv[]) {
             }
         } else if (strcmp(argv[i], "--slide") == 0 || strcmp(argv[i], "-sl") == 0) {
             if (i + 1 < argc) target_slide = atoi(argv[++i]);
+        } else if (strcmp(argv[i], "--bg") == 0) {
+            if (i + 1 < argc) color_bg = argv[++i];
+        } else if (strcmp(argv[i], "--title") == 0) {
+            if (i + 1 < argc) color_title = argv[++i];
+        } else if (strcmp(argv[i], "--text") == 0) {
+            if (i + 1 < argc) color_text = argv[++i];
+        } else if (strcmp(argv[i], "--accent") == 0) {
+            if (i + 1 < argc) color_accent = argv[++i];
         } else if (strcmp(argv[i], "--version") == 0 || strcmp(argv[i], "-v") == 0) {
             printf("c-slides v1.0.0\n");
             return 0;
@@ -75,9 +88,13 @@ int main(int argc, char *argv[]) {
 
     Slider *s = slider_load(md_path);
     if (!s) return 1;
-    if (palette_name) s->theme = theme_find(palette_name);
+    if (palette_name) slider_set_theme(s, palette_name);
     if (font_family) strncpy(s->font_family, font_family, sizeof(s->font_family) - 1);
     if (font_scale > 0.1) s->font_scale = font_scale;
+    if (color_bg) slider_set_color(s, "bg", color_bg);
+    if (color_title) slider_set_color(s, "title", color_title);
+    if (color_text) slider_set_color(s, "text", color_text);
+    if (color_accent) slider_set_color(s, "accent", color_accent);
 
     int n_slides = slider_get_count(s);
     fprintf(stderr, "[slides] %d slide(s) cargados desde %s (tema: %s, font: %s, scale: %.1f)\n", 
