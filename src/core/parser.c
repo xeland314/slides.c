@@ -283,7 +283,7 @@ Slider* slider_load(const char *path) {
                         while (*val_start == ' ') val_start++;
                         char val[32];
                         int vi = 0;
-                        while (*val_start && *val_start != ' ' && *val_start != '-' && *val_start != '>' && vi < 31) {
+                        while (*val_start && *val_start != ' ' && *val_start != '>' && vi < 31) {
                             val[vi++] = *val_start++;
                         }
                         val[vi] = '\0';
