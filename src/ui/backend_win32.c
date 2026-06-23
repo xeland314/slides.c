@@ -13,6 +13,7 @@ static DWORD g_start_time = 0;
 static DWORD g_slide_start_time = 0;
 static int g_last_printed_slide = -1;
 static int g_overview_active = 0;
+static double g_zoom = 1.0;
 
 #define OVERVIEW_COLS 4
 
@@ -144,6 +145,13 @@ static void render_overview(HDC hdc, int w, int h) {
     cairo_surface_destroy(surface);
 }
 
+static void apply_zoom(cairo_t *cr, int w, int h) {
+    if (g_zoom == 1.0) return;
+    cairo_translate(cr, w / 2.0, h / 2.0);
+    cairo_scale(cr, g_zoom, g_zoom);
+    cairo_translate(cr, -w / 2.0, -h / 2.0);
+}
+
 static void render_frame(HDC hdc, int w, int h) {
     if (!g_slider) return;
 
@@ -159,7 +167,10 @@ static void render_frame(HDC hdc, int w, int h) {
     cairo_set_source_rgb(cr, t->bg_r, t->bg_g, t->bg_b);
     cairo_paint(cr);
 
+    cairo_save(cr);
+    apply_zoom(cr, w, h);
     slider_render(g_slider, g_current_slide, cr, w, h, get_slide_time_ms());
+    cairo_restore(cr);
 
     cairo_destroy(cr);
     cairo_surface_destroy(surface);
@@ -315,6 +326,19 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
                 InvalidateRect(hwnd, NULL, FALSE);
             }
             return 0;
+        }
+        // Zoom: Ctrl++ / Ctrl+- / Ctrl+0
+        if (wParam == VK_OEM_PLUS && (GetKeyState(VK_CONTROL) & 0x8000)) {
+            g_zoom *= 1.2; if (g_zoom > 5.0) g_zoom = 5.0;
+            InvalidateRect(hwnd, NULL, FALSE); return 0;
+        }
+        if (wParam == VK_OEM_MINUS && (GetKeyState(VK_CONTROL) & 0x8000)) {
+            g_zoom /= 1.2; if (g_zoom < 0.3) g_zoom = 0.3;
+            InvalidateRect(hwnd, NULL, FALSE); return 0;
+        }
+        if (wParam == '0' && (GetKeyState(VK_CONTROL) & 0x8000)) {
+            g_zoom = 1.0;
+            InvalidateRect(hwnd, NULL, FALSE); return 0;
         }
         switch (wParam) {
         case VK_ESCAPE: PostQuitMessage(0); return 0;

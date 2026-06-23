@@ -44,6 +44,7 @@ int backend_run(Slider *s) {
 
     int current = 0, running = 1, dirty = 1, fullscreen = 0, last_printed_slide = -1;
     int overview_active = 0;
+    double zoom = 1.0;
     int n_slides = slider_get_count(s);
     #define OVERVIEW_COLS 4
     
@@ -73,6 +74,12 @@ int backend_run(Slider *s) {
                         overview_active = 0; s->transition_type = TRANS_NONE;
                         slide_start_time = get_time_ms(); dirty = 1;
                     }
+                } else if ((ks == XK_plus || ks == XK_equal || ks == XK_KP_Add) && (ev.xkey.state & ControlMask)) {
+                    zoom *= 1.2; if (zoom > 5.0) zoom = 5.0; dirty = 1;
+                } else if ((ks == XK_minus || ks == XK_underscore || ks == XK_KP_Subtract) && (ev.xkey.state & ControlMask)) {
+                    zoom /= 1.2; if (zoom < 0.3) zoom = 0.3; dirty = 1;
+                } else if (ks == XK_0 && (ev.xkey.state & ControlMask)) {
+                    zoom = 1.0; dirty = 1;
                 } else if (ks == XK_q || ks == XK_Escape) running = 0;
                 else if (ks == XK_Right || ks == XK_Return || ks == XK_space || ks == XK_Next) {
                     if (current < n_slides - 1) {
@@ -225,7 +232,14 @@ int backend_run(Slider *s) {
                     cairo_show_text(cr, label);
                 }
             } else {
+                cairo_save(cr);
+                if (zoom != 1.0) {
+                    cairo_translate(cr, win_w / 2.0, win_h / 2.0);
+                    cairo_scale(cr, zoom, zoom);
+                    cairo_translate(cr, -win_w / 2.0, -win_h / 2.0);
+                }
                 slider_render(s, current, cr, win_w, win_h, now);
+                cairo_restore(cr);
             }
 
             cairo_set_source_surface(cr_flip, sfc_back, 0, 0);
