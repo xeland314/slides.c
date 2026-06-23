@@ -21,6 +21,18 @@
 #define COL_LABEL_G 0.65
 #define COL_LABEL_B 0.90
 
+// ── Transiciones ───────────────────────────────────────────────────────────────
+#define TRANSITION_DEFAULT_MS 300
+
+typedef enum {
+    TRANS_NONE,
+    TRANS_FADE,
+    TRANS_SLIDE_LEFT,
+    TRANS_SLIDE_RIGHT,
+    TRANS_SLIDE_UP,
+    TRANS_SLIDE_DOWN,
+} TransitionType;
+
 // ── Tipos ─────────────────────────────────────────────────────────────────────
 
 typedef enum {
@@ -55,6 +67,8 @@ typedef struct {
     SlideLine lines[MAX_LINES];
     int       nlines;
     bool      has_anim;
+    char      notes[4096];
+    TransitionType transition;
 } Slide;
 
 struct Slider {
@@ -63,6 +77,11 @@ struct Slider {
     const Theme *theme;
     char  font_family[64];
     double font_scale;
+    char  filepath[512];
+    long long last_mtime;
+    // Transient transition state (set by backend before render)
+    int transition_from;
+    TransitionType transition_type;
 };
 
 // Cache de imágenes para no recargar en cada frame

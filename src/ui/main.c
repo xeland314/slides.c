@@ -24,7 +24,7 @@ int main(int argc, char *argv[]) {
     const char *md_path = NULL;
     const char *palette_name = NULL;
     const char *font_family = NULL;
-    double font_scale = 1.0;
+    double font_scale = -1.0;
     int export_png = 0;
     int export_pdf = 0;
     int target_slide = -1;

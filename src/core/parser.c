@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/stat.h>
 
 // Trim in-place (modifica el buffer)
 static char *trim(char *s) {
@@ -164,28 +165,174 @@ void parse_line(const char *raw, SlideLine *out) {
 }
 
 Slider* slider_load(const char *path) {
+    struct stat st;
+    long long mtime = 0;
+    if (stat(path, &st) == 0) {
+        mtime = (long long)st.st_mtime;
+    }
+    
     FILE *fp = fopen(path, "r");
     if (!fp) { fprintf(stderr, "No se pudo abrir: %s\n", path); return NULL; }
+
+    // Evitar cargar archivos vacíos durante escritura temporal
+    fseek(fp, 0, SEEK_END);
+    long size = ftell(fp);
+    fseek(fp, 0, SEEK_SET);
+    if (size <= 0) {
+        fclose(fp);
+        return NULL;
+    }
 
     Slider *s = calloc(1, sizeof(Slider));
     if (!s) { fclose(fp); return NULL; }
     s->theme = theme_default();
     strncpy(s->font_family, "Inter", sizeof(s->font_family) - 1);
     s->font_scale = 1.0;
+    strncpy(s->filepath, path, sizeof(s->filepath) - 1);
+    s->last_mtime = mtime;
+
+    char line[MAX_LINE_LEN];
+    char trimmed[MAX_LINE_LEN];
+
+    // Parse Frontmatter si el archivo empieza con "---"
+    if (fgets(line, sizeof(line), fp)) {
+        strncpy(trimmed, line, MAX_LINE_LEN - 1);
+        char *t = trim(trimmed);
+        if (strcmp(t, "---") == 0) {
+            while (fgets(line, sizeof(line), fp)) {
+                strncpy(trimmed, line, MAX_LINE_LEN - 1);
+                t = trim(trimmed);
+                if (strcmp(t, "---") == 0) {
+                    break;
+                }
+                char *colon = strchr(t, ':');
+                if (colon) {
+                    *colon = '\0';
+                    char *key = trim(t);
+                    char *val = trim(colon + 1);
+                    if (strcmp(key, "theme") == 0 || strcmp(key, "palette") == 0) {
+                        s->theme = theme_find(val);
+                    } else if (strcmp(key, "font") == 0 || strcmp(key, "font-family") == 0) {
+                        strncpy(s->font_family, val, sizeof(s->font_family) - 1);
+                        s->font_family[sizeof(s->font_family) - 1] = '\0';
+                    } else if (strcmp(key, "scale") == 0 || strcmp(key, "font-scale") == 0) {
+                        double sc = atof(val);
+                        if (sc > 0.1) s->font_scale = sc;
+                    }
+                }
+            }
+        } else {
+            rewind(fp);
+        }
+    }
 
     int n = 0;
-    char line[MAX_LINE_LEN];
     int in_code = 0;
+    int in_notes = 0;
+
+    // Set default transition for first slide
+    if (n < MAX_SLIDES) {
+        s->slides[n].transition = TRANS_NONE;
+    }
 
     while (fgets(line, sizeof(line), fp) && n < MAX_SLIDES) {
-        // Separador de slide
-        char trimmed[MAX_LINE_LEN];
         strncpy(trimmed, line, MAX_LINE_LEN - 1);
         char *t = trim(trimmed);
         
         if (!in_code && strcmp(t, "---") == 0) {
             n++;
+            in_notes = 0;
+            if (n < MAX_SLIDES) {
+                s->slides[n].transition = TRANS_NONE;
+            }
             continue;
+        }
+
+        // Notes parsing
+        if (!in_code) {
+            if (in_notes) {
+                char *end = strstr(line, "-->");
+                if (end) {
+                    int len = (int)(end - line);
+                    Slide *cur = &s->slides[n];
+                    int cur_len = (int)strlen(cur->notes);
+                    if (cur_len + len < 4090) {
+                        strncat(cur->notes, line, len);
+                    }
+                    in_notes = 0;
+                    char *notes_trimmed = trim(cur->notes);
+                    if (notes_trimmed != cur->notes) {
+                        memmove(cur->notes, notes_trimmed, strlen(notes_trimmed) + 1);
+                    }
+                } else {
+                    Slide *cur = &s->slides[n];
+                    int cur_len = (int)strlen(cur->notes);
+                    int line_len = (int)strlen(line);
+                    if (cur_len + line_len < 4090) {
+                        strcat(cur->notes, line);
+                    }
+                }
+                continue;
+            } else {
+                char *start = strstr(line, "<!--");
+                if (start) {
+                    // Check for transition directive first
+                    char *trans_indicator = strstr(start, "transition:");
+                    if (trans_indicator) {
+                        char *val_start = trans_indicator + 11;
+                        while (*val_start == ' ') val_start++;
+                        char val[32];
+                        int vi = 0;
+                        while (*val_start && *val_start != ' ' && *val_start != '-' && *val_start != '>' && vi < 31) {
+                            val[vi++] = *val_start++;
+                        }
+                        val[vi] = '\0';
+                        Slide *cur = &s->slides[n];
+                        if (strcmp(val, "fade") == 0) cur->transition = TRANS_FADE;
+                        else if (strcmp(val, "slide-left") == 0) cur->transition = TRANS_SLIDE_LEFT;
+                        else if (strcmp(val, "slide-right") == 0) cur->transition = TRANS_SLIDE_RIGHT;
+                        else if (strcmp(val, "slide-up") == 0) cur->transition = TRANS_SLIDE_UP;
+                        else if (strcmp(val, "slide-down") == 0) cur->transition = TRANS_SLIDE_DOWN;
+                        else if (strcmp(val, "none") == 0) cur->transition = TRANS_NONE;
+                        continue;
+                    }
+
+                    char *notes_indicator = strstr(start, "notes:");
+                    if (!notes_indicator) notes_indicator = strstr(start, "note:");
+                    if (!notes_indicator) notes_indicator = strstr(start, "NOTES:");
+                    if (!notes_indicator) notes_indicator = strstr(start, "NOTE:");
+                    
+                    if (notes_indicator) {
+                        char *content_start = notes_indicator;
+                        if (strncmp(content_start, "notes:", 6) == 0 || strncmp(content_start, "NOTES:", 6) == 0) {
+                            content_start += 6;
+                        } else {
+                            content_start += 5;
+                        }
+                        char *end = strstr(content_start, "-->");
+                        if (end) {
+                            int len = (int)(end - content_start);
+                            Slide *cur = &s->slides[n];
+                            int cur_len = (int)strlen(cur->notes);
+                            if (cur_len + len < 4090) {
+                                strncat(cur->notes, content_start, len);
+                                char *notes_trimmed = trim(cur->notes);
+                                if (notes_trimmed != cur->notes) {
+                                    memmove(cur->notes, notes_trimmed, strlen(notes_trimmed) + 1);
+                                }
+                            }
+                        } else {
+                            Slide *cur = &s->slides[n];
+                            int len = (int)strlen(content_start);
+                            if (len < 4090) {
+                                strcpy(cur->notes, content_start);
+                            }
+                            in_notes = 1;
+                        }
+                        continue;
+                    }
+                }
+            }
         }
 
         // Code block triple backticks
@@ -210,7 +357,6 @@ Slider* slider_load(const char *path) {
         if (cur->nlines < MAX_LINES) {
             if (in_code) {
                 cur->lines[cur->nlines].type = LINE_CODE;
-                // Quitar solo el \n al final
                 char *p = line + strlen(line) - 1;
                 while (p >= line && (*p == '\r' || *p == '\n')) *p-- = '\0';
                 strncpy(cur->lines[cur->nlines].text, line, MAX_LINE_LEN - 1);
@@ -218,9 +364,25 @@ Slider* slider_load(const char *path) {
                 parse_line(line, &cur->lines[cur->nlines]);
             }
             cur->nlines++;
+            if (cur->nlines >= MAX_LINES - 1) {
+                fprintf(stderr, "\033[1;33m[LINTER WARNING] Slide %d en %s tiene demasiadas líneas (> %d). Algunas líneas no se mostrarán.\033[0m\n", n + 1, path, MAX_LINES);
+            }
         }
     }
+
+    if (in_code) {
+        fprintf(stderr, "\033[1;31m[LINTER WARNING] Bloque de código sin cerrar al final de %s\033[0m\n", path);
+    }
+
     s->n_slides = n + 1;
+    // Trim de notas final
+    for (int idx = 0; idx < s->n_slides; idx++) {
+        char *t_notes = trim(s->slides[idx].notes);
+        if (t_notes != s->slides[idx].notes) {
+            memmove(s->slides[idx].notes, t_notes, strlen(t_notes) + 1);
+        }
+    }
+
     fclose(fp);
     return s;
 }
@@ -258,4 +420,22 @@ const char* slider_get_font_family(Slider *s) {
 
 double slider_get_font_scale(Slider *s) {
     return s ? s->font_scale : 1.0;
+}
+
+void slider_print_notes(Slider *s, int index) {
+    if (!s || index < 0 || index >= s->n_slides) return;
+    Slide *slide = &s->slides[index];
+    
+    // Limpiar terminal usando secuencias ANSI estándar (compatible multiplataforma)
+    printf("\033[H\033[2J\033[3J");
+    fflush(stdout);
+    
+    printf("\033[1;36m=== NOTAS DEL PRESENTADOR (Slide %d / %d) ===\033[0m\n\n", index + 1, s->n_slides);
+    if (strlen(slide->notes) > 0) {
+        printf("%s\n", slide->notes);
+    } else {
+        printf("\033[3;90m(Sin notas para esta diapositiva)\033[0m\n");
+    }
+    printf("\n\033[1;30m----------------------------------------\033[0m\n");
+    fflush(stdout);
 }

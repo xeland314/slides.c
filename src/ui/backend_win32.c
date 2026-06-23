@@ -3,6 +3,7 @@
 #include <windows.h>
 #include <cairo/cairo-win32.h>
 #include <stdio.h>
+#include <sys/stat.h>
 
 static Slider *g_slider = NULL;
 static int g_current_slide = 0;
@@ -10,6 +11,7 @@ static int g_n_slides = 0;
 static int g_fullscreen = 0;
 static DWORD g_start_time = 0;
 static DWORD g_slide_start_time = 0;
+static int g_last_printed_slide = -1;
 
 // Estructura para recordar la posición de la ventana antes de ir a fullscreen
 static RECT g_prev_rect;
@@ -45,6 +47,25 @@ static void toggle_fullscreen(HWND hwnd) {
                      g_prev_rect.bottom - g_prev_rect.top,
                      SWP_NOZORDER | SWP_NOACTIVATE | SWP_FRAMECHANGED);
         g_fullscreen = 0;
+    }
+}
+
+static void set_transition(int new_slide) {
+    if (g_slider && new_slide != g_current_slide) {
+        g_slider->transition_from = g_current_slide;
+        g_slider->transition_type = g_slider->slides[new_slide].transition;
+    }
+}
+
+static void navigate_to(int new_slide, int *dirty, HWND hwnd) {
+    if (new_slide < 0) new_slide = 0;
+    if (new_slide >= g_n_slides) new_slide = g_n_slides - 1;
+    if (new_slide != g_current_slide) {
+        set_transition(new_slide);
+        g_current_slide = new_slide;
+        g_slide_start_time = GetTickCount();
+        if (dirty) *dirty = 1;
+        InvalidateRect(hwnd, NULL, FALSE);
     }
 }
 
@@ -85,23 +106,56 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
         EndPaint(hwnd, &ps);
         return 0;
     }
-    case WM_TIMER:
-        if (g_slider && g_slider->slides[g_current_slide].has_anim) {
-            InvalidateRect(hwnd, NULL, FALSE);
+    case WM_TIMER: {
+        static DWORD last_check_time = 0;
+        DWORD now_time = GetTickCount();
+        if (now_time - last_check_time > 500) {
+            last_check_time = now_time;
+            struct stat st;
+            if (g_slider && stat(g_slider->filepath, &st) == 0) {
+                if ((long long)st.st_mtime > g_slider->last_mtime) {
+                    Slider *new_s = slider_load(g_slider->filepath);
+                    if (new_s) {
+                        // Conservar propiedades de CLI
+                        new_s->theme = g_slider->theme;
+                        strncpy(new_s->font_family, g_slider->font_family, sizeof(new_s->font_family) - 1);
+                        new_s->font_scale = g_slider->font_scale;
+
+                        slider_free(g_slider);
+                        g_slider = new_s;
+                        g_n_slides = slider_get_count(new_s);
+                        if (g_current_slide >= g_n_slides) g_current_slide = g_n_slides - 1;
+                        
+                        dirty = 1;
+                        // Forzar refresco de notas
+                        g_last_printed_slide = -1;
+                        fprintf(stderr, "[slides] Diapositivas recargadas automáticamente (hot reload)\n");
+                    }
+                }
+            }
+        }
+        if (g_slider) {
+            // Redibujar durante animaciones GIF o transiciones activas
+            int in_transition = (g_slider->transition_type != TRANS_NONE &&
+                GetTickCount() - g_slide_start_time < TRANSITION_DEFAULT_MS);
+            if (g_slider->slides[g_current_slide].has_anim || in_transition) {
+                InvalidateRect(hwnd, NULL, FALSE);
+            }
         }
         return 0;
-    case WM_LBUTTONDOWN: // Click izquierdo -> Retroceder
-        if (g_current_slide > 0) { g_current_slide--; dirty = 1; g_slide_start_time = GetTickCount(); }
+    }
+    case WM_LBUTTONDOWN:
+        navigate_to(g_current_slide - 1, &dirty, hwnd);
         break;
-    case WM_RBUTTONDOWN: // Click derecho -> Avanzar
-        if (g_current_slide < g_n_slides - 1) { g_current_slide++; dirty = 1; g_slide_start_time = GetTickCount(); }
+    case WM_RBUTTONDOWN:
+        navigate_to(g_current_slide + 1, &dirty, hwnd);
         break;
     case WM_MOUSEWHEEL: {
         short delta = (short)HIWORD(wParam);
-        if (delta > 0) { // Scroll arriba -> Retroceder
-            if (g_current_slide > 0) { g_current_slide--; dirty = 1; g_slide_start_time = GetTickCount(); }
-        } else if (delta < 0) { // Scroll abajo -> Avanzar
-            if (g_current_slide < g_n_slides - 1) { g_current_slide++; dirty = 1; g_slide_start_time = GetTickCount(); }
+        if (delta > 0) {
+            navigate_to(g_current_slide - 1, &dirty, hwnd);
+        } else if (delta < 0) {
+            navigate_to(g_current_slide + 1, &dirty, hwnd);
         }
         break;
     }
@@ -110,13 +164,13 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
         case VK_ESCAPE: PostQuitMessage(0); return 0;
         case 'Q': PostQuitMessage(0); return 0;
         case VK_RIGHT: case VK_SPACE: case VK_RETURN: case VK_NEXT:
-            if (g_current_slide < g_n_slides - 1) { g_current_slide++; dirty = 1; g_slide_start_time = GetTickCount(); }
+            navigate_to(g_current_slide + 1, &dirty, hwnd);
             break;
         case VK_LEFT: case VK_BACK: case VK_PRIOR:
-            if (g_current_slide > 0) { g_current_slide--; dirty = 1; g_slide_start_time = GetTickCount(); }
+            navigate_to(g_current_slide - 1, &dirty, hwnd);
             break;
-        case VK_HOME: g_current_slide = 0; dirty = 1; g_slide_start_time = GetTickCount(); break;
-        case VK_END: g_current_slide = g_n_slides - 1; dirty = 1; g_slide_start_time = GetTickCount(); break;
+        case VK_HOME: navigate_to(0, &dirty, hwnd); break;
+        case VK_END: navigate_to(g_n_slides - 1, &dirty, hwnd); break;
         case 'F': case VK_F11:
             toggle_fullscreen(hwnd);
             dirty = 1;
@@ -131,7 +185,13 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
         return 0;
     }
 
-    if (dirty) InvalidateRect(hwnd, NULL, FALSE);
+    if (dirty) {
+        if (g_slider && g_current_slide != g_last_printed_slide) {
+            slider_print_notes(g_slider, g_current_slide);
+            g_last_printed_slide = g_current_slide;
+        }
+        InvalidateRect(hwnd, NULL, FALSE);
+    }
     return DefWindowProc(hwnd, uMsg, wParam, lParam);
 }
 

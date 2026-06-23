@@ -105,4 +105,11 @@ const char* slider_get_font_family(Slider *s);
  */
 double slider_get_font_scale(Slider *s);
 
+/**
+ * @brief Prints the presenter notes of a slide to the terminal.
+ * @param s The Slider object.
+ * @param index The index of the slide.
+ */
+void slider_print_notes(Slider *s, int index);
+
 #endif // SLIDER_H

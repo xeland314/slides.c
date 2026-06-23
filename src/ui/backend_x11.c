@@ -42,7 +42,7 @@ int backend_run(Slider *s) {
     cairo_t *cr = cairo_create(sfc_back);
     cairo_t *cr_flip = cairo_create(sfc_screen);
 
-    int current = 0, running = 1, dirty = 1, fullscreen = 0;
+    int current = 0, running = 1, dirty = 1, fullscreen = 0, last_printed_slide = -1;
     int n_slides = slider_get_count(s);
     
     double start_time = get_time_ms();
@@ -56,11 +56,27 @@ int backend_run(Slider *s) {
                 KeySym ks = XLookupKeysym(&ev.xkey, 0);
                 if (ks == XK_q || ks == XK_Escape) running = 0;
                 else if (ks == XK_Right || ks == XK_Return || ks == XK_space || ks == XK_Next) {
-                    if (current < n_slides - 1) { current++; dirty = 1; slide_start_time = get_time_ms(); }
+                    if (current < n_slides - 1) {
+                        s->transition_from = current;
+                        s->transition_type = s->slides[current + 1].transition;
+                        current++; dirty = 1; slide_start_time = get_time_ms();
+                    }
                 } else if (ks == XK_Left || ks == XK_BackSpace || ks == XK_Prior) {
-                    if (current > 0) { current--; dirty = 1; slide_start_time = get_time_ms(); }
-                } else if (ks == XK_Home) { current = 0; dirty = 1; slide_start_time = get_time_ms(); }
-                else if (ks == XK_End) { current = n_slides - 1; dirty = 1; slide_start_time = get_time_ms(); }
+                    if (current > 0) {
+                        s->transition_from = current;
+                        s->transition_type = s->slides[current - 1].transition;
+                        current--; dirty = 1; slide_start_time = get_time_ms();
+                    }
+                } else if (ks == XK_Home) {
+                    s->transition_from = current;
+                    s->transition_type = s->slides[0].transition;
+                    current = 0; dirty = 1; slide_start_time = get_time_ms();
+                }
+                else if (ks == XK_End) {
+                    s->transition_from = current;
+                    s->transition_type = s->slides[n_slides - 1].transition;
+                    current = n_slides - 1; dirty = 1; slide_start_time = get_time_ms();
+                }
                 else if (ks == XK_f || ks == XK_F11) {
                     XEvent fev = {0}; fev.type = ClientMessage; fev.xclient.window = win;
                     fev.xclient.message_type = wm_state; fev.xclient.format = 32;
@@ -70,11 +86,19 @@ int backend_run(Slider *s) {
                 }
             }
             if (ev.type == ButtonPress) {
-                if (ev.xbutton.button == Button1 || ev.xbutton.button == Button4) { 
-                    if (current > 0) { current--; dirty = 1; slide_start_time = get_time_ms(); } 
+                if (ev.xbutton.button == Button1 || ev.xbutton.button == Button4) {
+                    if (current > 0) {
+                        s->transition_from = current;
+                        s->transition_type = s->slides[current - 1].transition;
+                        current--; dirty = 1; slide_start_time = get_time_ms();
+                    }
                 }
-                else if (ev.xbutton.button == Button3 || ev.xbutton.button == Button5) { 
-                    if (current < n_slides - 1) { current++; dirty = 1; slide_start_time = get_time_ms(); } 
+                else if (ev.xbutton.button == Button3 || ev.xbutton.button == Button5) {
+                    if (current < n_slides - 1) {
+                        s->transition_from = current;
+                        s->transition_type = s->slides[current + 1].transition;
+                        current++; dirty = 1; slide_start_time = get_time_ms();
+                    }
                 }
             }
             if (ev.type == ConfigureNotify) {
@@ -96,14 +120,15 @@ int backend_run(Slider *s) {
             if (ev.type == ClientMessage) if ((Atom)ev.xclient.data.l[0] == wm_delete) running = 0;
         }
 
-        // Si hay animación, forzamos dirty para redibujar
-        // Nota: s->slides[current].has_anim se actualiza en slider_render, 
-        // así que la primera vez puede no estar seteado hasta que se renderice.
-        // Pero está bien, al cambiar de slide dirty=1, se renderiza, se detecta anim, 
-        // y en el siguiente loop entra aquí.
-        if (s->slides[current].has_anim) dirty = 1;
+        // Forzar redibujo durante animaciones o transiciones
+        double elapsed = get_time_ms() - slide_start_time;
+        if (s->slides[current].has_anim || elapsed < TRANSITION_DEFAULT_MS) dirty = 1;
 
         if (dirty) {
+            if (current != last_printed_slide) {
+                slider_print_notes(s, current);
+                last_printed_slide = current;
+            }
             double now = get_time_ms() - slide_start_time;
             cairo_set_source_rgb(cr, s->theme->bg_r, s->theme->bg_g, s->theme->bg_b);
             cairo_paint(cr);
@@ -114,9 +139,9 @@ int backend_run(Slider *s) {
             dirty = 0;
         }
         
-        // Si hay animación, dormimos menos para mantener fluidez (~60fps = 16ms)
-        if (s->slides[current].has_anim) usleep(16000);
-        else usleep(50000); // 50ms para reposo (20fps check input)
+        // Mantener fluidez durante animaciones o transiciones (~60fps = 16ms)
+        if (s->slides[current].has_anim || elapsed < TRANSITION_DEFAULT_MS) usleep(16000);
+        else usleep(50000);
     }
 
     cairo_destroy(cr); cairo_destroy(cr_flip);
