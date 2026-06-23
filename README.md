@@ -1,10 +1,8 @@
-# C-Slides 🛝
+# C-Slides
 
-Un presentador de diapositivas minimalista y de alto rendimiento escrito en **C** utilizando **X11**, **Cairo** y **Pango**. Diseñado para renderizar archivos Markdown directamente en pantalla con una estética moderna y profesional.
+Un presentador de diapositivas minimalista y de alto rendimiento escrito en **C** utilizando **Cairo** y **Pango**. Renderiza archivos Markdown directamente en pantalla con transiciones suaves, temas visuales y exportación a PNG/PDF.
 
-## Previsualización de Estilos
-
-Aquí puedes ver cómo luce el mismo slide con diferentes paletas de colores (Renderizado a 1080p):
+## Previsualización
 
 | Dark (Default) | Monokai |
 | :---: | :---: |
@@ -30,73 +28,181 @@ Aquí puedes ver cómo luce el mismo slide con diferentes paletas de colores (Re
 | :---: | :---: |
 | ![Tokyo Night](examples/preview_tokyo-night.png) | |
 
-## Arquitectura del Proyecto
+## Características
 
-El proyecto ha sido refactorizado para separar las responsabilidades y permitir la portabilidad de sus componentes a múltiples lenguajes (**Ada, Dart, Python, Zig, Lua, Go**):
+### Contenido Markdown
+- Títulos (`#`, `##`) con barra inferior decorativa
+- Párrafos con word-wrapping automático
+- Listas con viñetas (anidadas nivel 1 y 2)
+- Listas numeradas (`1.`, `a)`, `i)`, etc.)
+- Listas de tareas (`- [ ]` / `- [x]`)
+- Blockquotes con barra lateral
+- Imágenes PNG/JPG/GIF/BMP (auto-escalado, caché de 64 slots)
+- Tablas con ancho proporcional, wrapping, filas alternadas y cabecera
+- Bloques de código (fenced) con resaltado de sintaxis
+- Códulo inline (`código`)
+- Énfasis: **bold**, *italic*, ***combinado***
 
-- `slider.h`: API pública (Firmas de funciones para facilitar el porting).
-- `src/core/`: Lógica del Parser y estructuras de datos internas.
-- `src/render/`: Motor de dibujo basado en Cairo/Pango (soporta Markup y Anti-aliasing).
-- `src/ui/`: Gestión de ventanas X11 y loop de eventos.
+### Transiciones entre diapositivas
+- `fade` — Fundido cruzado
+- `slide-left` — Entrada desde la derecha
+- `slide-right` — Entrada desde la izquierda
+- `slide-up` — Entrada desde abajo
+- `slide-down` — Entrada desde arriba
+- `none` — Corte instantáneo
+- Duración: 300ms con easing smoothstep
+- Configurables por slide via `<!-- transition: tipo -->`
 
-## Comparativa de Implementación (Markdown Spec)
+### Temas visuales (11 integrados)
+| Tema | Descripción |
+| :--- | :--- |
+| `dark` | Fondo oscuro, texto blanco, acentos neutros |
+| `rose` | Vino oscuro, acentos rosados |
+| `monokai` | Vibrante, títulos rosados, viñetas verdes |
+| `nord` | Azul-gris ártico, azules y verdes suaves |
+| `light` | Fondo blanco, texto oscuro, acentos azules |
+| `blue` | Pizarra azul profunda, acentos cielo |
+| `ambercat` | Ámbar/marrón técnico |
+| `dracula` | Púrpura/rosa/cian vibrante |
+| `gruvbox` | Tono tierra retro |
+| `catppuccin` | Pastel suave (mocha) |
+| `tokyo-night` | Ciberpunk azul/rosa/cian |
 
-La implementación actual sigue una filosofía orientada a **slides** (una línea = un elemento), optimizada para presentaciones dinámicas.
+### Frontmatter (metadatos YAML)
+Configuración incrustada al inicio del archivo:
+```markdown
+---
+theme: dracula
+font: JetBrains Mono
+scale: 1.2
+---
+```
 
-| Característica | Soporte | Detalle de Implementación |
-| :--- | :---: | :--- |
-| **Headers (#, ##)** | ✅ | Soporta niveles 1 y 2 con estilos diferenciados. |
-| **Énfasis (Bold/Italic)** | ✅ | Implementado mediante Pango Markup (`**`, `__`, `*`, `_`). |
-| **Listas (Bullets)** | ✅ | Soporta viñetas (`-` y `  - `). |
-| **Listas Numeradas** | ✅ | **Nuevo:** Soporta `1.`, `a.`, `i)`, etc., con marcadores acentuados. |
-| **Imágenes** | ✅ | Carga de PNGs/JPGs/GIFs con auto-escalado y cache. |
-| **Tablas (GFM)** | ✅ | **Mejorado:** Ancho dinámico proporcional, ajuste de texto (wrap) y altura de fila variable. |
-| **Párrafos** | ✅ | Texto normal con soporte de wrapping automático. |
-| **Blockquotes** | ✅ | Implementado con barra lateral acentuada y texto en color secundario. |
-| **Código (Blocks/Inline)** | ✅ | Soporte de fuentes monoespaciadas y resaltado de sintaxis general. |
-| **Enlaces [text](url)** | ❌ | No implementado (X11 no gestiona clicks en texto por defecto). |
+### Notas del presentador
+- `<!-- notes: texto -->` en una línea
+- `<!-- notes:` ... `-->` multilinea
+- Se imprimen automáticamente al navegar
 
-## Especificaciones Técnicas
+### Hot reload
+- Detecta cambios en el archivo `.md` cada 500ms
+- Recarga automática preservando tema, fuente y escala
+- Notificación en consola
 
-- **Ancho Proporcional de Tablas:** Calcula el espacio basándose en el contenido de cada columna.
-- **Renderizado Adaptativo:** Las filas de las tablas ajustan su altura según el contenido envuelto.
-- **Tipografía:** Renderizado de fuentes del sistema vía Pango (default: Inter).
-- **Performance:** Doble buffer para transiciones sin parpadeo (flicker-free).
+### Exportación
+- `--export png` — Exporta diapositivas a PNG
+- `--export pdf` — Exporta todas a PDF
+- `--export-res WxH` — Resolución personalizada (defecto: 1080x1080)
+- `--slide N` — Seleccionar diapositiva específica
+
+### Backends de ventana
+- **Win32** (Windows nativo) — GDI double-buffer, timer 60fps
+- **X11** (Linux/BSD) — Doble buffer, framerate adaptativo
+- Teclado, ratón, pantalla completa en ambos
+
+## Requisitos
+
+### Linux
+```bash
+sudo apt install libcairo2-dev libpango1.0-dev libx11-dev
+```
+
+### Windows (MSYS2 MinGW64)
+Instala las dependencias desde la terminal MSYS2 (no PowerShell):
+```
+pacman -S mingw-w64-x86_64-cairo mingw-w64-x86_64-pango \
+          mingw-w64-x86_64-gcc make
+```
+
+## Compilar
+
+```bash
+make
+```
+
+Esto produce:
+- `slides` / `slides.exe` — Presentador interactivo
+- `libslider.so` / `slider.dll` — Librería compartida (para ports FFI)
+- `slides_ada` / `slides_ada.exe` — Versión Ada
+
+En Windows, el Makefile auto-detecta MSYS2 (`C:/msys64/mingw64`, `C:/msys2/mingw64`).
+Si usas Cygwin GCC, el Makefile muestra una advertencia.
 
 ## Uso
 
 ```bash
-make
 ./slides [opciones] presentacion.md
 ```
 
-**❯ slides --help**
-```text
-Uso: ./slides [opciones] presentacion.md
+### Opciones
 
-Opciones:
-  -p, --palette <name>    Elegir paleta (dark, rose, monokai, nord, light, blue, ambercat,
-                          dracula, gruvbox, catppuccin, tokyo-night)
-  -f, --font-family <str> Definir tipografía (ej. 'Arial', 'JetBrains Mono')
-  -s, --font-scale <num>  Escalar tamaño de fuentes (ej. 1.2)
-  -e, --export <type>     Exportar slides a 'pdf' o 'png'
-  -er, --export-res <WxH> Resolución de exportación (ej. 1920x1080, default 1080x1080)
-  -sl, --slide <num>      Seleccionar slide específico para exportar (0-index)
-  -h, --help              Mostrar esta ayuda
+| Flag | Descripción |
+| :--- | :--- |
+| `-p, --palette <nombre>` | Elegir tema (dark, rose, monokai, nord, light, ...) |
+| `-f, --font-family <str>` | Tipografía (ej. 'Arial', 'JetBrains Mono') |
+| `-s, --font-scale <num>` | Factor de escala (ej. 1.2) |
+| `-e, --export <tipo>` | Exportar a 'pdf' o 'png' |
+| `-er, --export-res <WxH>` | Resolución de exportación (ej. 1920x1080) |
+| `-sl, --slide <num>` | Slide específico para exportar (0-index) |
+| `-v, --version` | Versión |
+| `-h, --help` | Ayuda |
+
+Los argumentos CLI sobrescriben la configuración de frontmatter.
+
+### Controles
+
+| Tecla | Acción |
+| :--- | :--- |
+| `→` `Enter` `Space` `PageDown` | Siguiente diapositiva |
+| `←` `Backspace` `PageUp` | Diapositiva anterior |
+| `Home` | Primera diapositiva |
+| `End` | Última diapositiva |
+| `F` `F11` | Pantalla completa (toggle) |
+| `Q` `Esc` | Salir |
+
+Ratón: clic izquierdo/rueda-arriba = anterior, clic derecho/rueda-abajo = siguiente.
+
+## Ejemplos
+
+```bash
+./slides examples/features.md
+./slides examples/transitions.md
+./slides --palette dracula examples/frontmatter.md
+./slides --export pdf --export-res 1920x1080 presentacion.md
 ```
 
-**Controles:**
-- `->` / `Enter`: Siguiente diapositiva.
-- `<-` / `Backspace`: Diapositiva anterior.
-- `F`: Pantalla completa (Toggle).
-- `Q` / `ESC`: Salir.
+## Arquitectura
 
-## Ports Disponibles
+```
+slider.h              API pública
+src/
+  core/
+    parser.c          Parser Markdown + frontmatter + transiciones
+    themes.c          11 temas visuales
+    highlighter.c     Resaltado de sintaxis genérico
+    internal.h        Estructuras internas (Slide, Slider, Theme)
+  render/
+    renderer.c        Motor Cairo/Pango + transiciones + GIF
+  ui/
+    backend_win32.c   Ventana Win32 (nativa)
+    backend_x11.c     Ventana X11
+    main.c            CLI + punto de entrada
+```
 
-El proyecto incluye ports funcionales en los siguientes lenguajes:
-- **Ada:** Localizado en `ada/`.
-- **Dart:** Localizado en `dart/`.
-- **Python:** Localizado en `python/`.
-- **Zig:** Localizado en `zig/`.
-- **Lua:** Localizado en `lua/`.
-- **Go:** Localizado en `go/`.
+## Tests
+
+```bash
+make test
+```
+
+Ejecuta 21 tests unitarios y de integración (Python + ctypes sobre `slider.dll`).
+
+## Ports
+
+El proyecto incluye bindings FFI funcionales en varios lenguajes:
+
+- **Ada** (`ada/`) — System.Address FFI, CLI completo
+- **Dart** (`dart/`) — dart:ffi + package:ffi
+- **Python** (`python/`) — ctypes + tests
+- **Zig** (`zig/`) — @cImport, Zig build system
+- **Lua** (`lua/`) — LuaJIT FFI
+- **Go** (`go/`) — cgo + flag package
