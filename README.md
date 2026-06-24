@@ -143,6 +143,10 @@ Si usas Cygwin GCC, el Makefile muestra una advertencia.
 | `-e, --export <tipo>` | Exportar a 'pdf' o 'png' |
 | `-er, --export-res <WxH>` | Resolución de exportación (ej. 1920x1080) |
 | `-sl, --slide <num>` | Slide específico para exportar (0-index) |
+| `--bg <hex>` | Color de fondo personalizado |
+| `--title <hex>` | Color de títulos personalizado |
+| `--text <hex>` | Color de texto personalizado |
+| `--accent <hex>` | Color de acento personalizado |
 | `-v, --version` | Versión |
 | `-h, --help` | Ayuda |
 
@@ -160,10 +164,6 @@ Los argumentos CLI sobrescriben la configuración de frontmatter.
 | `Ctrl++` | Acercar (zoom in) |
 | `Ctrl+-` | Alejar (zoom out) |
 | `Ctrl+0` | Restablecer zoom |
-| `--bg <hex>` | Color de fondo personalizado |
-| `--title <hex>` | Color de títulos personalizado |
-| `--text <hex>` | Color de texto personalizado |
-| `--accent <hex>` | Color de acento personalizado |
 | `Tab` | Vista general (mini-mapa de todas las slides) |
 | `→` `←` `↑` `↓` `Enter` | Navegar y seleccionar en vista general |
 | `Esc` | Salir / Cerrar vista general |
