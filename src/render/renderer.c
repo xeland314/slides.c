@@ -360,13 +360,37 @@ static double render_code_block(cairo_t *cr, PangoLayout *lay_code,
     double *line_heights = malloc(count * sizeof(double));
     if (!line_heights) return 0.0;
 
+    char code_block[MAX_LINES * MAX_LINE_LEN * 2];
+    size_t code_block_len = 0;
+    for (int i = 0; i < count; i++) {
+        SlideLine *sl = &lines[start + i];
+        if (sl->type == LINE_CODE_START || sl->type == LINE_CODE_END) continue;
+        if (code_block_len > 0 && code_block_len + 1 < sizeof(code_block)) {
+            code_block[code_block_len++] = '\n';
+        }
+        size_t text_len = strlen(sl->text);
+        if (code_block_len + text_len + 1 < sizeof(code_block)) {
+            memcpy(code_block + code_block_len, sl->text, text_len);
+            code_block_len += text_len;
+        }
+    }
+    code_block[code_block_len] = '\0';
+    highlighter_begin_document(code_block);
+
     for (int i = 0; i < count; i++) {
         line_heights[i] = 0.0;
         SlideLine *sl = &lines[start + i];
         if (sl->type == LINE_CODE_START || sl->type == LINE_CODE_END) continue;
 
         char markup[MAX_LINE_LEN * 8];
-        highlighter_highlight(sl->text, s->theme, markup, sizeof(markup));
+        int code_line_index = 0;
+        for (int j = 0; j < i; j++) {
+            SlideLine *prev = &lines[start + j];
+            if (prev->type != LINE_CODE_START && prev->type != LINE_CODE_END) {
+                code_line_index++;
+            }
+        }
+        highlighter_highlight_line(sl->text, code_line_index, s->theme, markup, sizeof(markup));
         pango_layout_set_markup(lay_code, markup, -1);
 
         int tw, th;
@@ -398,7 +422,14 @@ static double render_code_block(cairo_t *cr, PangoLayout *lay_code,
         if (sl->type == LINE_CODE_START || sl->type == LINE_CODE_END) continue;
 
         char markup[MAX_LINE_LEN * 8];
-        highlighter_highlight(sl->text, s->theme, markup, sizeof(markup));
+        int code_line_index = 0;
+        for (int j = 0; j < i; j++) {
+            SlideLine *prev = &lines[start + j];
+            if (prev->type != LINE_CODE_START && prev->type != LINE_CODE_END) {
+                code_line_index++;
+            }
+        }
+        highlighter_highlight_line(sl->text, code_line_index, s->theme, markup, sizeof(markup));
         pango_layout_set_markup(lay_code, markup, -1);
         
         cairo_move_to(cr, x + 15.0 * s->font_scale, cur_y);
@@ -406,6 +437,7 @@ static double render_code_block(cairo_t *cr, PangoLayout *lay_code,
         cur_y += line_heights[i];
     }
 
+    highlighter_end_document();
     free(line_heights);
     return total_h;
 }
