@@ -360,13 +360,15 @@ static double render_code_block(cairo_t *cr, PangoLayout *lay_code,
     double *line_heights = malloc(count * sizeof(double));
     if (!line_heights) return 0.0;
 
+    const char *lang = lines[start].text;
+
     for (int i = 0; i < count; i++) {
         line_heights[i] = 0.0;
         SlideLine *sl = &lines[start + i];
         if (sl->type == LINE_CODE_START || sl->type == LINE_CODE_END) continue;
 
         char markup[MAX_LINE_LEN * 8];
-        highlighter_highlight(sl->text, s->theme, markup, sizeof(markup));
+        highlighter_highlight(sl->text, lang, s->theme, markup, sizeof(markup));
         pango_layout_set_markup(lay_code, markup, -1);
 
         int tw, th;
@@ -398,7 +400,7 @@ static double render_code_block(cairo_t *cr, PangoLayout *lay_code,
         if (sl->type == LINE_CODE_START || sl->type == LINE_CODE_END) continue;
 
         char markup[MAX_LINE_LEN * 8];
-        highlighter_highlight(sl->text, s->theme, markup, sizeof(markup));
+        highlighter_highlight(sl->text, lang, s->theme, markup, sizeof(markup));
         pango_layout_set_markup(lay_code, markup, -1);
         
         cairo_move_to(cr, x + 15.0 * s->font_scale, cur_y);
