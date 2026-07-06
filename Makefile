@@ -56,7 +56,7 @@ CFLAGS += $(PKG_CFLAGS)
 LIBS = $(PKG_LIBS) $(PLATFORM_LIBS)
 
 # Fuentes y Objetos
-CORE_COMMON_SRC = src/core/parser.c src/core/themes.c src/core/highlighter.c src/render/renderer.c
+CORE_COMMON_SRC = src/core/parser.c src/core/themes.c src/core/highlighter.c src/render/renderer.c src/core/lexer_c.c src/core/lexer_py.c
 CORE_SRC = $(CORE_COMMON_SRC) $(BACKEND_SRC)
 CORE_OBJ = $(CORE_SRC:.c=.o)
 
@@ -78,6 +78,10 @@ $(TARGET_ADA): $(CORE_OBJ)
 test: $(TARGET_DLL)
 	python3 python/run_all_tests.py
 
+# Regla para compilar archivos .l usando Flex automáticamente
+src/core/lexer_%.c: src/core/lexer_%.l
+	flex -o $@ $<
+
 # --- Regla genérica de compilación ---
 %.o: %.c
 	$(CC) $(CFLAGS) -c $< -o $@
@@ -86,5 +90,6 @@ clean:
 	$(RM) $(CORE_OBJ) $(MAIN_OBJ) $(TARGET_EXE) $(TARGET_ADA) $(TARGET_DLL)
 	$(RM) slides libslider.so slides_ada.exe
 	$(RM) ada/*.o ada/*.ali
+	$(RM) src/core/lexer_c.c src/core/lexer_py.c
 
 .PHONY: all clean test
