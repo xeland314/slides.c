@@ -14,7 +14,7 @@ static void print_help(const char *prog) {
     printf("                          dracula, gruvbox, catppuccin, tokyo-night)\n");
     printf("  -f, --font-family <str> Definir tipografía (ej. 'Arial', 'JetBrains Mono')\n");
     printf("  -s, --font-scale <num>  Escalar tamaño de fuentes (ej. 1.2)\n");
-    printf("  -e, --export <type>     Exportar slides a 'pdf' o 'png'\n");
+    printf("  -e, --export <type>     Exportar slides a 'pdf', 'png' o 'svg'\n");
     printf("  -er, --export-res <WxH> Resolución de exportación (ej. 1920x1080, default 1080x1080)\n");
     printf("  -sl, --slide <num>      Seleccionar slide específico para exportar (0-index)\n");
     printf("  --bg <hex>              Color de fondo (ej. '#0f0f23')\n");
@@ -32,6 +32,7 @@ int main(int argc, char *argv[]) {
     const char *color_bg = NULL, *color_title = NULL, *color_text = NULL, *color_accent = NULL;
     int export_png = 0;
     int export_pdf = 0;
+    int export_svg = 0;
     int target_slide = -1;
     int export_w = 1080;
     int export_h = 1080;
@@ -48,8 +49,9 @@ int main(int argc, char *argv[]) {
                 const char *type = argv[++i];
                 if (strcmp(type, "pdf") == 0) export_pdf = 1;
                 else if (strcmp(type, "png") == 0) export_png = 1;
+                else if (strcmp(type, "svg") == 0) export_svg = 1;
                 else {
-                    fprintf(stderr, "Error: Tipo de exportación desconocido '%s'. Use 'pdf' o 'png'.\n", type);
+                    fprintf(stderr, "Error: Tipo de exportación desconocido '%s'. Use 'pdf', 'png' o 'svg'.\n", type);
                     return 1;
                 }
             } else {
@@ -100,7 +102,7 @@ int main(int argc, char *argv[]) {
     fprintf(stderr, "[slides] %d slide(s) cargados desde %s (tema: %s, font: %s, scale: %.1f)\n", 
             n_slides, md_path, s->theme->name, s->font_family, s->font_scale);
 
-    if (export_png || export_pdf) {
+    if (export_png || export_pdf || export_svg) {
         if (export_pdf) {
             char filename[1024];
             strncpy(filename, md_path, sizeof(filename) - 1);
@@ -118,6 +120,27 @@ int main(int argc, char *argv[]) {
                 printf("Exportado PDF: %s (%dx%d)\n", filename, export_w, export_h);
             } else {
                 fprintf(stderr, "Fallo al exportar PDF: %s\n", filename);
+            }
+        }
+
+        if (export_svg) {
+            int start = (target_slide >= 0) ? target_slide : 0;
+            int end   = (target_slide >= 0) ? target_slide + 1 : n_slides;
+            
+            if (start < 0 || start >= n_slides) {
+                fprintf(stderr, "Error: Slide %d fuera de rango (0-%d)\n", target_slide, n_slides-1);
+                slider_free(s);
+                return 1;
+            }
+
+            for (int i = start; i < end; i++) {
+                char filename[1024];
+                snprintf(filename, sizeof(filename), "slide_%d.svg", i + 1);
+                if (slider_export_svg(s, i, filename, export_w, export_h) == 0) {
+                    printf("Exportado SVG: %s (%dx%d)\n", filename, export_w, export_h);
+                } else {
+                    fprintf(stderr, "Fallo al exportar SVG: %s\n", filename);
+                }
             }
         }
 
