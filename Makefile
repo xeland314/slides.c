@@ -13,11 +13,11 @@ ifeq ($(OS),Windows_NT)
     TARGET_ADA = slides_ada.exe
 
     # Auto-detectar directorio MSYS2 MinGW64
-    ifeq ($(shell test -d C:/msys64/mingw64 && echo 1),1)
+    ifneq (,$(wildcard C:/msys64/mingw64/bin/gcc.exe))
         MINGW_DIR := C:/msys64/mingw64
-    else ifeq ($(shell test -d C:/msys2/mingw64 && echo 1),1)
+    else ifneq (,$(wildcard C:/msys2/mingw64/bin/gcc.exe))
         MINGW_DIR := C:/msys2/mingw64
-    else ifeq ($(shell test -d C:/tools/msys64/mingw64 && echo 1),1)
+    else ifneq (,$(wildcard C:/tools/msys64/mingw64/bin/gcc.exe))
         MINGW_DIR := C:/tools/msys64/mingw64
     endif
 
