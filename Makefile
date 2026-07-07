@@ -60,7 +60,7 @@ CORE_COMMON_SRC = src/core/parser.c src/core/themes.c src/core/highlighter.c src
 CORE_SRC = $(CORE_COMMON_SRC) $(BACKEND_SRC)
 CORE_OBJ = $(CORE_SRC:.c=.o)
 
-MAIN_SRC = src/ui/main.c
+MAIN_SRC = src/ui/main.c src/ui/help.c
 MAIN_OBJ = $(MAIN_SRC:.c=.o)
 
 all: $(TARGET_EXE) $(TARGET_ADA) $(TARGET_DLL)
@@ -92,4 +92,10 @@ clean:
 	$(RM) ada/*.o ada/*.ali
 	$(RM) src/core/lexer_c.c src/core/lexer_py.c
 
-.PHONY: all clean test
+install: $(TARGET_EXE)
+	install -d $(DESTDIR)$(PREFIX)/bin
+	install -m 755 $(TARGET_EXE) $(DESTDIR)$(PREFIX)/bin/
+	install -d $(DESTDIR)$(PREFIX)/share/man/man1
+	install -m 644 slides.1 $(DESTDIR)$(PREFIX)/share/man/man1/
+
+.PHONY: all clean test install

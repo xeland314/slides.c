@@ -2,27 +2,11 @@
 #include "../core/internal.h"
 #include "../core/theme.h"
 #include "backend.h"
+#include "help.h"
 #include <stdio.h>
 #include <unistd.h>
 #include <string.h>
 #include <stdlib.h>
-
-static void print_help(const char *prog) {
-    printf("Uso: %s [opciones] presentacion.md\n\n", prog);
-    printf("Opciones:\n");
-    printf("  -p, --palette <name>    Elegir paleta (dark, rose, monokai, nord, light, blue, ambercat,\n");
-    printf("                          dracula, gruvbox, catppuccin, tokyo-night)\n");
-    printf("  -f, --font-family <str> Definir tipografía (ej. 'Arial', 'JetBrains Mono')\n");
-    printf("  -s, --font-scale <num>  Escalar tamaño de fuentes (ej. 1.2)\n");
-    printf("  -e, --export <type>     Exportar slides a 'pdf', 'png', 'svg', 'gif' o 'jpg'\n");
-    printf("  -er, --export-res <WxH> Resolución de exportación (ej. 1920x1080, default 1080x1080)\n");
-    printf("  -sl, --slide <num>      Seleccionar slide específico para exportar (0-index)\n");
-    printf("  --bg <hex>              Color de fondo (ej. '#0f0f23')\n");
-    printf("  --title <hex>           Color de títulos (ej. '#ff6b6b')\n");
-    printf("  --text <hex>            Color de texto (ej. '#c0caf5')\n");
-    printf("  --accent <hex>          Color de acento (ej. '#7aa2f7')\n");
-    printf("  -h, --help              Mostrar esta ayuda\n");
-}
 
 int main(int argc, char *argv[]) {
     const char *md_path = NULL;
@@ -77,7 +61,7 @@ int main(int argc, char *argv[]) {
         } else if (strcmp(argv[i], "--accent") == 0) {
             if (i + 1 < argc) color_accent = argv[++i];
         } else if (strcmp(argv[i], "--version") == 0 || strcmp(argv[i], "-v") == 0) {
-            printf("c-slides v1.0.0\n");
+            print_version();
             return 0;
         } else if (strcmp(argv[i], "--help") == 0 || strcmp(argv[i], "-h") == 0) {
             print_help(argv[0]);
