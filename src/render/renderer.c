@@ -775,8 +775,11 @@ int slider_export_png(Slider *s, int index, const char *path, int w, int h) {
     set_color(cr, s->theme->bg_r, s->theme->bg_g, s->theme->bg_b);
     cairo_paint(cr);
     
-    // Renderizar slide (tiempo 0 para exportación estática)
+    // Exportación estática: deshabilitar transición para evitar renderizar slide incorrecto
+    TransitionType saved = s->slides[index].transition;
+    s->slides[index].transition = TRANS_NONE;
     slider_render(s, index, cr, w, h, 0.0);
+    s->slides[index].transition = saved;
     
     cairo_status_t status = cairo_surface_write_to_png(sfc, path);
     
@@ -801,8 +804,11 @@ int slider_export_pdf(Slider *s, const char *path, int w, int h) {
         set_color(cr, s->theme->bg_r, s->theme->bg_g, s->theme->bg_b);
         cairo_paint(cr);
 
-        // Renderizar slide (tiempo 0)
+        // Exportación estática: deshabilitar transición para evitar renderizar slide incorrecto
+        TransitionType saved = s->slides[i].transition;
+        s->slides[i].transition = TRANS_NONE;
         slider_render(s, i, cr, w, h, 0.0);
+        s->slides[i].transition = saved;
 
         // Nueva página si no es la última
         cairo_show_page(cr);
