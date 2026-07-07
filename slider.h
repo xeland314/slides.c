@@ -50,6 +50,7 @@ void slider_render(Slider *s, int index, cairo_t *cr, int win_w, int win_h, doub
  * @return 0 on success, non-zero on error.
  */
 int slider_export_png(Slider *s, int index, const char *path, int w, int h);
+int slider_export_jpg(Slider *s, int index, const char *path, int w, int h, int quality);
 
 /**
  * @brief Exports all slides to a single PDF file.
