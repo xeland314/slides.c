@@ -14,7 +14,7 @@ static void print_help(const char *prog) {
     printf("                          dracula, gruvbox, catppuccin, tokyo-night)\n");
     printf("  -f, --font-family <str> Definir tipografía (ej. 'Arial', 'JetBrains Mono')\n");
     printf("  -s, --font-scale <num>  Escalar tamaño de fuentes (ej. 1.2)\n");
-    printf("  -e, --export <type>     Exportar slides a 'pdf', 'png' o 'svg'\n");
+    printf("  -e, --export <type>     Exportar slides a 'pdf', 'png', 'svg' o 'gif'\n");
     printf("  -er, --export-res <WxH> Resolución de exportación (ej. 1920x1080, default 1080x1080)\n");
     printf("  -sl, --slide <num>      Seleccionar slide específico para exportar (0-index)\n");
     printf("  --bg <hex>              Color de fondo (ej. '#0f0f23')\n");
@@ -33,6 +33,7 @@ int main(int argc, char *argv[]) {
     int export_png = 0;
     int export_pdf = 0;
     int export_svg = 0;
+    int export_gif = 0;
     int target_slide = -1;
     int export_w = 1080;
     int export_h = 1080;
@@ -50,8 +51,9 @@ int main(int argc, char *argv[]) {
                 if (strcmp(type, "pdf") == 0) export_pdf = 1;
                 else if (strcmp(type, "png") == 0) export_png = 1;
                 else if (strcmp(type, "svg") == 0) export_svg = 1;
+                else if (strcmp(type, "gif") == 0) export_gif = 1;
                 else {
-                    fprintf(stderr, "Error: Tipo de exportación desconocido '%s'. Use 'pdf', 'png' o 'svg'.\n", type);
+                    fprintf(stderr, "Error: Tipo de exportación desconocido '%s'. Use 'pdf', 'png', 'svg' o 'gif'.\n", type);
                     return 1;
                 }
             } else {
@@ -102,7 +104,7 @@ int main(int argc, char *argv[]) {
     fprintf(stderr, "[slides] %d slide(s) cargados desde %s (tema: %s, font: %s, scale: %.1f)\n", 
             n_slides, md_path, s->theme->name, s->font_family, s->font_scale);
 
-    if (export_png || export_pdf || export_svg) {
+    if (export_png || export_pdf || export_svg || export_gif) {
         if (export_pdf) {
             char filename[1024];
             strncpy(filename, md_path, sizeof(filename) - 1);
@@ -141,6 +143,24 @@ int main(int argc, char *argv[]) {
                 } else {
                     fprintf(stderr, "Fallo al exportar SVG: %s\n", filename);
                 }
+            }
+        }
+
+        if (export_gif) {
+            char filename[1024];
+            strncpy(filename, md_path, sizeof(filename) - 1);
+            filename[sizeof(filename) - 1] = '\0';
+            char *dot = strrchr(filename, '.');
+            if (dot && strcmp(dot, ".md") == 0) {
+                strcpy(dot, ".gif");
+            } else {
+                strncat(filename, ".gif", sizeof(filename) - strlen(filename) - 1);
+            }
+
+            if (slider_export_gif(s, filename, export_w, export_h) == 0) {
+                printf("Exportado GIF: %s (%dx%d, %d slides animados)\n", filename, export_w, export_h, n_slides);
+            } else {
+                fprintf(stderr, "Fallo al exportar GIF: %s\n", filename);
             }
         }
 

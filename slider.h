@@ -62,6 +62,16 @@ int slider_export_png(Slider *s, int index, const char *path, int w, int h);
 int slider_export_pdf(Slider *s, const char *path, int w, int h);
 
 /**
+ * @brief Exports all slides as an animated GIF file.
+ * @param s The Slider object.
+ * @param path The output path (e.g., "presentation.gif").
+ * @param w Width of the output frames.
+ * @param h Height of the output frames.
+ * @return 0 on success, non-zero on error.
+ */
+int slider_export_gif(Slider *s, const char *path, int w, int h);
+
+/**
  * @brief Exports a specific slide to an SVG file.
  * @param s The Slider object.
  * @param index The index of the slide to export (0-based).

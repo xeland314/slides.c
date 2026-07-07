@@ -822,6 +822,351 @@ int slider_export_pdf(Slider *s, const char *path, int w, int h) {
     return (status == CAIRO_STATUS_SUCCESS) ? 0 : -1;
 }
 
+// ── Minimal GIF Writer ────────────────────────────────────────────────────────
+// Implements GIF89a with LZW compression for animated slides export
+
+#define GIF_PAL_SIZE 256
+
+typedef struct {
+    FILE *fp;
+    int w, h;
+    int n_frames;
+} GifWriter;
+
+static int gif_palette[GIF_PAL_SIZE];
+
+static void gif_build_palette(void) {
+    static int built = 0;
+    if (built) return;
+    built = 1;
+    int i = 0;
+    for (int r = 0; r < 6; r++)
+        for (int g = 0; g < 6; g++)
+            for (int b = 0; b < 6; b++)
+                gif_palette[i++] = (r * 51) << 16 | (g * 51) << 8 | (b * 51);
+    for (int gr = 0; gr < 40; gr++)
+        gif_palette[i++] = (gr * 255 / 39) << 16 | (gr * 255 / 39) << 8 | (gr * 255 / 39);
+}
+
+static int gif_color_index(int r, int g, int b) {
+    int best = 0, best_dist = 256 * 256 * 3 + 1;
+    for (int i = 0; i < GIF_PAL_SIZE; i++) {
+        int pr = (gif_palette[i] >> 16) & 0xFF;
+        int pg = (gif_palette[i] >> 8) & 0xFF;
+        int pb = gif_palette[i] & 0xFF;
+        int dr = r - pr, dg = g - pg, db = b - pb;
+        int dist = dr * dr + dg * dg + db * db;
+        if (dist < best_dist) { best_dist = dist; best = i; }
+    }
+    return best;
+}
+
+static void gif_write(FILE *fp, const void *data, int len) {
+    fwrite(data, 1, len, fp);
+}
+
+static void gif_putc(FILE *fp, unsigned char c) {
+    fputc(c, fp);
+}
+
+static void gif_write_16(FILE *fp, unsigned short v) {
+    gif_putc(fp, v & 0xFF);
+    gif_putc(fp, (v >> 8) & 0xFF);
+}
+
+static void gif_write_palette(FILE *fp) {
+    for (int i = 0; i < GIF_PAL_SIZE; i++) {
+        gif_putc(fp, (gif_palette[i] >> 16) & 0xFF);
+        gif_putc(fp, (gif_palette[i] >> 8) & 0xFF);
+        gif_putc(fp, gif_palette[i] & 0xFF);
+    }
+}
+
+static void gif_write_header(FILE *fp, int w, int h) {
+    unsigned char header[] = "GIF89a";
+    gif_write(fp, header, 6);
+    gif_write_16(fp, w);
+    gif_write_16(fp, h);
+    // Packed field: GCT flag=1, color res=7, sort=0, GCT size=7 (2^(7+1)=256)
+    gif_putc(fp, 0x80 | 0x70 | 7);
+    gif_putc(fp, 0);    // bg color index
+    gif_putc(fp, 0);    // pixel aspect ratio
+    gif_write_palette(fp);
+}
+
+static void gif_write_gce(FILE *fp, int delay_cs) {
+    gif_putc(fp, 0x21);            // extension introducer
+    gif_putc(fp, 0xF9);            // graphic control label
+    gif_putc(fp, 0x04);            // block size
+    gif_putc(fp, 0x00);            // packed: no transparency, no user input, disposal=0
+    gif_write_16(fp, delay_cs);    // delay in centiseconds
+    gif_putc(fp, 0x00);            // transparent color index
+    gif_putc(fp, 0x00);            // block terminator
+}
+
+static int lzw_find(int *key, int *val, int *pref, int *suff, int p, int s) {
+    int h = (p * 256 + s) % 5003;
+    int start = h;
+    do {
+        if (key[h] == -1) return -1;
+        int code = val[h];
+        if (code >= 256 && pref[code] == p && suff[code] == s) return code;
+        h = (h + 1) % 5003;
+    } while (h != start);
+    return -1;
+}
+
+static void gif_write_image(FILE *fp, const unsigned char *indexed, int w, int h) {
+    gif_putc(fp, 0x2C);
+    gif_write_16(fp, 0);
+    gif_write_16(fp, 0);
+    gif_write_16(fp, w);
+    gif_write_16(fp, h);
+    gif_putc(fp, 0x00);
+
+    int min_code_size = 8;
+    gif_putc(fp, min_code_size);
+
+    int *key = calloc(5003, sizeof(int));
+    int *val = calloc(5003, sizeof(int));
+    int *pref = calloc(4096, sizeof(int));
+    int *suff = calloc(4096, sizeof(int));
+
+    if (!key || !val || !pref || !suff) {
+        free(key); free(val); free(pref); free(suff);
+        return;
+    }
+
+    memset(key, -1, 5003 * sizeof(int));
+    memset(pref, -1, 4096 * sizeof(int));
+
+    for (int i = 0; i < 256; i++) {
+        int h = i % 5003;
+        while (key[h] != -1) h = (h + 1) % 5003;
+        key[h] = i; val[h] = i;
+        pref[i] = -1; suff[i] = i;
+    }
+
+    int next = 258, csize = 9, cmax = 512, clr = 256, eoi = 257;
+
+    unsigned char buf[256];
+    int blen = 0, bbits = 0, bcnt = 0;
+
+    #define LZWC(c) do { \
+        bbits |= (c) << bcnt; bcnt += csize; \
+        while (bcnt >= 8) { \
+            buf[blen++] = bbits & 0xFF; bbits >>= 8; bcnt -= 8; \
+            if (blen >= 255) { gif_putc(fp, blen); gif_write(fp, buf, blen); blen = 0; } \
+        } \
+    } while (0)
+
+    LZWC(clr);
+    int cur = indexed[0];
+    int n = w * h;
+
+    for (int pos = 1; pos < n; pos++) {
+        int byte = indexed[pos];
+        int found = lzw_find(key, val, pref, suff, cur, byte);
+
+        if (found >= 0) {
+            cur = found;
+            continue;
+        }
+
+        LZWC(cur);
+
+        if (next < 4096) {
+            int h = (cur * 256 + byte) % 5003;
+            while (key[h] != -1) h = (h + 1) % 5003;
+            key[h] = cur * 256 + byte; val[h] = next;
+            pref[next] = cur; suff[next] = byte;
+            next++;
+            if (next > cmax) { csize++; cmax = 1 << csize; }
+        }
+
+        cur = byte;
+
+        if (next >= 4096) {
+            LZWC(clr);
+            memset(key, -1, 5003 * sizeof(int));
+            memset(pref, -1, 4096 * sizeof(int));
+            for (int i = 0; i < 256; i++) {
+                int hi = i % 5003;
+                while (key[hi] != -1) hi = (hi + 1) % 5003;
+                key[hi] = i; val[hi] = i;
+                pref[i] = -1; suff[i] = i;
+            }
+            next = 258; csize = 9; cmax = 512;
+        }
+    }
+
+    LZWC(cur);
+    LZWC(eoi);
+    if (bcnt) { buf[blen++] = bbits & 0xFF; bbits = 0; bcnt = 0; }
+    if (blen) { gif_putc(fp, blen); gif_write(fp, buf, blen); }
+    gif_putc(fp, 0x00);
+
+    free(key); free(val); free(pref); free(suff);
+}
+
+static int gif_open(GifWriter *gw, const char *path, int w, int h) {
+    gif_build_palette();
+    gw->fp = fopen(path, "wb");
+    if (!gw->fp) return 0;
+    gw->w = w;
+    gw->h = h;
+    gw->n_frames = 0;
+    gif_write_header(gw->fp, w, h);
+    return 1;
+}
+
+static int gif_add_frame(GifWriter *gw, const unsigned char *rgba, int delay_cs) {
+    if (!gw->fp) return 0;
+    int w = gw->w, h = gw->h;
+
+    // Quantize RGBA to indexed
+    unsigned char *indexed = malloc(w * h);
+    if (!indexed) return 0;
+
+    for (int y = 0; y < h; y++) {
+        for (int x = 0; x < w; x++) {
+            int off = (y * w + x) * 4;
+            indexed[y * w + x] = gif_color_index(rgba[off + 2], rgba[off + 1], rgba[off]);
+        }
+    }
+
+    gif_write_gce(gw->fp, delay_cs);
+    gif_write_image(gw->fp, indexed, w, h);
+    free(indexed);
+    gw->n_frames++;
+    return 1;
+}
+
+static void gif_close(GifWriter *gw) {
+    if (gw->fp) {
+        gif_putc(gw->fp, 0x3B); // trailer
+        fclose(gw->fp);
+        gw->fp = NULL;
+    }
+}
+
+static void gif_frame_from_surface(cairo_surface_t *sfc, unsigned char *rgba_out) {
+    int w = cairo_image_surface_get_width(sfc);
+    int h = cairo_image_surface_get_height(sfc);
+    unsigned char *data = cairo_image_surface_get_data(sfc);
+    int stride = cairo_image_surface_get_stride(sfc);
+
+    for (int y = 0; y < h; y++) {
+        for (int x = 0; x < w; x++) {
+            uint32_t *pixel = (uint32_t *)(data + y * stride);
+            uint32_t argb = pixel[x];
+            int off = (y * w + x) * 4;
+            // Cairo uses premultiplied ARGB32 (host byte order, typically BGRA on little-endian)
+            // Convert to RGBA
+            rgba_out[off + 0] = (argb >> 16) & 0xFF; // R
+            rgba_out[off + 1] = (argb >> 8) & 0xFF;  // G
+            rgba_out[off + 2] = argb & 0xFF;          // B
+            rgba_out[off + 3] = (argb >> 24) & 0xFF;  // A
+        }
+    }
+}
+
+// ── GIF Export ─────────────────────────────────────────────────────────────────
+
+int slider_export_gif(Slider *s, const char *path, int w, int h) {
+    if (!s || s->n_slides <= 0) return -1;
+
+    // Parámetros de animación
+    int fps = 15;
+    int hold_frames = fps;           // 1 segundo por slide estático
+    int trans_ms = TRANSITION_DEFAULT_MS; // 300ms
+    int trans_frames = (int)(trans_ms / 1000.0 * fps + 0.5);
+    if (trans_frames < 1) trans_frames = 1;
+    int delay_cs = 100 / fps;        // delay por frame en centisegundos
+
+    // Crear surface temporal para renderizar frames
+    cairo_surface_t *sfc = cairo_image_surface_create(CAIRO_FORMAT_RGB24, w, h);
+    cairo_t *cr = cairo_create(sfc);
+
+    // Buffer para datos RGBA de cada frame
+    unsigned char *frame_rgba = malloc(w * h * 4);
+    if (!frame_rgba) { cairo_destroy(cr); cairo_surface_destroy(sfc); return -1; }
+
+    GifWriter gw;
+    if (!gif_open(&gw, path, w, h)) {
+        free(frame_rgba);
+        cairo_destroy(cr);
+        cairo_surface_destroy(sfc);
+        return -1;
+    }
+
+    for (int i = 0; i < s->n_slides; i++) {
+        if (i == 0) {
+            // Primer slide: solo hold frames (sin transición de entrada)
+            for (int f = 0; f < hold_frames; f++) {
+                set_color(cr, s->theme->bg_r, s->theme->bg_g, s->theme->bg_b);
+                cairo_paint(cr);
+                TransitionType saved = s->slides[i].transition;
+                s->slides[i].transition = TRANS_NONE;
+                slider_render(s, i, cr, w, h, (double)trans_ms + 1.0);
+                s->slides[i].transition = saved;
+                cairo_surface_flush(sfc);
+                gif_frame_from_surface(sfc, frame_rgba);
+                gif_add_frame(&gw, frame_rgba, delay_cs);
+            }
+        } else {
+            // Transición desde slide anterior
+            TransitionType trans = s->slides[i].transition;
+            if (trans == TRANS_NONE) {
+                // Sin transición: solo hold frames
+                for (int f = 0; f < hold_frames; f++) {
+                    set_color(cr, s->theme->bg_r, s->theme->bg_g, s->theme->bg_b);
+                    cairo_paint(cr);
+                    TransitionType saved = s->slides[i].transition;
+                    s->slides[i].transition = TRANS_NONE;
+                    slider_render(s, i, cr, w, h, (double)trans_ms + 1.0);
+                    s->slides[i].transition = saved;
+                    cairo_surface_flush(sfc);
+                    gif_frame_from_surface(sfc, frame_rgba);
+                    gif_add_frame(&gw, frame_rgba, delay_cs);
+                }
+            } else {
+                // Renderizar frames de transición
+                for (int f = 0; f < trans_frames; f++) {
+                    double t = (double)f / trans_frames * trans_ms;
+                    set_color(cr, s->theme->bg_r, s->theme->bg_g, s->theme->bg_b);
+                    cairo_paint(cr);
+                    s->transition_type = trans;
+                    s->transition_from = i - 1;
+                    slider_render(s, i, cr, w, h, t);
+                    cairo_surface_flush(sfc);
+                    gif_frame_from_surface(sfc, frame_rgba);
+                    gif_add_frame(&gw, frame_rgba, delay_cs);
+                }
+                // Hold frames después de la transición
+                for (int f = 0; f < hold_frames; f++) {
+                    set_color(cr, s->theme->bg_r, s->theme->bg_g, s->theme->bg_b);
+                    cairo_paint(cr);
+                    TransitionType saved = s->slides[i].transition;
+                    s->slides[i].transition = TRANS_NONE;
+                    slider_render(s, i, cr, w, h, (double)trans_ms + 1.0);
+                    s->slides[i].transition = saved;
+                    cairo_surface_flush(sfc);
+                    gif_frame_from_surface(sfc, frame_rgba);
+                    gif_add_frame(&gw, frame_rgba, delay_cs);
+                }
+            }
+        }
+    }
+
+    gif_close(&gw);
+    free(frame_rgba);
+    cairo_destroy(cr);
+    cairo_surface_destroy(sfc);
+
+    return (gw.n_frames > 0) ? 0 : -1;
+}
+
 int slider_export_svg(Slider *s, int index, const char *path, int w, int h) {
     if (!s || index < 0 || index >= s->n_slides) return -1;
 
