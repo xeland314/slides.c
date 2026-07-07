@@ -1,6 +1,6 @@
 # C-Slides
 
-Un presentador de diapositivas minimalista y de alto rendimiento escrito en **C** utilizando **Cairo** y **Pango**. Renderiza archivos Markdown directamente en pantalla con transiciones suaves, temas visuales y exportación a PNG/PDF.
+Un presentador de diapositivas minimalista y de alto rendimiento escrito en **C** utilizando **Cairo** y **Pango**. Renderiza archivos Markdown directamente en pantalla con transiciones suaves, temas visuales y exportación a PNG/PDF/SVG/GIF/JPG.
 
 ## Previsualización
 
@@ -89,10 +89,13 @@ scale: 1.2
 - Notificación en consola
 
 ### Exportación
-- `--export png` — Exporta diapositivas a PNG
-- `--export pdf` — Exporta todas a PDF
+- `--export png` — Exporta diapositivas a PNG (una por slide)
+- `--export pdf` — Exporta todas las slides a un solo PDF
+- `--export svg` — Exporta diapositivas a SVG (vectorial, una por slide)
+- `--export gif` — Exporta todas las slides como GIF animado
+- `--export jpg` / `--export jpeg` — Exporta diapositivas a JPEG (una por slide, calidad 90)
 - `--export-res WxH` — Resolución personalizada (defecto: 1080x1080)
-- `--slide N` — Seleccionar diapositiva específica
+- `--slide N` — Seleccionar diapositiva específica (0-index, para png/svg/jpg)
 
 ### Backends de ventana
 - **Win32** (Windows nativo) — GDI double-buffer, timer 60fps
@@ -133,6 +136,11 @@ Si usas Cygwin GCC, el Makefile muestra una advertencia.
 ./slides [opciones] presentacion.md
 ```
 
+En Linux, la documentación completa está disponible vía `man`:
+```bash
+man slides
+```
+
 ### Opciones
 
 | Flag | Descripción |
@@ -140,9 +148,9 @@ Si usas Cygwin GCC, el Makefile muestra una advertencia.
 | `-p, --palette <nombre>` | Elegir tema (dark, rose, monokai, nord, light, ...) |
 | `-f, --font-family <str>` | Tipografía (ej. 'Arial', 'JetBrains Mono') |
 | `-s, --font-scale <num>` | Factor de escala (ej. 1.2) |
-| `-e, --export <tipo>` | Exportar a 'pdf' o 'png' |
+| `-e, --export <tipo>` | Exportar a 'pdf', 'png', 'svg', 'gif' o 'jpg' |
 | `-er, --export-res <WxH>` | Resolución de exportación (ej. 1920x1080) |
-| `-sl, --slide <num>` | Slide específico para exportar (0-index) |
+| `-sl, --slide <num>` | Slide específico para exportar (0-index, para png/svg/jpg) |
 | `--bg <hex>` | Color de fondo personalizado |
 | `--title <hex>` | Color de títulos personalizado |
 | `--text <hex>` | Color de texto personalizado |
@@ -178,6 +186,10 @@ Ratón: clic izquierdo/rueda-arriba = anterior, clic derecho/rueda-abajo = sigui
 ./slides examples/transitions.md
 ./slides --palette dracula examples/frontmatter.md
 ./slides --export pdf --export-res 1920x1080 presentacion.md
+./slides --export gif presentacion.md
+./slides --export jpg --export-res 1920x1080 presentacion.md
+./slides --export svg --slide 0 presentacion.md
+./slides -e png -sl 2 presentacion.md     # exporta solo slide 3 como PNG
 ```
 
 ## Arquitectura
@@ -195,6 +207,8 @@ src/
   ui/
     backend_win32.c   Ventana Win32 (nativa)
     backend_x11.c     Ventana X11
+    help.c            Ayuda (--help / --version)
+    help.h
     main.c            CLI + punto de entrada
 ```
 
