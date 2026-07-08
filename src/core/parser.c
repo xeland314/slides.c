@@ -449,11 +449,37 @@ void slider_set_color(Slider *s, const char *key, const char *hex) {
         s->theme_storage.bg_r = r; s->theme_storage.bg_g = g; s->theme_storage.bg_b = b;
     } else if (strcmp(key, "title") == 0) {
         s->theme_storage.title_r = r; s->theme_storage.title_g = g; s->theme_storage.title_b = b;
+    } else if (strcmp(key, "sub") == 0 || strcmp(key, "subtitle") == 0) {
+        s->theme_storage.sub_r = r; s->theme_storage.sub_g = g; s->theme_storage.sub_b = b;
     } else if (strcmp(key, "body") == 0 || strcmp(key, "text") == 0) {
         s->theme_storage.body_r = r; s->theme_storage.body_g = g; s->theme_storage.body_b = b;
+    } else if (strcmp(key, "bullet") == 0) {
+        s->theme_storage.bullet_r = r; s->theme_storage.bullet_g = g; s->theme_storage.bullet_b = b;
     } else if (strcmp(key, "accent") == 0) {
         s->theme_storage.accent_r = r; s->theme_storage.accent_g = g; s->theme_storage.accent_b = b;
         s->theme_storage.bullet_r = r; s->theme_storage.bullet_g = g; s->theme_storage.bullet_b = b;
+    } else if (strcmp(key, "num") == 0 || strcmp(key, "number") == 0) {
+        s->theme_storage.num_r = r; s->theme_storage.num_g = g; s->theme_storage.num_b = b;
+    } else if (strcmp(key, "table-hdr") == 0) {
+        s->theme_storage.table_hdr_r = r; s->theme_storage.table_hdr_g = g; s->theme_storage.table_hdr_b = b;
+    } else if (strcmp(key, "table-row") == 0) {
+        s->theme_storage.table_row_r = r; s->theme_storage.table_row_g = g; s->theme_storage.table_row_b = b;
+    } else if (strcmp(key, "table-alt") == 0) {
+        s->theme_storage.table_alt_r = r; s->theme_storage.table_alt_g = g; s->theme_storage.table_alt_b = b;
+    } else if (strcmp(key, "table-bdr") == 0) {
+        s->theme_storage.table_bdr_r = r; s->theme_storage.table_bdr_g = g; s->theme_storage.table_bdr_b = b;
+    } else if (strcmp(key, "code-bg") == 0) {
+        s->theme_storage.code_bg_r = r; s->theme_storage.code_bg_g = g; s->theme_storage.code_bg_b = b;
+    } else if (strcmp(key, "code-txt") == 0) {
+        s->theme_storage.code_txt_r = r; s->theme_storage.code_txt_g = g; s->theme_storage.code_txt_b = b;
+    } else if (strcmp(key, "code-kw") == 0) {
+        s->theme_storage.code_kw_r = r; s->theme_storage.code_kw_g = g; s->theme_storage.code_kw_b = b;
+    } else if (strcmp(key, "code-com") == 0) {
+        s->theme_storage.code_com_r = r; s->theme_storage.code_com_g = g; s->theme_storage.code_com_b = b;
+    } else if (strcmp(key, "code-str") == 0) {
+        s->theme_storage.code_str_r = r; s->theme_storage.code_str_g = g; s->theme_storage.code_str_b = b;
+    } else if (strcmp(key, "code-sym") == 0) {
+        s->theme_storage.code_sym_r = r; s->theme_storage.code_sym_g = g; s->theme_storage.code_sym_b = b;
     }
 }
 

@@ -137,7 +137,11 @@ void slider_print_notes(Slider *s, int index);
 /**
  * @brief Overrides a single color in the current theme.
  * @param s The Slider object.
- * @param key Color key ("bg", "title", "body", "text", "accent").
+ * @param key Color key: "bg", "title", "sub"/"subtitle", "body"/"text",
+ *            "bullet", "accent", "num"/"number",
+ *            "table-hdr", "table-row", "table-alt", "table-bdr",
+ *            "code-bg", "code-txt", "code-kw", "code-com", "code-str",
+ *            "code-sym".
  * @param hex Hex color string (e.g., "#ff6b6b").
  */
 void slider_set_color(Slider *s, const char *key, const char *hex);

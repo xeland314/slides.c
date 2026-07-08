@@ -13,7 +13,10 @@ int main(int argc, char *argv[]) {
     const char *palette_name = NULL;
     const char *font_family = NULL;
     double font_scale = -1.0;
-    const char *color_bg = NULL, *color_title = NULL, *color_text = NULL, *color_accent = NULL;
+    const char *color_bg = NULL, *color_title = NULL, *color_sub = NULL, *color_text = NULL, *color_bullet = NULL;
+    const char *color_accent = NULL, *color_num = NULL;
+    const char *color_table_hdr = NULL, *color_table_row = NULL, *color_table_alt = NULL, *color_table_bdr = NULL;
+    const char *color_code_bg = NULL, *color_code_txt = NULL, *color_code_kw = NULL, *color_code_com = NULL, *color_code_str = NULL, *color_code_sym = NULL;
     int export_png = 0;
     int export_pdf = 0;
     int export_svg = 0;
@@ -56,10 +59,36 @@ int main(int argc, char *argv[]) {
             if (i + 1 < argc) color_bg = argv[++i];
         } else if (strcmp(argv[i], "--title") == 0) {
             if (i + 1 < argc) color_title = argv[++i];
-        } else if (strcmp(argv[i], "--text") == 0) {
+        } else if (strcmp(argv[i], "--sub") == 0 || strcmp(argv[i], "--subtitle") == 0) {
+            if (i + 1 < argc) color_sub = argv[++i];
+        } else if (strcmp(argv[i], "--text") == 0 || strcmp(argv[i], "--body") == 0) {
             if (i + 1 < argc) color_text = argv[++i];
+        } else if (strcmp(argv[i], "--bullet") == 0) {
+            if (i + 1 < argc) color_bullet = argv[++i];
         } else if (strcmp(argv[i], "--accent") == 0) {
             if (i + 1 < argc) color_accent = argv[++i];
+        } else if (strcmp(argv[i], "--num") == 0 || strcmp(argv[i], "--number") == 0) {
+            if (i + 1 < argc) color_num = argv[++i];
+        } else if (strcmp(argv[i], "--table-hdr") == 0) {
+            if (i + 1 < argc) color_table_hdr = argv[++i];
+        } else if (strcmp(argv[i], "--table-row") == 0) {
+            if (i + 1 < argc) color_table_row = argv[++i];
+        } else if (strcmp(argv[i], "--table-alt") == 0) {
+            if (i + 1 < argc) color_table_alt = argv[++i];
+        } else if (strcmp(argv[i], "--table-bdr") == 0) {
+            if (i + 1 < argc) color_table_bdr = argv[++i];
+        } else if (strcmp(argv[i], "--code-bg") == 0) {
+            if (i + 1 < argc) color_code_bg = argv[++i];
+        } else if (strcmp(argv[i], "--code-txt") == 0) {
+            if (i + 1 < argc) color_code_txt = argv[++i];
+        } else if (strcmp(argv[i], "--code-kw") == 0) {
+            if (i + 1 < argc) color_code_kw = argv[++i];
+        } else if (strcmp(argv[i], "--code-com") == 0) {
+            if (i + 1 < argc) color_code_com = argv[++i];
+        } else if (strcmp(argv[i], "--code-str") == 0) {
+            if (i + 1 < argc) color_code_str = argv[++i];
+        } else if (strcmp(argv[i], "--code-sym") == 0) {
+            if (i + 1 < argc) color_code_sym = argv[++i];
         } else if (strcmp(argv[i], "--version") == 0 || strcmp(argv[i], "-v") == 0) {
             print_version();
             return 0;
@@ -83,8 +112,21 @@ int main(int argc, char *argv[]) {
     if (font_scale > 0.1) s->font_scale = font_scale;
     if (color_bg) slider_set_color(s, "bg", color_bg);
     if (color_title) slider_set_color(s, "title", color_title);
+    if (color_sub) slider_set_color(s, "sub", color_sub);
     if (color_text) slider_set_color(s, "text", color_text);
+    if (color_bullet) slider_set_color(s, "bullet", color_bullet);
     if (color_accent) slider_set_color(s, "accent", color_accent);
+    if (color_num) slider_set_color(s, "num", color_num);
+    if (color_table_hdr) slider_set_color(s, "table-hdr", color_table_hdr);
+    if (color_table_row) slider_set_color(s, "table-row", color_table_row);
+    if (color_table_alt) slider_set_color(s, "table-alt", color_table_alt);
+    if (color_table_bdr) slider_set_color(s, "table-bdr", color_table_bdr);
+    if (color_code_bg) slider_set_color(s, "code-bg", color_code_bg);
+    if (color_code_txt) slider_set_color(s, "code-txt", color_code_txt);
+    if (color_code_kw) slider_set_color(s, "code-kw", color_code_kw);
+    if (color_code_com) slider_set_color(s, "code-com", color_code_com);
+    if (color_code_str) slider_set_color(s, "code-str", color_code_str);
+    if (color_code_sym) slider_set_color(s, "code-sym", color_code_sym);
 
     int n_slides = slider_get_count(s);
     fprintf(stderr, "[slides] %d slide(s) cargados desde %s (tema: %s, font: %s, scale: %.1f)\n", 
