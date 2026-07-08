@@ -177,7 +177,6 @@ man slides
 | `--kiosk <sec>` | Avance automático cada N segundos (bucle infinito) |
 | `--auto-advance <sec>` | Igual que --kiosk |
 | `--bullet <hex>` | Color de viñetas personalizado |
-| `--accent <hex>` | Color de acento (y viñetas si no se define --bullet) |
 | `--num <hex>` | Color del número de slide |
 | `--table-hdr <hex>` | Color de encabezado de tabla |
 | `--table-row <hex>` | Color de fila de tabla |
