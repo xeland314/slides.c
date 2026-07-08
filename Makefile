@@ -59,7 +59,7 @@ CFLAGS += $(PKG_CFLAGS)
 LIBS = $(PKG_LIBS) $(PLATFORM_LIBS)
 
 # Fuentes y Objetos
-CORE_COMMON_SRC = src/core/parser.c src/core/themes.c src/core/highlighter.c src/render/renderer.c src/core/lexer_c.c src/core/lexer_py.c
+CORE_COMMON_SRC = src/core/parser.c src/core/themes.c src/core/highlighter.c src/render/renderer.c src/render/render_util.c src/render/render_table.c src/render/render_code.c src/render/render_transition.c src/render/export_png.c src/render/export_jpg.c src/render/export_pdf.c src/render/export_gif.c src/render/export_svg.c src/core/lexer_c.c src/core/lexer_py.c
 CORE_SRC = $(CORE_COMMON_SRC) $(BACKEND_SRC)
 CORE_OBJ = $(CORE_SRC:.c=.o)
 
