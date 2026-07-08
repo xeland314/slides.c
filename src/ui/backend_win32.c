@@ -213,8 +213,6 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
                         new_s->theme = &new_s->theme_storage;
                         strncpy(new_s->font_family, g_slider->font_family, sizeof(new_s->font_family) - 1);
                         new_s->font_scale = g_slider->font_scale;
-                        new_s->kiosk_interval_ms = g_slider->kiosk_interval_ms;
-                        new_s->hide_num = g_slider->hide_num;
 
                         slider_free(g_slider);
                         g_slider = new_s;
@@ -230,20 +228,11 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
             }
         }
         if (g_slider) {
-            DWORD now = GetTickCount();
             // Redibujar durante animaciones GIF o transiciones activas
             int in_transition = (g_slider->transition_type != TRANS_NONE &&
-                now - g_slide_start_time < TRANSITION_DEFAULT_MS);
+                GetTickCount() - g_slide_start_time < TRANSITION_DEFAULT_MS);
             if (g_slider->slides[g_current_slide].has_anim || in_transition) {
                 InvalidateRect(hwnd, NULL, FALSE);
-            }
-            // Avance automático (modo kiosk)
-            if (g_slider->kiosk_interval_ms > 0 && !g_overview_active) {
-                if (now - g_slide_start_time >= (DWORD)g_slider->kiosk_interval_ms) {
-                    int next = g_current_slide + 1;
-                    if (next >= g_n_slides) next = 0;
-                    navigate_to(next, NULL, hwnd);
-                }
             }
         }
         return 0;

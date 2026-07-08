@@ -84,7 +84,6 @@ struct Slider {
     int transition_from;
     TransitionType transition_type;
     int hide_num;    // 1 = ocultar número de slide y barra de progreso
-    int kiosk_interval_ms; // 0 = desactivado, > 0 = avance automático cada N ms
 };
 
 // Cache de imágenes para no recargar en cada frame

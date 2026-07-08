@@ -75,6 +75,24 @@ Configuración incrustada al inicio del archivo:
 theme: dracula
 font: JetBrains Mono
 scale: 1.2
+colors:
+  bg: "#0f0f23"
+  title: "#ff6b6b"
+  sub: "#a9b1d6"
+  body: "#c0caf5"
+  bullet: "#7dcfff"
+  accent: "#7aa2f7"
+  num: "#565f89"
+  table-hdr: "#1a1b26"
+  table-row: "#24283b"
+  table-alt: "#1f2335"
+  table-bdr: "#3b4261"
+  code-bg: "#1a1b26"
+  code-txt: "#c0caf5"
+  code-kw: "#bb9af7"
+  code-com: "#565f89"
+  code-str: "#9ece6a"
+  code-sym: "#f7768e"
 ---
 ```
 
@@ -153,10 +171,24 @@ man slides
 | `-sl, --slide <num>` | Slide específico para exportar (0-index, para png/svg/jpg) |
 | `--bg <hex>` | Color de fondo personalizado |
 | `--title <hex>` | Color de títulos personalizado |
+| `--sub <hex>` | Color de subtítulos personalizado |
 | `--text <hex>` | Color de texto personalizado |
 | `--accent <hex>` | Color de acento personalizado |
 | `--kiosk <sec>` | Avance automático cada N segundos (bucle infinito) |
 | `--auto-advance <sec>` | Igual que --kiosk |
+| `--bullet <hex>` | Color de viñetas personalizado |
+| `--accent <hex>` | Color de acento (y viñetas si no se define --bullet) |
+| `--num <hex>` | Color del número de slide |
+| `--table-hdr <hex>` | Color de encabezado de tabla |
+| `--table-row <hex>` | Color de fila de tabla |
+| `--table-alt <hex>` | Color de fila alterna de tabla |
+| `--table-bdr <hex>` | Color de bordes de tabla |
+| `--code-bg <hex>` | Color de fondo de bloque de código |
+| `--code-txt <hex>` | Color de texto de código |
+| `--code-kw <hex>` | Color de palabras clave de código |
+| `--code-com <hex>` | Color de comentarios de código |
+| `--code-str <hex>` | Color de strings de código |
+| `--code-sym <hex>` | Color de símbolos de código |
 | `-v, --version` | Versión |
 | `-h, --help` | Ayuda |
 
@@ -177,6 +209,7 @@ Los argumentos CLI sobrescriben la configuración de frontmatter.
 | `Tab` | Vista general (mini-mapa de todas las slides) |
 | `→` `←` `↑` `↓` `Enter` | Navegar y seleccionar en vista general |
 | `Esc` | Salir / Cerrar vista general |
+| `N` | Mostrar/ocultar número de slide y barra de progreso |
 | `Q` | Salir |
 
 Ratón: clic izquierdo/rueda-arriba = anterior, clic derecho/rueda-abajo = siguiente.
@@ -194,6 +227,7 @@ Ratón: clic izquierdo/rueda-arriba = anterior, clic derecho/rueda-abajo = sigui
 ```bash
 ./slides examples/features.md
 ./slides examples/transitions.md
+./slides examples/custom_colors.md
 ./slides --palette dracula examples/frontmatter.md
 ./slides --export pdf --export-res 1920x1080 presentacion.md
 ./slides --export gif presentacion.md
@@ -213,7 +247,16 @@ src/
     highlighter.c     Resaltado de sintaxis genérico
     internal.h        Estructuras internas (Slide, Slider, Theme)
   render/
-    renderer.c        Motor Cairo/Pango + transiciones + GIF
+    renderer.c        Motor Cairo/Pango (solo slider_render)
+    render_util.c     Utilidades de render + caché de imágenes
+    render_table.c    Dibujado de tablas
+    render_code.c     Bloques de código con syntax highlighting
+    render_transition.c  Transiciones entre diapositivas
+    export_png.c      Exportación a PNG
+    export_jpg.c      Exportación a JPG
+    export_pdf.c      Exportación a PDF
+    export_gif.c      Exportación a GIF animado
+    export_svg.c      Exportación a SVG
   ui/
     backend_win32.c   Ventana Win32 (nativa)
     backend_x11.c     Ventana X11
