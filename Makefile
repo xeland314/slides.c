@@ -3,6 +3,9 @@ CFLAGS = -Wall -Wextra -fPIC
 AR = ar
 RM = rm -f
 
+PREFIX ?= /usr/local
+DESTDIR ?=
+
 # Detección de Sistema Operativo
 ifeq ($(OS),Windows_NT)
     PLATFORM_LIBS = -lgdi32 -luser32
