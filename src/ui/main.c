@@ -13,6 +13,7 @@ int main(int argc, char *argv[]) {
     const char *palette_name = NULL;
     const char *font_family = NULL;
     double font_scale = -1.0;
+    int kiosk_seconds = 0;
     const char *color_bg = NULL, *color_title = NULL, *color_sub = NULL, *color_text = NULL, *color_bullet = NULL;
     const char *color_accent = NULL, *color_num = NULL;
     const char *color_table_hdr = NULL, *color_table_row = NULL, *color_table_alt = NULL, *color_table_bdr = NULL;
@@ -67,6 +68,8 @@ int main(int argc, char *argv[]) {
             if (i + 1 < argc) color_bullet = argv[++i];
         } else if (strcmp(argv[i], "--accent") == 0) {
             if (i + 1 < argc) color_accent = argv[++i];
+        } else if (strcmp(argv[i], "--kiosk") == 0 || strcmp(argv[i], "--auto-advance") == 0) {
+            if (i + 1 < argc) kiosk_seconds = atoi(argv[++i]);
         } else if (strcmp(argv[i], "--num") == 0 || strcmp(argv[i], "--number") == 0) {
             if (i + 1 < argc) color_num = argv[++i];
         } else if (strcmp(argv[i], "--table-hdr") == 0) {
@@ -116,6 +119,7 @@ int main(int argc, char *argv[]) {
     if (color_text) slider_set_color(s, "text", color_text);
     if (color_bullet) slider_set_color(s, "bullet", color_bullet);
     if (color_accent) slider_set_color(s, "accent", color_accent);
+    if (kiosk_seconds > 0) s->kiosk_interval_ms = kiosk_seconds * 1000;
     if (color_num) slider_set_color(s, "num", color_num);
     if (color_table_hdr) slider_set_color(s, "table-hdr", color_table_hdr);
     if (color_table_row) slider_set_color(s, "table-row", color_table_row);
