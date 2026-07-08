@@ -761,13 +761,15 @@ void slider_render(Slider *s, int index, cairo_t *cr, int win_w, int win_h, doub
         default: i++; break;
         }
     }
-    char num_buf[32]; snprintf(num_buf, sizeof(num_buf), "%d / %d", index + 1, s->n_slides);
-    set_color(cr, s->theme->num_r, s->theme->num_g, s->theme->num_b);
-    pango_layout_set_width(lay_num, (int)(200.0 * s->font_scale * PANGO_SCALE)); pango_layout_set_alignment(lay_num, PANGO_ALIGN_RIGHT);
-    render_pango(cr, lay_num, num_buf, win_w - MARGIN_X - 200.0 * s->font_scale, win_h - 32.0 * s->font_scale);
-    double prog = (s->n_slides > 1) ? (double)index / (s->n_slides - 1) : 1.0;
-    set_color(cr, s->theme->bg_r * 1.5, s->theme->bg_g * 1.5, s->theme->bg_b * 1.5); cairo_rectangle(cr, 0, win_h - 4, win_w, 4); cairo_fill(cr);
-    set_color(cr, s->theme->accent_r, s->theme->accent_g, s->theme->accent_b); cairo_rectangle(cr, 0, win_h - 4, win_w * prog, 4); cairo_fill(cr);
+    if (!s->hide_num) {
+        char num_buf[32]; snprintf(num_buf, sizeof(num_buf), "%d / %d", index + 1, s->n_slides);
+        set_color(cr, s->theme->num_r, s->theme->num_g, s->theme->num_b);
+        pango_layout_set_width(lay_num, (int)(200.0 * s->font_scale * PANGO_SCALE)); pango_layout_set_alignment(lay_num, PANGO_ALIGN_RIGHT);
+        render_pango(cr, lay_num, num_buf, win_w - MARGIN_X - 200.0 * s->font_scale, win_h - 32.0 * s->font_scale);
+        double prog = (s->n_slides > 1) ? (double)index / (s->n_slides - 1) : 1.0;
+        set_color(cr, s->theme->bg_r * 1.5, s->theme->bg_g * 1.5, s->theme->bg_b * 1.5); cairo_rectangle(cr, 0, win_h - 4, win_w, 4); cairo_fill(cr);
+        set_color(cr, s->theme->accent_r, s->theme->accent_g, s->theme->accent_b); cairo_rectangle(cr, 0, win_h - 4, win_w * prog, 4); cairo_fill(cr);
+    }
     g_object_unref(lay_title); g_object_unref(lay_subtitle); g_object_unref(lay_body);
     g_object_unref(lay_bullet); g_object_unref(lay_bullet2); g_object_unref(lay_num);
     g_object_unref(lay_code);

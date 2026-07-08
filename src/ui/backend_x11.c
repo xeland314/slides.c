@@ -150,6 +150,9 @@ int backend_run(Slider *s) {
           current = n_slides - 1;
           dirty = 1;
           slide_start_time = get_time_ms();
+        } else if (ks == XK_n || ks == XK_N) {
+          s->hide_num = !s->hide_num;
+          dirty = 1;
         } else if (ks == XK_f || ks == XK_F11) {
           XEvent fev = {0};
           fev.type = ClientMessage;
