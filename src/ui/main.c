@@ -14,6 +14,7 @@ int main(int argc, char *argv[]) {
     const char *font_family = NULL;
     double font_scale = -1.0;
     const char *color_bg = NULL, *color_title = NULL, *color_text = NULL, *color_accent = NULL;
+    int kiosk_seconds = 0;
     int export_png = 0;
     int export_pdf = 0;
     int export_svg = 0;
@@ -60,6 +61,8 @@ int main(int argc, char *argv[]) {
             if (i + 1 < argc) color_text = argv[++i];
         } else if (strcmp(argv[i], "--accent") == 0) {
             if (i + 1 < argc) color_accent = argv[++i];
+        } else if (strcmp(argv[i], "--kiosk") == 0 || strcmp(argv[i], "--auto-advance") == 0) {
+            if (i + 1 < argc) kiosk_seconds = atoi(argv[++i]);
         } else if (strcmp(argv[i], "--version") == 0 || strcmp(argv[i], "-v") == 0) {
             print_version();
             return 0;
@@ -85,6 +88,7 @@ int main(int argc, char *argv[]) {
     if (color_title) slider_set_color(s, "title", color_title);
     if (color_text) slider_set_color(s, "text", color_text);
     if (color_accent) slider_set_color(s, "accent", color_accent);
+    if (kiosk_seconds > 0) s->kiosk_interval_ms = kiosk_seconds * 1000;
 
     int n_slides = slider_get_count(s);
     fprintf(stderr, "[slides] %d slide(s) cargados desde %s (tema: %s, font: %s, scale: %.1f)\n", 

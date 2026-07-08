@@ -15,6 +15,8 @@ void print_help(const char *prog) {
     printf("  --title <hex>           Title color (e.g. '#ff6b6b')\n");
     printf("  --text <hex>            Body text color (e.g. '#c0caf5')\n");
     printf("  --accent <hex>          Accent color (e.g. '#7aa2f7')\n");
+    printf("  --kiosk <sec>           Auto-advance every N seconds (infinite loop)\n");
+    printf("  --auto-advance <sec>    Same as --kiosk\n");
     printf("  -h, --help              Show this help\n");
     printf("  -v, --version           Show version\n");
 }

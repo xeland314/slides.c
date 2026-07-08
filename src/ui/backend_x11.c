@@ -253,6 +253,8 @@ int backend_run(Slider *s) {
             strncpy(new_s->font_family, s->font_family,
                     sizeof(new_s->font_family) - 1);
             new_s->font_scale = s->font_scale;
+            new_s->kiosk_interval_ms = s->kiosk_interval_ms;
+            new_s->hide_num = s->hide_num;
 
             // Liberar el anterior y apuntar al nuevo puntero
             slider_free(s);
@@ -273,6 +275,18 @@ int backend_run(Slider *s) {
     double elapsed = get_time_ms() - slide_start_time;
     if (s->slides[current].has_anim || elapsed < TRANSITION_DEFAULT_MS)
       dirty = 1;
+    // Avance automático (modo kiosk)
+    if (s->kiosk_interval_ms > 0 && !overview_active) {
+      if (elapsed >= (double)s->kiosk_interval_ms) {
+        int next = current + 1;
+        if (next >= n_slides) next = 0;
+        s->transition_from = current;
+        s->transition_type = s->slides[next].transition;
+        current = next;
+        slide_start_time = get_time_ms();
+        dirty = 1;
+      }
+    }
 
     if (dirty) {
       if (!overview_active && current != last_printed_slide) {

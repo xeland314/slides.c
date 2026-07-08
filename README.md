@@ -155,6 +155,8 @@ man slides
 | `--title <hex>` | Color de títulos personalizado |
 | `--text <hex>` | Color de texto personalizado |
 | `--accent <hex>` | Color de acento personalizado |
+| `--kiosk <sec>` | Avance automático cada N segundos (bucle infinito) |
+| `--auto-advance <sec>` | Igual que --kiosk |
 | `-v, --version` | Versión |
 | `-h, --help` | Ayuda |
 
@@ -178,6 +180,14 @@ Los argumentos CLI sobrescriben la configuración de frontmatter.
 | `Q` | Salir |
 
 Ratón: clic izquierdo/rueda-arriba = anterior, clic derecho/rueda-abajo = siguiente.
+
+### Modo kiosk
+`--kiosk N` avanza automáticamente a la siguiente diapositiva cada N segundos. Al llegar a la última, vuelve a la primera en bucle infinito. Ideal para vitrinas, displays públicos o ferias. La navegación manual resetea el contador.
+
+```bash
+./slides --kiosk 5 presentacion.md    # avanza cada 5s
+./slides --auto-advance 10 presentacion.md  # igual, cada 10s
+```
 
 ## Ejemplos
 
