@@ -83,6 +83,7 @@ struct Slider {
     // Transient transition state (set by backend before render)
     int transition_from;
     TransitionType transition_type;
+    int hide_num;    // 1 = ocultar número de slide y barra de progreso
 };
 
 // Cache de imágenes para no recargar en cada frame

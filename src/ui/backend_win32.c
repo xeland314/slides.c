@@ -356,6 +356,9 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
             toggle_fullscreen(hwnd);
             dirty = 1;
             break;
+        case 'N':
+            if (g_slider) { g_slider->hide_num = !g_slider->hide_num; dirty = 1; }
+            break;
         }
         break;
     case WM_SIZE:
