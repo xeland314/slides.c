@@ -165,15 +165,15 @@ void parse_line(const char *raw, SlideLine *out) {
 }
 
 static void img_config_reset(ImageConfig *cfg) {
+    cfg->opacity = 1.0;
+    cfg->rotate = 0.0;
     cfg->active = 0;
     cfg->fit = IMG_FIT_NONE;
     cfg->width = -1;
     cfg->height = -1;
-    cfg->width_is_pct = 0;
-    cfg->height_is_pct = 0;
-    cfg->opacity = 1.0;
+    cfg->width_unit = UNIT_UNSET;
+    cfg->height_unit = UNIT_UNSET;
     cfg->radius = 0;
-    cfg->rotate = 0.0;
     cfg->align = IMG_ALIGN_CENTER;
 }
 
@@ -219,22 +219,12 @@ static int parse_img_config(const char *raw, ImageConfig *cfg) {
             else if (strcmp(val, "fill") == 0) cfg->fit = IMG_FIT_FILL;
             cfg->active = 1;
         } else if (strcmp(key, "width") == 0) {
-            if (strchr(val, '%')) {
-                cfg->width = atoi(val);
-                cfg->width_is_pct = 1;
-            } else {
-                cfg->width = atoi(val);
-                cfg->width_is_pct = 0;
-            }
+            cfg->width = atoi(val);
+            cfg->width_unit = strchr(val, '%') ? UNIT_PCT : UNIT_PX;
             cfg->active = 1;
         } else if (strcmp(key, "height") == 0) {
-            if (strchr(val, '%')) {
-                cfg->height = atoi(val);
-                cfg->height_is_pct = 1;
-            } else {
-                cfg->height = atoi(val);
-                cfg->height_is_pct = 0;
-            }
+            cfg->height = atoi(val);
+            cfg->height_unit = strchr(val, '%') ? UNIT_PCT : UNIT_PX;
             cfg->active = 1;
         } else if (strcmp(key, "opacity") == 0) {
             if (strchr(val, '%')) {

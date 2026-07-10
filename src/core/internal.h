@@ -20,17 +20,23 @@ typedef enum {
     IMG_ALIGN_RIGHT,
 } ImgAlign;
 
+typedef enum {
+    UNIT_UNSET = 0,
+    UNIT_PX,
+    UNIT_PCT,
+} ImgUnit;
+
 typedef struct {
+    double  opacity;        // 1.0 = opaco
+    double  rotate;         // grados
     int     active;         // 1 si se aplicó directiva img:
-    int     fit;            // ImgFit
+    ImgFit  fit;
     int     width;          // -1 = no seteado; >0 = px absolutos
     int     height;         // -1 = no seteado
-    int     width_is_pct;   // 1 si width es porcentaje
-    int     height_is_pct;  // 1 si height es porcentaje
-    double  opacity;        // 1.0 = opaco
+    ImgUnit width_unit;     // UNIT_UNSET | UNIT_PX | UNIT_PCT
+    ImgUnit height_unit;
     int     radius;         // 0 = sin bordes redondeados
-    double  rotate;         // grados
-    int     align;          // ImgAlign
+    ImgAlign align;
 } ImageConfig;
 
 // ── Configuración ─────────────────────────────────────────────────────────────

@@ -239,9 +239,9 @@ void slider_render(Slider *s, int index, cairo_t *cr, int win_w, int win_h, doub
                         double scale = 1.0;
                         double cont_w = content_w;
                         if (cfg->active && cfg->width > 0)
-                            cont_w = cfg->width_is_pct ? content_w * cfg->width / 100.0 : (double)cfg->width;
+                            cont_w = cfg->width_unit == UNIT_PCT ? content_w * cfg->width / 100.0 : (double)cfg->width;
                         if (cfg->active && cfg->height > 0) {
-                            double th = cfg->height_is_pct ? avail_h * cfg->height / 100.0 : (double)cfg->height;
+                            double th = cfg->height_unit == UNIT_PCT ? avail_h * cfg->height / 100.0 : (double)cfg->height;
                             if (cfg->width > 0) { dw = cont_w; dh = th; }
                             else { scale = th / ih; dw = iw * scale; dh = th; }
                         } else if (cfg->active && cfg->width > 0) {
