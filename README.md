@@ -274,9 +274,9 @@ Ejecuta 21 tests unitarios y de integración (Python + ctypes sobre `slider.dll`
 
 El proyecto incluye bindings FFI funcionales en varios lenguajes:
 
-- **Ada** (`ada/`) — System.Address FFI, CLI completo
-- **Dart** (`dart/`) — dart:ffi + package:ffi
-- **Python** (`python/`) — ctypes + tests
-- **Zig** (`zig/`) — @cImport, Zig build system
-- **Lua** (`lua/`) — LuaJIT FFI
-- **Go** (`go/`) — cgo + flag package
+- **Ada** (`ports/ada/`) — System.Address FFI, CLI completo
+- **Dart** (`ports/dart/`) — dart:ffi + package:ffi
+- **Python** (`ports/python/`) — ctypes + tests
+- **Zig** (`ports/zig/`) — @cImport, Zig build system
+- **Lua** (`ports/lua/`) — LuaJIT FFI
+- **Go** (`ports/go/`) — cgo + flag package

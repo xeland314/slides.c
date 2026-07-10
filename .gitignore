@@ -6,8 +6,8 @@ run_tests_parser
 run_tests_markup
 libslider.so
 slides_ada
-dart/build/
-python/__pycache__/
+ports/dart/build/
+ports/python/__pycache__/
 slides.exe
 slider.dll
 libslider.a
@@ -17,7 +17,7 @@ dist/
 slides_go.exe
 .zig-cache/
 zig-out/
-zig/zig-cache/
+ports/zig/zig-cache/
 bin/
 slides-mingw-w64-x86_64.zip
 slides-linux-x86_64.zip

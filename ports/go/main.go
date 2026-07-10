@@ -1,9 +1,9 @@
 package main
 
 /*
-#cgo CFLAGS: -I..
-#cgo linux LDFLAGS: -L.. -lslider -lX11 -lpangocairo-1.0 -lpango-1.0 -lgobject-2.0 -lglib-2.0 -lharfbuzz -lcairo -lm
-#cgo windows LDFLAGS: -L.. -lslider -lgdi32 -luser32 -lpangocairo-1.0 -lpango-1.0 -lgobject-2.0 -lglib-2.0 -lharfbuzz -lcairo -lm
+#cgo CFLAGS: -I../..
+#cgo linux LDFLAGS: -L../.. -lslider -lX11 -lpangocairo-1.0 -lpango-1.0 -lgobject-2.0 -lglib-2.0 -lharfbuzz -lcairo -lm
+#cgo windows LDFLAGS: -L../.. -lslider -lgdi32 -luser32 -lpangocairo-1.0 -lpango-1.0 -lgobject-2.0 -lglib-2.0 -lharfbuzz -lcairo -lm
 #include "slider.h"
 #include "src/ui/backend.h"
 #include <stdlib.h>

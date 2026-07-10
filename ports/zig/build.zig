@@ -14,10 +14,10 @@ pub fn build(b: *std.Build) void {
     });
 
     // Directorios de inclusión (ajusta según tu estructura)
-    exe.addIncludePath(b.path(".."));
+    exe.addIncludePath(b.path("../.."));
 
     // Enlace con la librería core
-    exe.addLibraryPath(b.path(".."));
+    exe.addLibraryPath(b.path("../.."));
     exe.linkSystemLibrary("slider");
 
     // Enlace con dependencias de Cairo/Pango

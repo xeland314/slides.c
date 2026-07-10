@@ -22,6 +22,31 @@ class LineType:
     TASK_CHECKED = 14
     NUM_LIST = 15
 
+class ImgFit:
+    NONE = 0
+    COVER = 1
+    CONTAIN = 2
+    FILL = 3
+
+class ImgAlign:
+    CENTER = 0
+    LEFT = 1
+    RIGHT = 2
+
+class ImageConfig(ctypes.Structure):
+    _fields_ = [
+        ("active", ctypes.c_int),
+        ("fit", ctypes.c_int),
+        ("width", ctypes.c_int),
+        ("height", ctypes.c_int),
+        ("width_is_pct", ctypes.c_int),
+        ("height_is_pct", ctypes.c_int),
+        ("opacity", ctypes.c_double),
+        ("radius", ctypes.c_int),
+        ("rotate", ctypes.c_double),
+        ("align", ctypes.c_int),
+    ]
+
 class SlideLine(ctypes.Structure):
     _fields_ = [
         ("type", ctypes.c_int),
@@ -29,6 +54,7 @@ class SlideLine(ctypes.Structure):
         ("marker", ctypes.c_char * 16),
         ("cols", (ctypes.c_char * 256) * 16),
         ("ncols", ctypes.c_int),
+        ("img_cfg", ImageConfig),
     ]
 
 class Theme(ctypes.Structure):

@@ -28,8 +28,8 @@ String getLibraryPath() {
     libName = 'libslider.so';
   }
 
-  // Buscar en el directorio raíz (asumiendo que ejecutamos desde la carpeta dart/)
-  return File('../$libName').absolute.path;
+  // Buscar en el directorio raíz (asumiendo que ejecutamos desde ports/dart/)
+  return File('../../$libName').absolute.path;
 }
 
 void main(List<String> args) {

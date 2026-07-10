@@ -2,7 +2,7 @@ local ffi = require("ffi")
 
 -- 1. Detección de OS y carga de librería
 local is_windows = package.config:sub(1,1) == "\\"
-local lib_name = is_windows and "../slider.dll" or "../libslider.so"
+local lib_name = is_windows and "../../slider.dll" or "../../libslider.so"
 
 -- Se intenta cargar la librería
 local status, lib = pcall(ffi.load, lib_name)

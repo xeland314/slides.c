@@ -75,11 +75,11 @@ $(TARGET_DLL): $(CORE_OBJ)
 	$(CC) -shared -o $@ $(CORE_OBJ) $(LIBS)
 
 $(TARGET_ADA): $(CORE_OBJ)
-	gnatmake -aIada/ -D ada/ -o $@ ada/slides_main.adb -largs $(CORE_OBJ) $(LIBS)
+	gnatmake -Iports/ada/ -D ports/ada/ -o $@ ports/ada/slides_main.adb -largs $(CORE_OBJ) $(LIBS)
 
 # --- Tests (Python) ---
 test: $(TARGET_DLL)
-	python3 python/run_all_tests.py
+	python3 ports/python/run_all_tests.py
 
 # Regla para compilar archivos .l usando Flex automáticamente
 src/core/lexer_%.c: src/core/lexer_%.l
@@ -92,7 +92,7 @@ src/core/lexer_%.c: src/core/lexer_%.l
 clean:
 	$(RM) $(CORE_OBJ) $(MAIN_OBJ) $(TARGET_EXE) $(TARGET_ADA) $(TARGET_DLL)
 	$(RM) slides libslider.so slides_ada.exe
-	$(RM) ada/*.o ada/*.ali
+	$(RM) ports/ada/*.o ports/ada/*.ali
 	$(RM) src/core/lexer_c.c src/core/lexer_py.c
 
 install: $(TARGET_EXE)
