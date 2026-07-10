@@ -171,23 +171,12 @@ man slides
 | `-sl, --slide <num>` | Slide específico para exportar (0-index, para png/svg/jpg) |
 | `--kiosk <sec>` | Avance automático cada N segundos (bucle infinito) |
 | `--auto-advance <sec>` | Igual que --kiosk |
-| `--bg`, `--title`, `--sub`, `--text` … | 17 colores personalizables vía CLI (ver `docs/`) |
-| `--bullet <hex>` | Color de viñetas personalizado |
-| `--num <hex>` | Color del número de slide |
-| `--table-hdr <hex>` | Color de encabezado de tabla |
-| `--table-row <hex>` | Color de fila de tabla |
-| `--table-alt <hex>` | Color de fila alterna de tabla |
-| `--table-bdr <hex>` | Color de bordes de tabla |
-| `--code-bg <hex>` | Color de fondo de bloque de código |
-| `--code-txt <hex>` | Color de texto de código |
-| `--code-kw <hex>` | Color de palabras clave de código |
-| `--code-com <hex>` | Color de comentarios de código |
-| `--code-str <hex>` | Color de strings de código |
-| `--code-sym <hex>` | Color de símbolos de código |
+| `--bg`, `--title`, `--sub`, … | 17 colores vía CLI (ver [`docs/colors.md`](docs/colors.md)) |
 | `-v, --version` | Versión |
 | `-h, --help` | Ayuda |
 
-Los argumentos CLI sobrescriben la configuración de frontmatter.
+Los argumentos CLI sobrescriben la configuración de frontmatter. La lista completa
+de colores y su uso en frontmatter está en [`docs/colors.md`](docs/colors.md).
 
 ### Controles
 
