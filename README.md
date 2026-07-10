@@ -169,13 +169,9 @@ man slides
 | `-e, --export <tipo>` | Exportar a 'pdf', 'png', 'svg', 'gif' o 'jpg' |
 | `-er, --export-res <WxH>` | Resolución de exportación (ej. 1920x1080) |
 | `-sl, --slide <num>` | Slide específico para exportar (0-index, para png/svg/jpg) |
-| `--bg <hex>` | Color de fondo personalizado |
-| `--title <hex>` | Color de títulos personalizado |
-| `--sub <hex>` | Color de subtítulos personalizado |
-| `--text <hex>` | Color de texto personalizado |
-| `--accent <hex>` | Color de acento personalizado |
 | `--kiosk <sec>` | Avance automático cada N segundos (bucle infinito) |
 | `--auto-advance <sec>` | Igual que --kiosk |
+| `--bg`, `--title`, `--sub`, `--text` … | 17 colores personalizables vía CLI (ver `docs/`) |
 | `--bullet <hex>` | Color de viñetas personalizado |
 | `--num <hex>` | Color del número de slide |
 | `--table-hdr <hex>` | Color de encabezado de tabla |
@@ -217,9 +213,21 @@ Ratón: clic izquierdo/rueda-arriba = anterior, clic derecho/rueda-abajo = sigui
 `--kiosk N` avanza automáticamente a la siguiente diapositiva cada N segundos. Al llegar a la última, vuelve a la primera en bucle infinito. Ideal para vitrinas, displays públicos o ferias. La navegación manual resetea el contador.
 
 ```bash
-./slides --kiosk 5 presentacion.md    # avanza cada 5s
-./slides --auto-advance 10 presentacion.md  # igual, cada 10s
+./slides --kiosk 5 presentacion.md
+./slides --auto-advance 10 presentacion.md
 ```
+
+### Control de imágenes (`docs/images.md`)
+
+La directiva `<!-- img: clave=valor, ... -->` permite controlar fit, tamaño,
+opacidad, bordes redondeados, rotación y alineación de imágenes:
+
+```markdown
+<!-- img: fit=cover, opacity=0.5 -->
+![fondo](textura.png)
+```
+
+Ver la especificación completa en [`docs/images.md`](docs/images.md).
 
 ## Ejemplos
 
@@ -228,6 +236,7 @@ Ratón: clic izquierdo/rueda-arriba = anterior, clic derecho/rueda-abajo = sigui
 ./slides examples/transitions.md
 ./slides examples/custom_colors.md
 ./slides --palette dracula examples/frontmatter.md
+./slides examples/img_config.md
 ./slides --export pdf --export-res 1920x1080 presentacion.md
 ./slides --export gif presentacion.md
 ./slides --export jpg --export-res 1920x1080 presentacion.md
