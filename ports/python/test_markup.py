@@ -1,13 +1,15 @@
 import unittest
 import os
 import random
-import string
 from c_slides_bindings import CSlides
+
 
 class TestMarkup(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        lib_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "libslider.so"))
+        lib_path = os.path.abspath(
+            os.path.join(os.path.dirname(__file__), "../..", "libslider.so")
+        )
         cls.cs = CSlides(lib_path)
 
     def test_simple_bold(self):
@@ -38,33 +40,56 @@ class TestMarkup(unittest.TestCase):
         self.assertEqual(out, "<tt>**no bold**</tt>")
 
     def test_fuzzing_markup(self):
-        tokens = ["*", "**", "***", "_", "__", "___", "&", "<", ">", "`", " ", "abc", "123"]
-        
+        tokens = [
+            "*",
+            "**",
+            "***",
+            "_",
+            "__",
+            "___",
+            "&",
+            "<",
+            ">",
+            "`",
+            " ",
+            "abc",
+            "123",
+        ]
+
         for i in range(10000):
-            input_str = "".join(random.choice(tokens) for _ in range(random.randint(0, 20)))
+            input_str = "".join(
+                random.choice(tokens) for _ in range(random.randint(0, 20))
+            )
             output = self.cs.md_to_markup(input_str)
-            
+
             # Verificar tags válidos
             p = 0
             while p < len(output):
-                if output[p] == '<':
+                if output[p] == "<":
                     valid_tags = ["<b>", "<i>", "<tt>", "</b>", "</i>", "</tt>"]
                     found = False
                     for tag in valid_tags:
                         if output[p:].startswith(tag):
                             found = True
                             break
-                    self.assertTrue(found, f"Tag inválido generado en iteración {i}: {output[p:]} (Input: {input_str})")
-                
-                if output[p] == '&':
+                    self.assertTrue(
+                        found,
+                        f"Tag inválido generado en iteración {i}: {output[p:]} (Input: {input_str})",
+                    )
+
+                if output[p] == "&":
                     valid_escapes = ["&amp;", "&lt;", "&gt;"]
                     found = False
                     for esc in valid_escapes:
                         if output[p:].startswith(esc):
                             found = True
                             break
-                    self.assertTrue(found, f"Ampersand no escapado en iteración {i}: {output[p:]} (Input: {input_str})")
+                    self.assertTrue(
+                        found,
+                        f"Ampersand no escapado en iteración {i}: {output[p:]} (Input: {input_str})",
+                    )
                 p += 1
+
 
 if __name__ == "__main__":
     unittest.main()

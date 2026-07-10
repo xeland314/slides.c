@@ -65,25 +65,23 @@ class SlideLine(ctypes.Structure):
 class Theme(ctypes.Structure):
     _fields_ = [
         ("name", ctypes.c_char_p),
-        # Colores como dobles (bg, title, sub, body, bullet, accent, num, table_hdr, table_row, table_alt, table_bdr, code_bg, code_txt, code_kw, code_com, code_str, code_sym)
-        # Cada uno tiene 3 componentes (r, g, b)
-        ("bg_r", ctypes.c_double), ("bg_g", ctypes.c_double), ("bg_b", ctypes.c_double),
-        ("title_r", ctypes.c_double), ("title_g", ctypes.c_double), ("title_b", ctypes.c_double),
-        ("sub_r", ctypes.c_double), ("sub_g", ctypes.c_double), ("sub_b", ctypes.c_double),
-        ("body_r", ctypes.c_double), ("body_g", ctypes.c_double), ("body_b", ctypes.c_double),
-        ("bullet_r", ctypes.c_double), ("bullet_g", ctypes.c_double), ("bullet_b", ctypes.c_double),
-        ("accent_r", ctypes.c_double), ("accent_g", ctypes.c_double), ("accent_b", ctypes.c_double),
-        ("num_r", ctypes.c_double), ("num_g", ctypes.c_double), ("num_b", ctypes.c_double),
-        ("table_hdr_r", ctypes.c_double), ("table_hdr_g", ctypes.c_double), ("table_hdr_b", ctypes.c_double),
-        ("table_row_r", ctypes.c_double), ("table_row_g", ctypes.c_double), ("table_row_b", ctypes.c_double),
-        ("table_alt_r", ctypes.c_double), ("table_alt_g", ctypes.c_double), ("table_alt_b", ctypes.c_double),
-        ("table_bdr_r", ctypes.c_double), ("table_bdr_g", ctypes.c_double), ("table_bdr_b", ctypes.c_double),
-        ("code_bg_r", ctypes.c_double), ("code_bg_g", ctypes.c_double), ("code_bg_b", ctypes.c_double),
-        ("code_txt_r", ctypes.c_double), ("code_txt_g", ctypes.c_double), ("code_txt_b", ctypes.c_double),
-        ("code_kw_r", ctypes.c_double), ("code_kw_g", ctypes.c_double), ("code_kw_b", ctypes.c_double),
-        ("code_com_r", ctypes.c_double), ("code_com_g", ctypes.c_double), ("code_com_b", ctypes.c_double),
-        ("code_str_r", ctypes.c_double), ("code_str_g", ctypes.c_double), ("code_str_b", ctypes.c_double),
-        ("code_sym_r", ctypes.c_double), ("code_sym_g", ctypes.c_double), ("code_sym_b", ctypes.c_double),
+        ("bg", ctypes.c_uint32),
+        ("title", ctypes.c_uint32),
+        ("sub", ctypes.c_uint32),
+        ("body", ctypes.c_uint32),
+        ("bullet", ctypes.c_uint32),
+        ("accent", ctypes.c_uint32),
+        ("num", ctypes.c_uint32),
+        ("table_hdr", ctypes.c_uint32),
+        ("table_row", ctypes.c_uint32),
+        ("table_alt", ctypes.c_uint32),
+        ("table_bdr", ctypes.c_uint32),
+        ("code_bg", ctypes.c_uint32),
+        ("code_txt", ctypes.c_uint32),
+        ("code_kw", ctypes.c_uint32),
+        ("code_com", ctypes.c_uint32),
+        ("code_str", ctypes.c_uint32),
+        ("code_sym", ctypes.c_uint32),
     ]
 
 class CSlides:
@@ -166,9 +164,14 @@ class CSlides:
         self.lib.theme_default.argtypes = []
         self.lib.theme_default.restype = ctypes.POINTER(Theme)
 
-        # void highlighter_highlight(const char *line, const Theme *theme, char *out, size_t out_size)
+        # void highlighter_highlight(const char *line, const char *lang,
+        #                            const Theme *theme, char *out, size_t out_size)
         self.lib.highlighter_highlight.argtypes = [
-            ctypes.c_char_p, ctypes.POINTER(Theme), ctypes.c_char_p, ctypes.c_size_t
+            ctypes.c_char_p,
+            ctypes.c_char_p,
+            ctypes.POINTER(Theme),
+            ctypes.c_char_p,
+            ctypes.c_size_t,
         ]
         self.lib.highlighter_highlight.restype = None
 
@@ -221,7 +224,9 @@ class CSlides:
 
     def highlight(self, line, theme):
         out = ctypes.create_string_buffer(4096)
-        self.lib.highlighter_highlight(line.encode('utf-8'), theme, out, len(out))
+        self.lib.highlighter_highlight(
+            line.encode('utf-8'), None, theme, out, len(out)
+        )
         return out.value.decode('utf-8')
 
     def parse_line(self, line):

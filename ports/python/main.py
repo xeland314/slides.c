@@ -6,16 +6,9 @@ from c_slides_bindings import CSlides
 
 def setup_environment():
     """Configura las rutas de las DLLs y devuelve el path de la librería."""
-    if platform.system() == "Windows":
-        msys_path = r"C:\msys64\mingw64\bin"
-        if os.path.exists(msys_path):
-            os.add_dll_directory(msys_path)
-        else:
-            print(f"Advertencia: No se encontró MSYS2 en {msys_path}")
-
     ext = ".dll" if platform.system() == "Windows" else ".so"
     lib_name = f"slider{ext}"
-    return os.path.abspath(os.path.join(os.path.dirname(__file__), "..", lib_name))
+    return os.path.abspath(os.path.join(os.path.dirname(__file__), "../..", lib_name))
 
 def parse_arguments():
     """Define y parsea los argumentos de línea de comandos."""
@@ -68,9 +61,14 @@ def main():
         sys.exit(1)
 
     # Configuración de estilo
-    if args.palette: cslides.set_theme(slider, args.palette)
-    if args.font_family: cslides.set_font_family(slider, args.font_family)
-    if args.font_scale != 1: cslides.set_font_scale(slider, args.font_scale)
+    if args.palette:
+        cslides.set_theme(slider, args.palette)
+
+    if args.font_family:
+        cslides.set_font_family(slider, args.font_family)
+
+    if args.font_scale != 1:
+        cslides.set_font_scale(slider, args.font_scale)
 
     n_slides = cslides.get_count(slider)
     print(f"[slides-python] {n_slides} slide(s) cargados ({cslides.get_theme_name(slider)})")
