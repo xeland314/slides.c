@@ -39,11 +39,11 @@ double render_code_block(cairo_t *cr, PangoLayout *lay_code,
     double total_h = lines_h_sum + 20.0 * s->font_scale;
     if (total_h < 20.0 * s->font_scale) total_h = 20.0 * s->font_scale;
 
-    set_color(cr, s->theme->code_bg_r, s->theme->code_bg_g, s->theme->code_bg_b);
+    SET_COLOR(cr, s->theme->code_bg);
     cairo_rectangle(cr, x, y, max_w, total_h);
     cairo_fill(cr);
 
-    set_color(cr, s->theme->code_txt_r, s->theme->code_txt_g, s->theme->code_txt_b);
+    SET_COLOR(cr, s->theme->code_txt);
 
     double cur_y = y + 10.0 * s->font_scale;
     for (int i = 0; i < count; i++) {

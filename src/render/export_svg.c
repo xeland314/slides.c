@@ -13,7 +13,7 @@ int slider_export_svg(Slider *s, int index, const char *path, int w, int h) {
 
     cairo_t *cr = cairo_create(sfc);
 
-    set_color(cr, s->theme->bg_r, s->theme->bg_g, s->theme->bg_b);
+    SET_COLOR(cr, s->theme->bg);
     cairo_paint(cr);
 
     TransitionType saved = s->slides[index].transition;

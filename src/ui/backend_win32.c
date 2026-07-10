@@ -164,7 +164,7 @@ static void render_frame(HDC hdc, int w, int h) {
     cairo_t *cr = cairo_create(surface);
 
     const Theme *t = g_slider->theme;
-    cairo_set_source_rgb(cr, t->bg_r, t->bg_g, t->bg_b);
+    cairo_set_source_rgb(cr, COLOR_R(t->bg), COLOR_G(t->bg), COLOR_B(t->bg));
     cairo_paint(cr);
 
     cairo_save(cr);

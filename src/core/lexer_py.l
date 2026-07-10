@@ -30,14 +30,14 @@ STRING       "\""([^"\\\n]|\\.)*"\""|"'"([^'\\\n]|\\.)*"'"
 
 %%
 
-{KEYWORD}    { append_tagged_flex(py_text, current_theme->code_kw_r, current_theme->code_kw_g, current_theme->code_kw_b); }
-{COMMENT}    { append_tagged_flex(py_text, current_theme->code_com_r, current_theme->code_com_g, current_theme->code_com_b); }
-{STRING}     { append_tagged_flex(py_text, current_theme->code_str_r, current_theme->code_str_g, current_theme->code_str_b); }
-{NUM_HEX}|{NUM_BIN}|{NUM_OCT}|{NUM_INT} { append_tagged_flex(py_text, current_theme->code_sym_r, current_theme->code_sym_g, current_theme->code_sym_b); }
-{NUM_FLOAT}{PY_COM_SUF}?                { append_tagged_flex(py_text, current_theme->code_sym_r, current_theme->code_sym_g, current_theme->code_sym_b); }
+{KEYWORD}    { append_tagged_flex(py_text, current_theme->code_kw); }
+{COMMENT}    { append_tagged_flex(py_text, current_theme->code_com); }
+{STRING}     { append_tagged_flex(py_text, current_theme->code_str); }
+{NUM_HEX}|{NUM_BIN}|{NUM_OCT}|{NUM_INT} { append_tagged_flex(py_text, current_theme->code_sym); }
+{NUM_FLOAT}{PY_COM_SUF}?                { append_tagged_flex(py_text, current_theme->code_sym); }
 {IDENTIFIER} { append_str_flex(py_text); }
-[{}()\[\]]   { append_tagged_flex(py_text, current_theme->code_sym_r, current_theme->code_sym_g, current_theme->code_sym_b); }
-[-+*/%=<>!&|^~] { append_tagged_flex(py_text, current_theme->code_sym_r, current_theme->code_sym_g, current_theme->code_sym_b); }
+[{}()\[\]]   { append_tagged_flex(py_text, current_theme->code_sym); }
+[-+*/%=<>!&|^~] { append_tagged_flex(py_text, current_theme->code_sym); }
 .            { escape_append_flex(py_text[0]); }
 
 %%

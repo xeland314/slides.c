@@ -14,7 +14,7 @@ int slider_export_pdf(Slider *s, const char *path, int w, int h) {
     cairo_t *cr = cairo_create(sfc);
 
     for (int i = 0; i < s->n_slides; i++) {
-        set_color(cr, s->theme->bg_r, s->theme->bg_g, s->theme->bg_b);
+        SET_COLOR(cr, s->theme->bg);
         cairo_paint(cr);
 
         TransitionType saved = s->slides[i].transition;

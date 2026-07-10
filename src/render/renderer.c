@@ -56,26 +56,26 @@ void slider_render(Slider *s, int index, cairo_t *cr, int win_w, int win_h, doub
         switch (sl->type) {
         case LINE_EMPTY: y += 12.0 * s->font_scale; i++; break;
         case LINE_TITLE:
-            set_color(cr, s->theme->title_r, s->theme->title_g, s->theme->title_b);
+            SET_COLOR(cr, s->theme->title);
             y += render_pango(cr, lay_title, sl->text, MARGIN_X, y);
-            set_color(cr, s->theme->accent_r, s->theme->accent_g, s->theme->accent_b);
+            SET_COLOR(cr, s->theme->accent);
             cairo_set_line_width(cr, 2.5 * s->font_scale);
             cairo_move_to(cr, MARGIN_X, y + 8.0 * s->font_scale);
             cairo_line_to(cr, MARGIN_X + content_w, y + 8.0 * s->font_scale);
             cairo_stroke(cr);
             y += 22.0 * s->font_scale; i++; break;
         case LINE_SUBTITLE:
-            set_color(cr, s->theme->sub_r, s->theme->sub_g, s->theme->sub_b);
+            SET_COLOR(cr, s->theme->sub);
             y += render_pango(cr, lay_subtitle, sl->text, MARGIN_X, y);
             y += 14.0 * s->font_scale; i++; break;
         case LINE_BODY:
-            set_color(cr, s->theme->body_r, s->theme->body_g, s->theme->body_b);
+            SET_COLOR(cr, s->theme->body);
             y += render_pango(cr, lay_body, sl->text, MARGIN_X, y);
             y += 8.0 * s->font_scale; i++; break;
         case LINE_BLOCKQUOTE: {
             double b_x = MARGIN_X + 10.0 * s->font_scale;
             double t_x = b_x + 25.0 * s->font_scale;
-            set_color(cr, s->theme->accent_r, s->theme->accent_g, s->theme->accent_b);
+            SET_COLOR(cr, s->theme->accent);
             cairo_set_line_width(cr, 4.0 * s->font_scale);
             char markup[MAX_LINE_LEN * 4];
             md_to_markup(sl->text, markup, sizeof(markup));
@@ -85,7 +85,7 @@ void slider_render(Slider *s, int index, cairo_t *cr, int win_w, int win_h, doub
             cairo_move_to(cr, b_x, y);
             cairo_line_to(cr, b_x, y + (double)th);
             cairo_stroke(cr);
-            set_color(cr, s->theme->sub_r, s->theme->sub_g, s->theme->sub_b);
+            SET_COLOR(cr, s->theme->sub);
             cairo_move_to(cr, t_x, y);
             pango_cairo_show_layout(cr, lay_body);
             y += (double)th + 12.0 * s->font_scale;
@@ -103,11 +103,11 @@ void slider_render(Slider *s, int index, cairo_t *cr, int win_w, int win_h, doub
             double line_h = (double)logical_rect.height / PANGO_SCALE;
             double bullet_y = y + line_h / 2.0;
 
-            set_color(cr, s->theme->bullet_r, s->theme->bullet_g, s->theme->bullet_b);
+            SET_COLOR(cr, s->theme->bullet);
             cairo_arc(cr, MARGIN_X + 8.0 * s->font_scale, bullet_y, 4.0 * s->font_scale, 0, 2 * M_PI);
             cairo_fill(cr);
 
-            set_color(cr, s->theme->body_r, s->theme->body_g, s->theme->body_b);
+            SET_COLOR(cr, s->theme->body);
             int tw, th;
             pango_layout_get_pixel_size(lay_bullet, &tw, &th);
             cairo_move_to(cr, MARGIN_X + 22.0 * s->font_scale, y);
@@ -116,9 +116,9 @@ void slider_render(Slider *s, int index, cairo_t *cr, int win_w, int win_h, doub
             i++; break;
         }
         case LINE_NUM_LIST:
-            set_color(cr, s->theme->bullet_r, s->theme->bullet_g, s->theme->bullet_b);
+            SET_COLOR(cr, s->theme->bullet);
             render_pango(cr, lay_bullet, sl->marker, MARGIN_X + 2.0 * s->font_scale, y);
-            set_color(cr, s->theme->body_r, s->theme->body_g, s->theme->body_b);
+            SET_COLOR(cr, s->theme->body);
             y += render_pango(cr, lay_bullet, sl->text, MARGIN_X + 40.0 * s->font_scale, y) + 6.0 * s->font_scale;
             i++; break;
         case LINE_TASK_UNCHECKED:
@@ -138,7 +138,7 @@ void slider_render(Slider *s, int index, cairo_t *cr, int win_w, int win_h, doub
             double bx = MARGIN_X + 2.0 * s->font_scale;
             double by = center_y - sz / 2.0;
 
-            set_color(cr, s->theme->accent_r, s->theme->accent_g, s->theme->accent_b);
+            SET_COLOR(cr, s->theme->accent);
             cairo_set_line_width(cr, 1.5 * s->font_scale);
             cairo_rectangle(cr, bx, by, sz, sz);
             cairo_stroke(cr);
@@ -149,7 +149,7 @@ void slider_render(Slider *s, int index, cairo_t *cr, int win_w, int win_h, doub
                 cairo_stroke(cr);
             }
 
-            set_color(cr, s->theme->body_r, s->theme->body_g, s->theme->body_b);
+            SET_COLOR(cr, s->theme->body);
             int tw, th;
             pango_layout_get_pixel_size(lay_bullet, &tw, &th);
             cairo_move_to(cr, MARGIN_X + 30.0 * s->font_scale, y);
@@ -170,14 +170,14 @@ void slider_render(Slider *s, int index, cairo_t *cr, int win_w, int win_h, doub
             double bullet_y = y + line_h / 2.0;
 
             double bx = MARGIN_X + 38.0 * s->font_scale;
-            set_color(cr, s->theme->accent_r, s->theme->accent_g, s->theme->accent_b);
+            SET_COLOR(cr, s->theme->accent);
             cairo_move_to(cr, bx, bullet_y - 4.0 * s->font_scale);
             cairo_line_to(cr, bx + 4.0 * s->font_scale, bullet_y);
             cairo_line_to(cr, bx, bullet_y + 4.0 * s->font_scale);
             cairo_line_to(cr, bx - 4.0 * s->font_scale, bullet_y);
             cairo_close_path(cr); cairo_fill(cr);
 
-            set_color(cr, s->theme->body_r, s->theme->body_g, s->theme->body_b);
+            SET_COLOR(cr, s->theme->body);
             int tw, th;
             pango_layout_get_pixel_size(lay_bullet2, &tw, &th);
             cairo_move_to(cr, MARGIN_X + 52.0 * s->font_scale, y);
@@ -307,12 +307,12 @@ void slider_render(Slider *s, int index, cairo_t *cr, int win_w, int win_h, doub
     }
     if (!s->hide_num) {
         char num_buf[32]; snprintf(num_buf, sizeof(num_buf), "%d / %d", index + 1, s->n_slides);
-        set_color(cr, s->theme->num_r, s->theme->num_g, s->theme->num_b);
+        SET_COLOR(cr, s->theme->num);
         pango_layout_set_width(lay_num, (int)(200.0 * s->font_scale * PANGO_SCALE)); pango_layout_set_alignment(lay_num, PANGO_ALIGN_RIGHT);
         render_pango(cr, lay_num, num_buf, win_w - MARGIN_X - 200.0 * s->font_scale, win_h - 32.0 * s->font_scale);
         double prog = (s->n_slides > 1) ? (double)index / (s->n_slides - 1) : 1.0;
-        set_color(cr, s->theme->bg_r * 1.5, s->theme->bg_g * 1.5, s->theme->bg_b * 1.5); cairo_rectangle(cr, 0, win_h - 4, win_w, 4); cairo_fill(cr);
-        set_color(cr, s->theme->accent_r, s->theme->accent_g, s->theme->accent_b); cairo_rectangle(cr, 0, win_h - 4, win_w * prog, 4); cairo_fill(cr);
+        set_color(cr, COLOR_R(s->theme->bg)*1.5, COLOR_G(s->theme->bg)*1.5, COLOR_B(s->theme->bg)*1.5); cairo_rectangle(cr, 0, win_h - 4, win_w, 4); cairo_fill(cr);
+        SET_COLOR(cr, s->theme->accent); cairo_rectangle(cr, 0, win_h - 4, win_w * prog, 4); cairo_fill(cr);
     }
     g_object_unref(lay_title); g_object_unref(lay_subtitle); g_object_unref(lay_body);
     g_object_unref(lay_bullet); g_object_unref(lay_bullet2); g_object_unref(lay_num);

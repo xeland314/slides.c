@@ -294,7 +294,7 @@ int backend_run(Slider *s) {
         last_printed_slide = current;
       }
       double now = get_time_ms() - slide_start_time;
-      cairo_set_source_rgb(cr, s->theme->bg_r, s->theme->bg_g, s->theme->bg_b);
+      cairo_set_source_rgb(cr, COLOR_R(s->theme->bg), COLOR_G(s->theme->bg), COLOR_B(s->theme->bg));
       cairo_paint(cr);
 
       if (overview_active) {

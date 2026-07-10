@@ -1,4 +1,5 @@
 #include "render_transition.h"
+#include "render_util.h"
 #include "../../slider.h"
 
 void do_transition(Slider *s, int from_idx, int to_idx, cairo_t *cr,
@@ -24,9 +25,9 @@ void do_transition(Slider *s, int from_idx, int to_idx, cairo_t *cr,
     cairo_t *cr_from = cairo_create(sfc_from);
     cairo_t *cr_to = cairo_create(sfc_to);
 
-    cairo_set_source_rgb(cr_from, s->theme->bg_r, s->theme->bg_g, s->theme->bg_b);
+    SET_COLOR(cr_from, s->theme->bg);
     cairo_paint(cr_from);
-    cairo_set_source_rgb(cr_to, s->theme->bg_r, s->theme->bg_g, s->theme->bg_b);
+    SET_COLOR(cr_to, s->theme->bg);
     cairo_paint(cr_to);
 
     TransitionType saved_tt = s->transition_type;

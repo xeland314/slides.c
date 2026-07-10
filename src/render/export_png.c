@@ -8,7 +8,7 @@ int slider_export_png(Slider *s, int index, const char *path, int w, int h) {
     cairo_surface_t *sfc = cairo_image_surface_create(CAIRO_FORMAT_RGB24, w, h);
     cairo_t *cr = cairo_create(sfc);
 
-    set_color(cr, s->theme->bg_r, s->theme->bg_g, s->theme->bg_b);
+    SET_COLOR(cr, s->theme->bg);
     cairo_paint(cr);
 
     TransitionType saved = s->slides[index].transition;

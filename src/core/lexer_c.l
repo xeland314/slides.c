@@ -34,15 +34,15 @@ COMMENT      "//".*
 
 %%
 
-{KEYWORD}    { append_tagged_flex(c_text, current_theme->code_kw_r, current_theme->code_kw_g, current_theme->code_kw_b); }
-{PREPROC}    { append_tagged_flex(c_text, current_theme->code_kw_r, current_theme->code_kw_g, current_theme->code_kw_b); }
-{COMMENT}    { append_tagged_flex(c_text, current_theme->code_com_r, current_theme->code_com_g, current_theme->code_com_b); }
-{STRING}     { append_tagged_flex(c_text, current_theme->code_str_r, current_theme->code_str_g, current_theme->code_str_b); }
-({NUM_HEX}|{NUM_BIN}|{NUM_OCT}|{NUM_INT}){C_INT_SUF}? { append_tagged_flex(c_text, current_theme->code_sym_r, current_theme->code_sym_g, current_theme->code_sym_b); }
-{NUM_FLOAT}{C_FLT_SUF}?                               { append_tagged_flex(c_text, current_theme->code_sym_r, current_theme->code_sym_g, current_theme->code_sym_b); }
+{KEYWORD}    { append_tagged_flex(c_text, current_theme->code_kw); }
+{PREPROC}    { append_tagged_flex(c_text, current_theme->code_kw); }
+{COMMENT}    { append_tagged_flex(c_text, current_theme->code_com); }
+{STRING}     { append_tagged_flex(c_text, current_theme->code_str); }
+({NUM_HEX}|{NUM_BIN}|{NUM_OCT}|{NUM_INT}){C_INT_SUF}? { append_tagged_flex(c_text, current_theme->code_sym); }
+{NUM_FLOAT}{C_FLT_SUF}?                               { append_tagged_flex(c_text, current_theme->code_sym); }
 {IDENTIFIER} { append_str_flex(c_text); }
-[{}()\[\]]   { append_tagged_flex(c_text, current_theme->code_sym_r, current_theme->code_sym_g, current_theme->code_sym_b); }
-[-+*/%=<>!&|^~] { append_tagged_flex(c_text, current_theme->code_sym_r, current_theme->code_sym_g, current_theme->code_sym_b); }
+[{}()\[\]]   { append_tagged_flex(c_text, current_theme->code_sym); }
+[-+*/%=<>!&|^~] { append_tagged_flex(c_text, current_theme->code_sym); }
 .            { escape_append_flex(c_text[0]); }
 
 %%

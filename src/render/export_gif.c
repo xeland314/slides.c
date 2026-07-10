@@ -53,7 +53,7 @@ int slider_export_gif(Slider *s, const char *path, int w, int h) {
     for (int i = 0; i < s->n_slides; i++) {
         if (i == 0) {
             for (int f = 0; f < hold_frames; f++) {
-                set_color(cr, s->theme->bg_r, s->theme->bg_g, s->theme->bg_b);
+                SET_COLOR(cr, s->theme->bg);
                 cairo_paint(cr);
                 TransitionType saved = s->slides[i].transition;
                 s->slides[i].transition = TRANS_NONE;
@@ -67,7 +67,7 @@ int slider_export_gif(Slider *s, const char *path, int w, int h) {
             TransitionType trans = s->slides[i].transition;
             if (trans == TRANS_NONE) {
                 for (int f = 0; f < hold_frames; f++) {
-                    set_color(cr, s->theme->bg_r, s->theme->bg_g, s->theme->bg_b);
+                    SET_COLOR(cr, s->theme->bg);
                     cairo_paint(cr);
                     TransitionType saved = s->slides[i].transition;
                     s->slides[i].transition = TRANS_NONE;
@@ -80,7 +80,7 @@ int slider_export_gif(Slider *s, const char *path, int w, int h) {
             } else {
                 for (int f = 0; f < trans_frames; f++) {
                     double t = (double)f / trans_frames * trans_ms;
-                    set_color(cr, s->theme->bg_r, s->theme->bg_g, s->theme->bg_b);
+                    SET_COLOR(cr, s->theme->bg);
                     cairo_paint(cr);
                     s->transition_type = trans;
                     s->transition_from = i - 1;
@@ -90,7 +90,7 @@ int slider_export_gif(Slider *s, const char *path, int w, int h) {
                     msf_gif_frame(&gs, frame_rgba, delay_cs, 16, 0);
                 }
                 for (int f = 0; f < hold_frames; f++) {
-                    set_color(cr, s->theme->bg_r, s->theme->bg_g, s->theme->bg_b);
+                    SET_COLOR(cr, s->theme->bg);
                     cairo_paint(cr);
                     TransitionType saved = s->slides[i].transition;
                     s->slides[i].transition = TRANS_NONE;

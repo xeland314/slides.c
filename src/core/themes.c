@@ -5,254 +5,144 @@
 // ── Dark (Pure / Neutral) ───────────────────────────────────────────────────
 static const Theme THEME_DARK = {
     .name = "dark",
-    .bg_r = 0.02, .bg_g = 0.02, .bg_b = 0.02,
-    .title_r = 1.00, .title_g = 1.00, .title_b = 1.00,
-    .sub_r   = 0.60, .sub_g   = 0.60, .sub_b   = 0.60,
-    .body_r  = 0.90, .body_g  = 0.90, .body_b  = 0.90,
-    .bullet_r = 1.00, .bullet_g = 1.00, .bullet_b = 1.00,
-    .accent_r = 0.50, .accent_g = 0.50, .accent_b = 0.50,
-    .num_r    = 0.40, .num_g    = 0.40, .num_b    = 0.40,
-    .table_hdr_r = 0.15, .table_hdr_g = 0.15, .table_hdr_b = 0.15,
-    .table_row_r = 0.05, .table_row_g = 0.05, .table_row_b = 0.05,
-    .table_alt_r = 0.10, .table_alt_g = 0.10, .table_alt_b = 0.10,
-    .table_bdr_r = 0.30, .table_bdr_g = 0.30, .table_bdr_b = 0.30,
-    // Code
-    .code_bg_r = 0.00, .code_bg_g = 0.00, .code_bg_b = 0.00,
-    .code_txt_r = 0.95, .code_txt_g = 0.95, .code_txt_b = 0.95,
-    .code_kw_r = 1.00, .code_kw_g = 1.00, .code_kw_b = 1.00,
-    .code_com_r = 0.40, .code_com_g = 0.40, .code_com_b = 0.40,
-    .code_str_r = 0.80, .code_str_g = 0.80, .code_str_b = 0.80,
-    .code_sym_r = 0.90, .code_sym_g = 0.90, .code_sym_b = 0.90
+    .bg        = HEX(0x050505),  .title = HEX(0xffffff),  .sub   = HEX(0x999999),
+    .body      = HEX(0xe6e6e6),  .bullet = HEX(0xffffff), .accent = HEX(0x808080),
+    .num       = HEX(0x666666),
+    .table_hdr = HEX(0x262626),  .table_row = HEX(0x0d0d0d),
+    .table_alt = HEX(0x1a1a1a),  .table_bdr = HEX(0x4d4d4d),
+    .code_bg   = HEX(0x000000),  .code_txt = HEX(0xf2f2f2),
+    .code_kw   = HEX(0xffffff),  .code_com = HEX(0x666666),
+    .code_str  = HEX(0xcccccc),  .code_sym = HEX(0xe6e6e6)
 };
 
 // ── Rose (Vino/Rosa) ─────────────────────────────────────────────────────────
 static const Theme THEME_ROSE = {
     .name = "rose",
-    .bg_r = 0.15, .bg_g = 0.05, .bg_b = 0.08,
-    .title_r = 1.00, .title_g = 0.85, .title_b = 0.90,
-    .sub_r   = 0.90, .sub_g   = 0.60, .sub_b   = 0.70,
-    .body_r  = 0.95, .body_g  = 0.90, .body_b  = 0.92,
-    .bullet_r = 1.00, .bullet_g = 0.40, .bullet_b = 0.60,
-    .accent_r = 1.00, .accent_g = 0.30, .accent_b = 0.50,
-    .num_r    = 0.70, .num_g    = 0.50, .num_b    = 0.55,
-    .table_hdr_r = 0.30, .table_hdr_g = 0.10, .table_hdr_b = 0.15,
-    .table_row_r = 0.20, .table_row_g = 0.08, .table_row_b = 0.10,
-    .table_alt_r = 0.25, .table_alt_g = 0.10, .table_alt_b = 0.12,
-    .table_bdr_r = 0.40, .table_bdr_g = 0.20, .table_bdr_b = 0.25,
-    // Code
-    .code_bg_r = 0.10, .code_bg_g = 0.03, .code_bg_b = 0.05,
-    .code_txt_r = 0.95, .code_txt_g = 0.85, .code_txt_b = 0.88,
-    .code_kw_r = 1.00, .code_kw_g = 0.40, .code_kw_b = 0.60,
-    .code_com_r = 0.50, .code_com_g = 0.40, .code_com_b = 0.42,
-    .code_str_r = 1.00, .code_str_g = 0.70, .code_str_b = 0.20,
-    .code_sym_r = 0.95, .code_sym_g = 0.80, .code_sym_b = 0.85
+    .bg        = HEX(0x260d14),  .title = HEX(0xffd9e6),  .sub   = HEX(0xe699b2),
+    .body      = HEX(0xf2e5eb),  .bullet = HEX(0xff6699), .accent = HEX(0xff4d80),
+    .num       = HEX(0xb2808c),
+    .table_hdr = HEX(0x4d1a26),  .table_row = HEX(0x331419),
+    .table_alt = HEX(0x401a1e),  .table_bdr = HEX(0x663340),
+    .code_bg   = HEX(0x1a080d),  .code_txt = HEX(0xf2d9e0),
+    .code_kw   = HEX(0xff6699),  .code_com = HEX(0x80666b),
+    .code_str  = HEX(0xffb233),  .code_sym = HEX(0xf2ccd9)
 };
 
 // ── Monokai (Vibrante) ────────────────────────────────────────────────────────
 static const Theme THEME_MONOKAI = {
     .name = "monokai",
-    .bg_r = 0.15, .bg_g = 0.16, .bg_b = 0.13,
-    .title_r = 0.98, .title_g = 0.15, .title_b = 0.45, // Pink
-    .sub_r   = 0.65, .sub_g   = 0.89, .sub_b   = 0.18, // Green
-    .body_r  = 0.97, .body_g  = 0.97, .body_b  = 0.95, // Whiteish
-    .bullet_r = 0.68, .bullet_g = 0.50, .bullet_b = 1.00, // Purple
-    .accent_r = 0.40, .accent_g = 0.85, .accent_b = 0.94, // Blue
-    .num_r    = 0.46, .num_g    = 0.46, .num_b    = 0.43,
-    .table_hdr_r = 0.25, .table_hdr_g = 0.26, .table_hdr_b = 0.23,
-    .table_row_r = 0.18, .table_row_g = 0.19, .table_row_b = 0.16,
-    .table_alt_r = 0.22, .table_alt_g = 0.23, .table_alt_b = 0.20,
-    .table_bdr_r = 0.36, .table_bdr_g = 0.36, .table_bdr_b = 0.33,
-    // Code
-    .code_bg_r = 0.08, .code_bg_g = 0.09, .code_bg_b = 0.07,
-    .code_txt_r = 0.97, .code_txt_g = 0.97, .code_txt_b = 0.95,
-    .code_kw_r = 0.98, .code_kw_g = 0.15, .code_kw_b = 0.45,
-    .code_com_r = 0.46, .code_com_g = 0.46, .code_com_b = 0.43,
-    .code_str_r = 0.90, .code_str_g = 0.86, .code_str_b = 0.45,
-    .code_sym_r = 0.65, .code_sym_g = 0.89, .code_sym_b = 0.18
+    .bg        = HEX(0x262921),  .title = HEX(0xfa2673),  .sub   = HEX(0xa6e32e),
+    .body      = HEX(0xf7f7f2),  .bullet = HEX(0xad80ff), .accent = HEX(0x66d9f0),
+    .num       = HEX(0x75756e),
+    .table_hdr = HEX(0x40423b),  .table_row = HEX(0x2e3029),
+    .table_alt = HEX(0x383b33),  .table_bdr = HEX(0x5c5c54),
+    .code_bg   = HEX(0x141712),  .code_txt = HEX(0xf7f7f2),
+    .code_kw   = HEX(0xfa2673),  .code_com = HEX(0x75756e),
+    .code_str  = HEX(0xe6db73),  .code_sym = HEX(0xa6e32e)
 };
 
 // ── Nord (Ártico) ─────────────────────────────────────────────────────────────
 static const Theme THEME_NORD = {
     .name = "nord",
-    .bg_r = 0.18, .bg_g = 0.20, .bg_b = 0.25,
-    .title_r = 0.53, .title_g = 0.75, .title_b = 0.82,
-    .sub_r   = 0.51, .sub_g   = 0.63, .sub_b   = 0.76,
-    .body_r  = 0.93, .body_g  = 0.94, .body_b  = 0.96,
-    .bullet_r = 0.56, .bullet_g = 0.73, .bullet_b = 0.54, // Aurora Green
-    .accent_r = 0.75, .accent_g = 0.38, .accent_b = 0.42, // Aurora Red
-    .num_r    = 0.30, .num_g    = 0.34, .num_b    = 0.42,
-    .table_hdr_r = 0.23, .table_hdr_g = 0.26, .table_hdr_b = 0.32,
-    .table_row_r = 0.18, .table_row_g = 0.20, .table_row_b = 0.25,
-    .table_alt_r = 0.21, .table_alt_g = 0.23, .table_alt_b = 0.29,
-    .table_bdr_r = 0.30, .table_bdr_g = 0.34, .table_bdr_b = 0.42,
-    // Code
-    .code_bg_r = 0.15, .code_bg_g = 0.17, .code_bg_b = 0.22,
-    .code_txt_r = 0.85, .code_txt_g = 0.88, .code_txt_b = 0.93,
-    .code_kw_r = 0.51, .code_kw_g = 0.63, .code_kw_b = 0.76,
-    .code_com_r = 0.30, .code_com_g = 0.34, .code_com_b = 0.42,
-    .code_str_r = 0.64, .code_str_g = 0.75, .code_str_b = 0.55,
-    .code_sym_r = 0.93, .code_sym_g = 0.94, .code_sym_b = 0.96
+    .bg        = HEX(0x2e3340),  .title = HEX(0x87bfd1),  .sub   = HEX(0x82a1c2),
+    .body      = HEX(0xedeff5),  .bullet = HEX(0x8fba8a), .accent = HEX(0xbf616b),
+    .num       = HEX(0x4c576b),
+    .table_hdr = HEX(0x3b4352),  .table_row = HEX(0x2e3340),
+    .table_alt = HEX(0x363b4a),  .table_bdr = HEX(0x4c576b),
+    .code_bg   = HEX(0x262b38),  .code_txt = HEX(0xd9e0ed),
+    .code_kw   = HEX(0x82a1c2),  .code_com = HEX(0x4c576b),
+    .code_str  = HEX(0xa3bf8c),  .code_sym = HEX(0xedeff5)
 };
 
 // ── Light (Papel) ─────────────────────────────────────────────────────────────
 static const Theme THEME_LIGHT = {
     .name = "light",
-    .bg_r = 0.96, .bg_g = 0.96, .bg_b = 0.96,
-    .title_r = 0.13, .title_g = 0.13, .title_b = 0.13,
-    .sub_r   = 0.33, .sub_g   = 0.33, .sub_b   = 0.33,
-    .body_r  = 0.20, .body_g  = 0.20, .body_b  = 0.20,
-    .bullet_r = 0.00, .bullet_g = 0.48, .bullet_b = 0.80,
-    .accent_r = 0.00, .accent_g = 0.48, .accent_b = 0.80,
-    .num_r    = 0.60, .num_g    = 0.60, .num_b    = 0.60,
-    .table_hdr_r = 0.85, .table_hdr_g = 0.85, .table_hdr_b = 0.85,
-    .table_row_r = 0.96, .table_row_g = 0.96, .table_row_b = 0.96,
-    .table_alt_r = 0.92, .table_alt_g = 0.92, .table_alt_b = 0.92,
-    .table_bdr_r = 0.80, .table_bdr_g = 0.80, .table_bdr_b = 0.80,
-    // Code
-    .code_bg_r = 0.90, .code_bg_g = 0.90, .code_bg_b = 0.90,
-    .code_txt_r = 0.20, .code_txt_g = 0.20, .code_txt_b = 0.20,
-    .code_kw_r = 0.00, .code_kw_g = 0.48, .code_kw_b = 0.80,
-    .code_com_r = 0.50, .code_com_g = 0.50, .code_com_b = 0.50,
-    .code_str_r = 0.30, .code_str_g = 0.60, .code_str_b = 0.30,
-    .code_sym_r = 0.20, .code_sym_g = 0.20, .code_sym_b = 0.20
+    .bg        = HEX(0xf5f5f5),  .title = HEX(0x212121),  .sub   = HEX(0x545454),
+    .body      = HEX(0x333333),  .bullet = HEX(0x007acc), .accent = HEX(0x007acc),
+    .num       = HEX(0x999999),
+    .table_hdr = HEX(0xd9d9d9),  .table_row = HEX(0xf5f5f5),
+    .table_alt = HEX(0xebebeb),  .table_bdr = HEX(0xcccccc),
+    .code_bg   = HEX(0xe6e6e6),  .code_txt = HEX(0x333333),
+    .code_kw   = HEX(0x007acc),  .code_com = HEX(0x808080),
+    .code_str  = HEX(0x4d994d),  .code_sym = HEX(0x333333)
 };
 
 // ── Blue (Specialized Technical) ─────────────────────────────────────────────
 static const Theme THEME_BLUE = {
     .name = "blue",
-    .bg_r = 0.06, .bg_g = 0.09, .bg_b = 0.16, // #0f172a (Deep Slate)
-    .title_r = 1.00, .title_g = 1.00, .title_b = 1.00, // #ffffff
-    .sub_r   = 0.22, .sub_g   = 0.74, .sub_b   = 0.97, // #38bdf8 (Sky)
-    .body_r  = 0.95, .body_g  = 0.96, .body_b  = 0.98, // #f1f5f9
-    .bullet_r = 0.06, .bullet_g = 0.73, .bullet_b = 0.51, // #10b981 (Emerald)
-    .accent_r = 0.23, .accent_g = 0.51, .accent_b = 0.96, // #3b82f6 (Blue)
-    .num_r    = 0.66, .num_g    = 0.33, .num_b    = 0.97, // #a855f7 (Purple)
-    .table_hdr_r = 0.10, .table_hdr_g = 0.18, .table_hdr_b = 0.35,
-    .table_row_r = 0.08, .table_row_g = 0.12, .table_row_b = 0.22,
-    .table_alt_r = 0.12, .table_alt_g = 0.16, .table_alt_b = 0.28,
-    .table_bdr_r = 0.22, .table_bdr_g = 0.74, .table_bdr_b = 0.97, // Sky border
-    // Code
-    .code_bg_r = 0.04, .code_bg_g = 0.06, .code_bg_b = 0.11,
-    .code_txt_r = 0.95, .code_txt_g = 0.96, .code_txt_b = 0.98,
-    .code_kw_r = 0.66, .code_kw_g = 0.33, .code_kw_b = 0.97, // Purple
-    .code_com_r = 0.40, .code_com_g = 0.45, .code_com_b = 0.55,
-    .code_str_r = 0.06, .code_str_g = 0.73, .code_str_b = 0.51, // Emerald
-    .code_sym_r = 0.93, .code_sym_g = 0.45, .code_sym_b = 0.60  // Pinkish #ec4899
+    .bg        = HEX(0x0f172a),  .title = HEX(0xffffff),  .sub   = HEX(0x38bdf8),
+    .body      = HEX(0xf1f5f9),  .bullet = HEX(0x10b981), .accent = HEX(0x3b82f6),
+    .num       = HEX(0xa855f7),
+    .table_hdr = HEX(0x1a2e59),  .table_row = HEX(0x141f38),
+    .table_alt = HEX(0x1f2947),  .table_bdr = HEX(0x38bdf8),
+    .code_bg   = HEX(0x0a101c),  .code_txt = HEX(0xf1f5f9),
+    .code_kw   = HEX(0xa855f7),  .code_com = HEX(0x66738c),
+    .code_str  = HEX(0x10b981),  .code_sym = HEX(0xec4899)
 };
 
 // ── Ambercat (Warm Technical) ──────────────────────────────────────────────
 static const Theme THEME_AMBERCAT = {
     .name = "ambercat",
-    .bg_r = 0.28, .bg_g = 0.19, .bg_b = 0.15, // #483025 (Dark)
-    .title_r = 0.98, .title_g = 0.90, .title_b = 0.78, // #f9e6c6 (Light)
-    .sub_r   = 0.95, .sub_g   = 0.64, .sub_b   = 0.29, // #f1a449 (Vibrant)
-    .body_r  = 0.93, .body_g  = 0.78, .body_b  = 0.60, // #edc699 (Muted)
-    .bullet_r = 0.78, .bullet_g = 0.40, .bullet_b = 0.14, // #c66624 (Deep)
-    .accent_r = 0.78, .accent_g = 0.40, .accent_b = 0.14, // #c66624
-    .num_r    = 0.78, .num_g    = 0.40, .num_b    = 0.14,
-    .table_hdr_r = 0.35, .table_hdr_g = 0.25, .table_hdr_b = 0.20,
-    .table_row_r = 0.28, .table_row_g = 0.19, .table_row_b = 0.15,
-    .table_alt_r = 0.32, .table_alt_g = 0.22, .table_alt_b = 0.18,
-    .table_bdr_r = 0.78, .table_bdr_g = 0.40, .table_bdr_b = 0.14,
-    // Code
-    .code_bg_r = 0.18, .code_bg_g = 0.12, .code_bg_b = 0.10,
-    .code_txt_r = 0.93, .code_txt_g = 0.78, .code_txt_b = 0.60,
-    .code_kw_r = 0.95, .code_kw_g = 0.64, .code_kw_b = 0.29,
-    .code_com_r = 0.50, .code_com_g = 0.40, .code_com_b = 0.35,
-    .code_str_r = 0.98, .code_str_g = 0.90, .code_str_b = 0.78,
-    .code_sym_r = 0.78, .code_sym_g = 0.40, .code_sym_b = 0.14
+    .bg        = HEX(0x483025),  .title = HEX(0xf9e6c6),  .sub   = HEX(0xf1a449),
+    .body      = HEX(0xedc699),  .bullet = HEX(0xc66624), .accent = HEX(0xc66624),
+    .num       = HEX(0xc66624),
+    .table_hdr = HEX(0x594033),  .table_row = HEX(0x483025),
+    .table_alt = HEX(0x52382e),  .table_bdr = HEX(0xc66624),
+    .code_bg   = HEX(0x2e1f1a),  .code_txt = HEX(0xedc699),
+    .code_kw   = HEX(0xf1a449),  .code_com = HEX(0x80665a),
+    .code_str  = HEX(0xf9e6c6),  .code_sym = HEX(0xc66624)
 };
 
 // ── Dracula (Vibrant Vampire) ────────────────────────────────────────────────
 static const Theme THEME_DRACULA = {
     .name = "dracula",
-    .bg_r = 0.16, .bg_g = 0.17, .bg_b = 0.24, // #282a36
-    .title_r = 0.97, .title_g = 0.97, .title_b = 0.95, // #f8f8f2
-    .sub_r   = 0.74, .sub_g   = 0.58, .sub_b   = 0.95, // #bd93f9
-    .body_r  = 0.97, .body_g  = 0.97, .body_b  = 0.95, // #f8f8f2
-    .bullet_r = 1.00, .bullet_g = 0.48, .bullet_b = 0.73, // #ff79c6
-    .accent_r = 0.31, .accent_g = 0.98, .accent_b = 0.48, // #50fa7b
-    .num_r    = 0.55, .num_g    = 0.55, .num_b    = 0.55,
-    .table_hdr_r = 0.27, .table_hdr_g = 0.28, .table_hdr_b = 0.37,
-    .table_row_r = 0.16, .table_row_g = 0.17, .table_row_b = 0.24,
-    .table_alt_r = 0.20, .table_alt_g = 0.21, .table_alt_b = 0.28,
-    .table_bdr_r = 0.38, .table_bdr_g = 0.39, .table_bdr_b = 0.48,
-    // Code
-    .code_bg_r = 0.13, .code_bg_g = 0.14, .code_bg_b = 0.19,
-    .code_txt_r = 0.97, .code_txt_g = 0.97, .code_txt_b = 0.95,
-    .code_kw_r = 1.00, .code_kw_g = 0.48, .code_kw_b = 0.73, // Pink
-    .code_com_r = 0.38, .code_com_g = 0.41, .code_com_b = 0.54, // Comment
-    .code_str_r = 0.95, .code_str_g = 0.99, .code_str_b = 0.54, // Yellow
-    .code_sym_r = 0.55, .code_sym_g = 0.90, .code_sym_b = 1.00  // Cyan
+    .bg        = HEX(0x282a36),  .title = HEX(0xf8f8f2),  .sub   = HEX(0xbd93f9),
+    .body      = HEX(0xf8f8f2),  .bullet = HEX(0xff79c6), .accent = HEX(0x50fa7b),
+    .num       = HEX(0x8c8c8c),
+    .table_hdr = HEX(0x45475e),  .table_row = HEX(0x282a36),
+    .table_alt = HEX(0x333547),  .table_bdr = HEX(0x61637a),
+    .code_bg   = HEX(0x212330),  .code_txt = HEX(0xf8f8f2),
+    .code_kw   = HEX(0xff79c6),  .code_com = HEX(0x6272a4),
+    .code_str  = HEX(0xf1fa8c),  .code_sym = HEX(0x8be9fd)
 };
 
 // ── Gruvbox (Retro Groove) ───────────────────────────────────────────────────
 static const Theme THEME_GRUVBOX = {
     .name = "gruvbox",
-    .bg_r = 0.16, .bg_g = 0.16, .bg_b = 0.16, // #282828
-    .title_r = 0.92, .title_g = 0.86, .title_b = 0.70, // #ebdbb2
-    .sub_r   = 0.84, .sub_g   = 0.36, .sub_b   = 0.05, // #d65d0e
-    .body_r  = 0.74, .body_g  = 0.70, .body_b  = 0.60, // #bdae93
-    .bullet_r = 0.60, .bullet_g = 0.59, .bullet_b = 0.10, // #98971a
-    .accent_r = 0.27, .accent_g = 0.52, .accent_b = 0.53, // #458588
-    .num_r    = 0.55, .num_g    = 0.48, .num_b    = 0.35,
-    .table_hdr_r = 0.24, .table_hdr_g = 0.24, .table_hdr_b = 0.24,
-    .table_row_r = 0.16, .table_row_g = 0.16, .table_row_b = 0.16,
-    .table_alt_r = 0.20, .table_alt_g = 0.20, .table_alt_b = 0.20,
-    .table_bdr_r = 0.31, .table_bdr_g = 0.30, .table_bdr_b = 0.26,
-    // Code
-    .code_bg_r = 0.11, .code_bg_g = 0.11, .code_bg_b = 0.11,
-    .code_txt_r = 0.92, .code_txt_g = 0.86, .code_txt_b = 0.70,
-    .code_kw_r = 0.98, .code_kw_g = 0.29, .code_kw_b = 0.20, // Red
-    .code_com_r = 0.57, .code_com_g = 0.51, .code_com_b = 0.45,
-    .code_str_r = 0.72, .code_str_g = 0.73, .code_str_b = 0.15, // Green
-    .code_sym_r = 0.83, .code_sym_g = 0.77, .code_sym_b = 0.22  // Yellow
+    .bg        = HEX(0x282828),  .title = HEX(0xebdbb2),  .sub   = HEX(0xd65d0e),
+    .body      = HEX(0xbdae93),  .bullet = HEX(0x98971a), .accent = HEX(0x458588),
+    .num       = HEX(0x8c7a59),
+    .table_hdr = HEX(0x3d3d3d),  .table_row = HEX(0x282828),
+    .table_alt = HEX(0x333333),  .table_bdr = HEX(0x4f4d42),
+    .code_bg   = HEX(0x1c1c1c),  .code_txt = HEX(0xebdbb2),
+    .code_kw   = HEX(0xfa4a33),  .code_com = HEX(0x928273),
+    .code_str  = HEX(0xb8ba26),  .code_sym = HEX(0xd4c438)
 };
 
 // ── Catppuccin (Soothing Pastel) ─────────────────────────────────────────────
 static const Theme THEME_CATPPUCCIN = {
     .name = "catppuccin",
-    .bg_r = 0.11, .bg_g = 0.11, .bg_b = 0.18, // #1e1e2e (Mocha)
-    .title_r = 0.80, .title_g = 0.84, .title_b = 0.96, // #cdd6f4
-    .sub_r   = 0.76, .sub_g   = 0.79, .sub_b   = 0.94, // #bac2de
-    .body_r  = 0.66, .body_g  = 0.70, .body_b  = 0.83, // #a6adc8
-    .bullet_r = 0.96, .bullet_g = 0.71, .bullet_b = 0.89, // #f5c2e7
-    .accent_r = 0.54, .accent_g = 0.91, .accent_b = 0.95, // #89dceb
-    .num_r    = 0.35, .num_g    = 0.36, .num_b    = 0.48,
-    .table_hdr_r = 0.19, .table_hdr_g = 0.20, .table_hdr_b = 0.30,
-    .table_row_r = 0.11, .table_row_g = 0.11, .table_row_b = 0.18,
-    .table_alt_r = 0.15, .table_alt_g = 0.15, .table_alt_b = 0.24,
-    .table_bdr_r = 0.25, .table_bdr_g = 0.27, .table_bdr_b = 0.38,
-    // Code
-    .code_bg_r = 0.07, .code_bg_g = 0.07, .code_bg_b = 0.13,
-    .code_txt_r = 0.80, .code_txt_g = 0.84, .code_txt_b = 0.96,
-    .code_kw_r = 0.80, .code_kw_g = 0.71, .code_kw_b = 0.98, // Mauve
-    .code_com_r = 0.42, .code_com_g = 0.44, .code_com_b = 0.53,
-    .code_str_r = 0.65, .code_str_g = 0.89, .code_str_b = 0.63, // Green
-    .code_sym_r = 0.98, .code_sym_g = 0.80, .code_sym_b = 0.69  // Peach
+    .bg        = HEX(0x1e1e2e),  .title = HEX(0xcdd6f4),  .sub   = HEX(0xbac2de),
+    .body      = HEX(0xa6adc8),  .bullet = HEX(0xf5c2e7), .accent = HEX(0x89dceb),
+    .num       = HEX(0x595c7a),
+    .table_hdr = HEX(0x31334d),  .table_row = HEX(0x1e1e2e),
+    .table_alt = HEX(0x26263d),  .table_bdr = HEX(0x404561),
+    .code_bg   = HEX(0x121221),  .code_txt = HEX(0xcdd6f4),
+    .code_kw   = HEX(0xccb5fa),  .code_com = HEX(0x6c7087),
+    .code_str  = HEX(0xa6e3a1),  .code_sym = HEX(0xfab387)
 };
 
 // ── Tokyo Night (Cyberpunk Night) ────────────────────────────────────────────
 static const Theme THEME_TOKYO_NIGHT = {
     .name = "tokyo-night",
-    .bg_r = 0.09, .bg_g = 0.10, .bg_b = 0.14, // #1a1b26
-    .title_r = 0.65, .title_g = 0.74, .title_b = 1.00, // #a9b1d6
-    .sub_r   = 0.47, .sub_g   = 0.54, .sub_b   = 0.78, // #787c99
-    .body_r  = 0.77, .body_g  = 0.82, .body_b  = 0.95, // #c0caf5
-    .bullet_r = 0.99, .bullet_g = 0.45, .bullet_b = 0.64, // #ff007c
-    .accent_r = 0.48, .accent_g = 0.89, .accent_b = 1.00, // #7dcfff
-    .num_r    = 0.34, .num_g    = 0.36, .num_b    = 0.50,
-    .table_hdr_r = 0.14, .table_hdr_g = 0.15, .table_hdr_b = 0.21,
-    .table_row_r = 0.09, .table_row_g = 0.10, .table_row_b = 0.14,
-    .table_alt_r = 0.11, .table_alt_g = 0.13, .table_alt_b = 0.18,
-    .table_bdr_r = 0.22, .table_bdr_g = 0.24, .table_bdr_b = 0.34,
-    // Code
-    .code_bg_r = 0.06, .code_bg_g = 0.07, .code_bg_b = 0.11,
-    .code_txt_r = 0.77, .code_txt_g = 0.82, .code_txt_b = 0.95,
-    .code_kw_r = 0.73, .code_kw_g = 0.58, .code_kw_b = 1.00, // #bb9af7
-    .code_com_r = 0.34, .code_com_g = 0.36, .code_com_b = 0.48,
-    .code_str_r = 0.60, .code_str_g = 0.84, .code_str_b = 0.47, // #9ece6a
-    .code_sym_r = 1.00, .code_sym_g = 0.62, .code_sym_b = 0.41  // #ff9e64
+    .bg        = HEX(0x1a1b26),  .title = HEX(0xa9b1d6),  .sub   = HEX(0x787c99),
+    .body      = HEX(0xc0caf5),  .bullet = HEX(0xff007c), .accent = HEX(0x7dcfff),
+    .num       = HEX(0x575c80),
+    .table_hdr = HEX(0x242635),  .table_row = HEX(0x1a1b26),
+    .table_alt = HEX(0x1e212e),  .table_bdr = HEX(0x383d57),
+    .code_bg   = HEX(0x10121c),  .code_txt = HEX(0xc0caf5),
+    .code_kw   = HEX(0xbb9af7),  .code_com = HEX(0x575c7a),
+    .code_str  = HEX(0x9ece6a),  .code_sym = HEX(0xff9e64)
 };
 
 static const Theme* ALL_THEMES[] = { 

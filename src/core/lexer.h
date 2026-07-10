@@ -42,10 +42,9 @@ static void append_str_flex(const char *s) {
 }
 
 // Append a token wrapped in a Pango color tag
-static void append_tagged_flex(const char *text, double r, double g, double b) {
+static void append_tagged_flex(const char *text, uint32_t color) {
   char tag[64];
-  snprintf(tag, sizeof(tag), "<span foreground='#%02x%02x%02x'>",
-           (int)(r * 255), (int)(g * 255), (int)(b * 255));
+  snprintf(tag, sizeof(tag), "<span foreground='#%06x'>", color & 0xffffff);
 
   size_t l = strlen(tag);
   if (out_idx + l < out_max - 1) {
