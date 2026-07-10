@@ -210,10 +210,10 @@ void slider_render(Slider *s, int index, cairo_t *cr, int win_w, int win_h, doub
                     int iw = cairo_image_surface_get_width(img_sfc);
                     int ih = cairo_image_surface_get_height(img_sfc);
                     double avail_h = win_h - y - MARGIN_Y - 40.0 * s->font_scale;
-                    const ImageConfig *cfg = &sl->img_cfg;
+                    const ImageConfig *cfg = sl->img_cfg;
                     double dw = (double)iw, dh = (double)ih, ox;
 
-                    if (cfg->active && cfg->fit == IMG_FIT_COVER) {
+                    if (cfg && cfg->active && cfg->fit == IMG_FIT_COVER) {
                         double sx = content_w / (double)iw;
                         double sy = avail_h / (double)ih;
                         double scale = (sx > sy) ? sx : sy;
@@ -227,7 +227,7 @@ void slider_render(Slider *s, int index, cairo_t *cr, int win_w, int win_h, doub
                         cairo_set_source_surface(cr, img_sfc, 0, 0);
                         cairo_paint_with_alpha(cr, cfg->opacity);
                         cairo_restore(cr);
-                    } else if (cfg->active && cfg->fit == IMG_FIT_FILL) {
+                    } else if (cfg && cfg->active && cfg->fit == IMG_FIT_FILL) {
                         dw = content_w; dh = avail_h;
                         cairo_save(cr);
                         cairo_translate(cr, MARGIN_X, y);
@@ -238,13 +238,13 @@ void slider_render(Slider *s, int index, cairo_t *cr, int win_w, int win_h, doub
                     } else {
                         double scale = 1.0;
                         double cont_w = content_w;
-                        if (cfg->active && cfg->width > 0)
+                        if (cfg && cfg->active && cfg->width > 0)
                             cont_w = cfg->width_unit == UNIT_PCT ? content_w * cfg->width / 100.0 : (double)cfg->width;
-                        if (cfg->active && cfg->height > 0) {
+                        if (cfg && cfg->active && cfg->height > 0) {
                             double th = cfg->height_unit == UNIT_PCT ? avail_h * cfg->height / 100.0 : (double)cfg->height;
                             if (cfg->width > 0) { dw = cont_w; dh = th; }
                             else { scale = th / ih; dw = iw * scale; dh = th; }
-                        } else if (cfg->active && cfg->width > 0) {
+                        } else if (cfg && cfg->active && cfg->width > 0) {
                             scale = cont_w / iw; dw = cont_w; dh = ih * scale;
                         } else {
                             if (iw > cont_w) scale = cont_w / iw;
@@ -252,14 +252,14 @@ void slider_render(Slider *s, int index, cairo_t *cr, int win_w, int win_h, doub
                             dw = iw * scale; dh = ih * scale;
                         }
                         ox = MARGIN_X;
-                        if (cfg->active && cfg->align == IMG_ALIGN_RIGHT) ox = MARGIN_X + content_w - dw;
-                        else if (!cfg->active || cfg->align == IMG_ALIGN_CENTER) ox = MARGIN_X + (content_w - dw) / 2.0;
+                        if (cfg && cfg->active && cfg->align == IMG_ALIGN_RIGHT) ox = MARGIN_X + content_w - dw;
+                        else if (!cfg || !cfg->active || cfg->align == IMG_ALIGN_CENTER) ox = MARGIN_X + (content_w - dw) / 2.0;
 
                         cairo_save(cr);
                         cairo_translate(cr, ox + dw/2.0, y + dh/2.0);
-                        if (cfg->active && cfg->rotate != 0.0) cairo_rotate(cr, cfg->rotate * G_PI / 180.0);
+                        if (cfg && cfg->active && cfg->rotate != 0.0) cairo_rotate(cr, cfg->rotate * G_PI / 180.0);
                         cairo_translate(cr, -dw/2.0, -dh/2.0);
-                        if (cfg->active && cfg->radius > 0) {
+                        if (cfg && cfg->active && cfg->radius > 0) {
                             double r = cfg->radius;
                             cairo_new_sub_path(cr);
                             cairo_arc(cr, dw - r, r, r, -G_PI_2, 0);
@@ -271,7 +271,7 @@ void slider_render(Slider *s, int index, cairo_t *cr, int win_w, int win_h, doub
                         }
                         cairo_scale(cr, scale, scale);
                         cairo_set_source_surface(cr, img_sfc, 0, 0);
-                        if (cfg->active && cfg->opacity < 1.0)
+                        if (cfg && cfg->active && cfg->opacity < 1.0)
                             cairo_paint_with_alpha(cr, cfg->opacity);
                         else
                             cairo_paint(cr);

@@ -61,7 +61,8 @@ void parse_line(const char *raw, SlideLine *out) {
     while (p >= buf && (*p == '\r' || *p == '\n')) *p-- = '\0';
 
     out->ncols = 0;
-    memset(out->cols, 0, sizeof(out->cols));
+    out->cols = NULL;
+    out->img_cfg = NULL;
 
     // Línea vacía
     char *s = buf;
@@ -113,7 +114,14 @@ void parse_line(const char *raw, SlideLine *out) {
     if (s[0] == '|') {
         out->type = LINE_TABLE_ROW;
         strncpy(out->text, s, MAX_LINE_LEN - 1);
-        out->ncols = parse_table_row(s, out->cols, 16);
+        char tmp[MAX_COLS][256];
+        memset(tmp, 0, sizeof(tmp));
+        int n = parse_table_row(s, tmp, MAX_COLS);
+        if (n > 0) {
+            out->cols = malloc(n * sizeof(char[256]));
+            if (out->cols) memcpy(out->cols, tmp, n * sizeof(char[256]));
+        }
+        out->ncols = n;
         return;
     }
     // Subviñeta (dos espacios + "- ")
@@ -489,7 +497,9 @@ Slider* slider_load(const char *path) {
                 // Aplicar configuración img: pendiente a la siguiente imagen
                 if (pending_img_cfg.active) {
                     if (cur->lines[cur->nlines].type == LINE_IMAGE) {
-                        cur->lines[cur->nlines].img_cfg = pending_img_cfg;
+                        cur->lines[cur->nlines].img_cfg = malloc(sizeof(ImageConfig));
+                        if (cur->lines[cur->nlines].img_cfg)
+                            *cur->lines[cur->nlines].img_cfg = pending_img_cfg;
                         img_config_reset(&pending_img_cfg);
                     } else if (cur->lines[cur->nlines].type != LINE_EMPTY) {
                         img_config_reset(&pending_img_cfg);
@@ -520,8 +530,18 @@ Slider* slider_load(const char *path) {
     return s;
 }
 
+static void slider_free_slide_lines(Slide *slide) {
+    for (int j = 0; j < slide->nlines; j++) {
+        free(slide->lines[j].cols);
+        free(slide->lines[j].img_cfg);
+    }
+}
+
 void slider_free(Slider *s) {
-    if (s) free(s);
+    if (!s) return;
+    for (int i = 0; i < s->n_slides; i++)
+        slider_free_slide_lines(&s->slides[i]);
+    free(s);
 }
 
 int slider_get_count(Slider *s) {

@@ -48,6 +48,7 @@ typedef struct {
 #define MAX_SLIDES    256
 #define MAX_LINES     128    // líneas por slide
 #define MAX_LINE_LEN  1024
+#define MAX_COLS      16      // columnas por fila de tabla
 #define MAX_IMG_CACHE 64
 
 // ── Definir COL_LABEL para el placeholder ────────────────────────────────────
@@ -93,9 +94,9 @@ typedef struct {
     char     text[MAX_LINE_LEN];  // contenido sin prefijo
     char     marker[16];          // indicador de lista (1., a), etc)
     // Para tablas: columnas parseadas
-    char     cols[16][256];
+    char     (*cols)[256];  // NULL except LINE_TABLE_ROW
     int      ncols;
-    ImageConfig img_cfg;   // configuración desde directiva <!-- img: -->
+    ImageConfig *img_cfg;   // NULL except LINE_IMAGE
 } SlideLine;
 
 typedef struct {

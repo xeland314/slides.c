@@ -33,17 +33,22 @@ class ImgAlign:
     LEFT = 1
     RIGHT = 2
 
+class ImgUnit:
+    UNSET = 0
+    PX = 1
+    PCT = 2
+
 class ImageConfig(ctypes.Structure):
     _fields_ = [
+        ("opacity", ctypes.c_double),
+        ("rotate", ctypes.c_double),
         ("active", ctypes.c_int),
         ("fit", ctypes.c_int),
         ("width", ctypes.c_int),
         ("height", ctypes.c_int),
-        ("width_is_pct", ctypes.c_int),
-        ("height_is_pct", ctypes.c_int),
-        ("opacity", ctypes.c_double),
+        ("width_unit", ctypes.c_int),
+        ("height_unit", ctypes.c_int),
         ("radius", ctypes.c_int),
-        ("rotate", ctypes.c_double),
         ("align", ctypes.c_int),
     ]
 
@@ -52,9 +57,9 @@ class SlideLine(ctypes.Structure):
         ("type", ctypes.c_int),
         ("text", ctypes.c_char * 1024),
         ("marker", ctypes.c_char * 16),
-        ("cols", (ctypes.c_char * 256) * 16),
+        ("cols", ctypes.POINTER(ctypes.c_char * 256)),
         ("ncols", ctypes.c_int),
-        ("img_cfg", ImageConfig),
+        ("img_cfg", ctypes.POINTER(ImageConfig)),
     ]
 
 class Theme(ctypes.Structure):

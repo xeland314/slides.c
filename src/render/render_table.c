@@ -13,10 +13,10 @@ double render_table(cairo_t *cr, PangoLayout *lay_body,
         if (lines[start + i].type == LINE_TABLE_SEP) header_row = i;
     }
     if (max_cols == 0) return 0.0;
-    if (max_cols > 16) max_cols = 16;
+    if (max_cols > MAX_COLS) max_cols = MAX_COLS;
 
-    double col_w[16];
-    double desired_w[16] = {0};
+    double col_w[MAX_COLS];
+    double desired_w[MAX_COLS] = {0};
     double total_desired_w = 0.0;
 
     for (int i = 0; i < count; i++) {
