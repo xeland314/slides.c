@@ -164,6 +164,107 @@ void parse_line(const char *raw, SlideLine *out) {
     strncpy(out->text, s, MAX_LINE_LEN - 1);
 }
 
+static void img_config_reset(ImageConfig *cfg) {
+    cfg->active = 0;
+    cfg->fit = IMG_FIT_NONE;
+    cfg->width = -1;
+    cfg->height = -1;
+    cfg->width_is_pct = 0;
+    cfg->height_is_pct = 0;
+    cfg->opacity = 1.0;
+    cfg->radius = 0;
+    cfg->rotate = 0.0;
+    cfg->align = IMG_ALIGN_CENTER;
+}
+
+static int parse_img_config(const char *raw, ImageConfig *cfg) {
+    // raw points right after "img:" — parse key=value pairs separated by commas
+    const char *p = raw;
+    while (*p == ' ') p++;
+    while (*p && *p != '>' && *p != '-') {
+        // Skip leading whitespace
+        while (*p == ' ') p++;
+        if (!*p || *p == '>' || *p == '-') break;
+
+        // Read key
+        char key[32];
+        int ki = 0;
+        while (*p && *p != '=' && *p != ',' && *p != ' ' && *p != '>' && ki < 31)
+            key[ki++] = *p++;
+        key[ki] = '\0';
+        // Trim trailing spaces from key
+        while (ki > 0 && key[ki-1] == ' ') key[--ki] = '\0';
+
+        if (*p != '=') { // Malformed, skip to next comma
+            while (*p && *p != ',') p++;
+            if (*p == ',') p++;
+            continue;
+        }
+        p++; // skip '='
+
+        // Read value
+        char val[64];
+        int vi = 0;
+        while (*p && *p != ',' && *p != '>' && *p != '-' && *p != ' ' && vi < 63)
+            val[vi++] = *p++;
+        val[vi] = '\0';
+
+        // Trim trailing spaces
+        while (vi > 0 && val[vi-1] == ' ') val[--vi] = '\0';
+
+        // Apply key=value
+        if (strcmp(key, "fit") == 0) {
+            if (strcmp(val, "cover") == 0) cfg->fit = IMG_FIT_COVER;
+            else if (strcmp(val, "contain") == 0) cfg->fit = IMG_FIT_CONTAIN;
+            else if (strcmp(val, "fill") == 0) cfg->fit = IMG_FIT_FILL;
+            cfg->active = 1;
+        } else if (strcmp(key, "width") == 0) {
+            if (strchr(val, '%')) {
+                cfg->width = atoi(val);
+                cfg->width_is_pct = 1;
+            } else {
+                cfg->width = atoi(val);
+                cfg->width_is_pct = 0;
+            }
+            cfg->active = 1;
+        } else if (strcmp(key, "height") == 0) {
+            if (strchr(val, '%')) {
+                cfg->height = atoi(val);
+                cfg->height_is_pct = 1;
+            } else {
+                cfg->height = atoi(val);
+                cfg->height_is_pct = 0;
+            }
+            cfg->active = 1;
+        } else if (strcmp(key, "opacity") == 0) {
+            if (strchr(val, '%')) {
+                cfg->opacity = atof(val) / 100.0;
+            } else {
+                cfg->opacity = atof(val);
+            }
+            if (cfg->opacity < 0.0) cfg->opacity = 0.0;
+            if (cfg->opacity > 1.0) cfg->opacity = 1.0;
+            cfg->active = 1;
+        } else if (strcmp(key, "radius") == 0) {
+            cfg->radius = atoi(val);
+            if (cfg->radius < 0) cfg->radius = 0;
+            cfg->active = 1;
+        } else if (strcmp(key, "rotate") == 0) {
+            cfg->rotate = atof(val);
+            cfg->active = 1;
+        } else if (strcmp(key, "align") == 0) {
+            if (strcmp(val, "left") == 0) cfg->align = IMG_ALIGN_LEFT;
+            else if (strcmp(val, "right") == 0) cfg->align = IMG_ALIGN_RIGHT;
+            else cfg->align = IMG_ALIGN_CENTER;
+            cfg->active = 1;
+        }
+
+        // Skip commas
+        while (*p == ' ' || *p == ',') p++;
+    }
+    return cfg->active;
+}
+
 static void theme_assign(Slider *s, const Theme *t);
 
 Slider* slider_load(const char *path) {
@@ -254,6 +355,8 @@ Slider* slider_load(const char *path) {
     int n = 0;
     int in_code = 0;
     int in_notes = 0;
+    ImageConfig pending_img_cfg;
+    img_config_reset(&pending_img_cfg);
 
     // Set default transition for first slide
     if (n < MAX_SLIDES) {
@@ -322,6 +425,12 @@ Slider* slider_load(const char *path) {
                         continue;
                     }
 
+                    char *img_indicator = strstr(start, "img:");
+                    if (img_indicator) {
+                        parse_img_config(img_indicator + 4, &pending_img_cfg);
+                        continue;
+                    }
+
                     char *notes_indicator = strstr(start, "notes:");
                     if (!notes_indicator) notes_indicator = strstr(start, "note:");
                     if (!notes_indicator) notes_indicator = strstr(start, "NOTES:");
@@ -387,6 +496,15 @@ Slider* slider_load(const char *path) {
                 strncpy(cur->lines[cur->nlines].text, line, MAX_LINE_LEN - 1);
             } else {
                 parse_line(line, &cur->lines[cur->nlines]);
+                // Aplicar configuración img: pendiente a la siguiente imagen
+                if (pending_img_cfg.active) {
+                    if (cur->lines[cur->nlines].type == LINE_IMAGE) {
+                        cur->lines[cur->nlines].img_cfg = pending_img_cfg;
+                        img_config_reset(&pending_img_cfg);
+                    } else if (cur->lines[cur->nlines].type != LINE_EMPTY) {
+                        img_config_reset(&pending_img_cfg);
+                    }
+                }
             }
             cur->nlines++;
             if (cur->nlines >= MAX_LINES - 1) {

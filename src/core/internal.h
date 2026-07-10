@@ -5,6 +5,34 @@
 #include "theme.h"
 #include <stdbool.h>
 
+// ── Configuración de imagen vía <!-- img: key=val, ... --> ─────────────────────
+
+typedef enum {
+    IMG_FIT_NONE = 0,
+    IMG_FIT_COVER,
+    IMG_FIT_CONTAIN,
+    IMG_FIT_FILL,
+} ImgFit;
+
+typedef enum {
+    IMG_ALIGN_CENTER = 0,
+    IMG_ALIGN_LEFT,
+    IMG_ALIGN_RIGHT,
+} ImgAlign;
+
+typedef struct {
+    int     active;         // 1 si se aplicó directiva img:
+    int     fit;            // ImgFit
+    int     width;          // -1 = no seteado; >0 = px absolutos
+    int     height;         // -1 = no seteado
+    int     width_is_pct;   // 1 si width es porcentaje
+    int     height_is_pct;  // 1 si height es porcentaje
+    double  opacity;        // 1.0 = opaco
+    int     radius;         // 0 = sin bordes redondeados
+    double  rotate;         // grados
+    int     align;          // ImgAlign
+} ImageConfig;
+
 // ── Configuración ─────────────────────────────────────────────────────────────
 
 #define WIN_W         1280
@@ -61,6 +89,7 @@ typedef struct {
     // Para tablas: columnas parseadas
     char     cols[16][256];
     int      ncols;
+    ImageConfig img_cfg;   // configuración desde directiva <!-- img: -->
 } SlideLine;
 
 typedef struct {
