@@ -38,6 +38,14 @@ class ImgUnit:
     PX = 1
     PCT = 2
 
+class TransitionType:
+    NONE = 0
+    FADE = 1
+    SLIDE_LEFT = 2
+    SLIDE_RIGHT = 3
+    SLIDE_UP = 4
+    SLIDE_DOWN = 5
+
 class ImageConfig(ctypes.Structure):
     _fields_ = [
         ("opacity", ctypes.c_double),
@@ -222,6 +230,27 @@ class CSlides:
         self.lib.md_to_markup.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.c_size_t]
         self.lib.md_to_markup.restype = None
 
+        # void py_lexer_run(const char *line, const Theme *theme, char *out, size_t out_size)
+        self.lib.py_lexer_run.argtypes = [
+            ctypes.c_char_p, ctypes.POINTER(Theme), ctypes.c_char_p, ctypes.c_size_t
+        ]
+        self.lib.py_lexer_run.restype = None
+
+        # void do_transition(Slider *s, int from_idx, int to_idx, cairo_t *cr,
+        #                     int win_w, int win_h, double progress)
+        self.lib.do_transition.argtypes = [
+            ctypes.POINTER(Slider), ctypes.c_int, ctypes.c_int, ctypes.c_void_p,
+            ctypes.c_int, ctypes.c_int, ctypes.c_double
+        ]
+        self.lib.do_transition.restype = None
+
+        # void slider_render(Slider *s, int index, cairo_t *cr, int win_w, int win_h, double time_ms)
+        self.lib.slider_render.argtypes = [
+            ctypes.POINTER(Slider), ctypes.c_int, ctypes.c_void_p,
+            ctypes.c_int, ctypes.c_int, ctypes.c_double
+        ]
+        self.lib.slider_render.restype = None
+
     def load(self, path):
         return self.lib.slider_load(path.encode('utf-8'))
 
@@ -300,3 +329,114 @@ class CSlides:
         out = ctypes.create_string_buffer(4096)
         self.lib.md_to_markup(text.encode('utf-8'), out, len(out))
         return out.value.decode('utf-8')
+
+    def highlight_python(self, line, theme):
+        out = ctypes.create_string_buffer(4096)
+        self.lib.py_lexer_run(line.encode('utf-8'), theme, out, len(out))
+        return out.value.decode('utf-8')
+
+    def highlight_lang(self, line, lang, theme):
+        out = ctypes.create_string_buffer(4096)
+        lang_bytes = lang.encode('utf-8') if lang else None
+        self.lib.highlighter_highlight(line.encode('utf-8'), lang_bytes, theme, out, len(out))
+        return out.value.decode('utf-8')
+
+    def do_transition(self, slider, from_idx, to_idx, cr, win_w, win_h, progress):
+        self.lib.do_transition(slider, from_idx, to_idx, cr, win_w, win_h, progress)
+
+    def render_slide(self, slider, index, cr, win_w, win_h, time_ms):
+        self.lib.slider_render(slider, index, cr, win_w, win_h, time_ms)
+
+    # ── Test accessors (read internal Slider state) ────────────────────────
+
+    def test_get_transition(self, slider, slide_idx):
+        return self.lib.slider_test_get_transition(slider, slide_idx)
+
+    def test_get_notes(self, slider, slide_idx):
+        self.lib.slider_test_get_notes.restype = ctypes.c_char_p
+        return self.lib.slider_test_get_notes(slider, slide_idx).decode('utf-8', errors='replace')
+
+    def test_get_nlines(self, slider, slide_idx):
+        return self.lib.slider_test_get_nlines(slider, slide_idx)
+
+    def test_get_line_type(self, slider, slide_idx, line_idx):
+        return self.lib.slider_test_get_line_type(slider, slide_idx, line_idx)
+
+    def test_get_line_text(self, slider, slide_idx, line_idx):
+        self.lib.slider_test_get_line_text.restype = ctypes.c_char_p
+        return self.lib.slider_test_get_line_text(slider, slide_idx, line_idx).decode('utf-8', errors='replace')
+
+    def test_get_line_marker(self, slider, slide_idx, line_idx):
+        self.lib.slider_test_get_line_marker.restype = ctypes.c_char_p
+        return self.lib.slider_test_get_line_marker(slider, slide_idx, line_idx).decode('utf-8', errors='replace')
+
+    def test_get_line_ncols(self, slider, slide_idx, line_idx):
+        return self.lib.slider_test_get_line_ncols(slider, slide_idx, line_idx)
+
+    def test_get_line_col(self, slider, slide_idx, line_idx, col_idx):
+        self.lib.slider_test_get_line_col.restype = ctypes.c_char_p
+        return self.lib.slider_test_get_line_col(slider, slide_idx, line_idx, col_idx).decode('utf-8', errors='replace')
+
+    def test_get_line_has_img_cfg(self, slider, slide_idx, line_idx):
+        return self.lib.slider_test_get_line_has_img_cfg(slider, slide_idx, line_idx)
+
+    def test_get_img_cfg_active(self, slider, slide_idx, line_idx):
+        return self.lib.slider_test_get_img_cfg_active(slider, slide_idx, line_idx)
+
+    def test_get_img_cfg_opacity(self, slider, slide_idx, line_idx):
+        self.lib.slider_test_get_img_cfg_opacity.restype = ctypes.c_double
+        return self.lib.slider_test_get_img_cfg_opacity(slider, slide_idx, line_idx)
+
+    def test_get_img_cfg_rotate(self, slider, slide_idx, line_idx):
+        self.lib.slider_test_get_img_cfg_rotate.restype = ctypes.c_double
+        return self.lib.slider_test_get_img_cfg_rotate(slider, slide_idx, line_idx)
+
+    def test_get_img_cfg_fit(self, slider, slide_idx, line_idx):
+        return self.lib.slider_test_get_img_cfg_fit(slider, slide_idx, line_idx)
+
+    def test_get_img_cfg_width(self, slider, slide_idx, line_idx):
+        return self.lib.slider_test_get_img_cfg_width(slider, slide_idx, line_idx)
+
+    def test_get_img_cfg_height(self, slider, slide_idx, line_idx):
+        return self.lib.slider_test_get_img_cfg_height(slider, slide_idx, line_idx)
+
+    def test_get_img_cfg_width_unit(self, slider, slide_idx, line_idx):
+        return self.lib.slider_test_get_img_cfg_width_unit(slider, slide_idx, line_idx)
+
+    def test_get_img_cfg_height_unit(self, slider, slide_idx, line_idx):
+        return self.lib.slider_test_get_img_cfg_height_unit(slider, slide_idx, line_idx)
+
+    def test_get_img_cfg_radius(self, slider, slide_idx, line_idx):
+        return self.lib.slider_test_get_img_cfg_radius(slider, slide_idx, line_idx)
+
+    def test_get_img_cfg_align(self, slider, slide_idx, line_idx):
+        return self.lib.slider_test_get_img_cfg_align(slider, slide_idx, line_idx)
+
+    def test_get_transition_type(self, slider):
+        return self.lib.slider_test_get_transition_type(slider)
+
+    def test_get_transition_from(self, slider):
+        return self.lib.slider_test_get_transition_from(slider)
+
+    def test_set_transition_type(self, slider, type_val):
+        self.lib.slider_test_set_transition_type(slider, type_val)
+
+    def test_set_transition_from(self, slider, from_val):
+        self.lib.slider_test_set_transition_from(slider, from_val)
+
+    def test_get_filepath(self, slider):
+        self.lib.slider_test_get_filepath.restype = ctypes.c_char_p
+        return self.lib.slider_test_get_filepath(slider).decode('utf-8', errors='replace')
+
+    def test_get_mtime(self, slider):
+        self.lib.slider_test_get_mtime.restype = ctypes.c_int64
+        return self.lib.slider_test_get_mtime(slider)
+
+    def test_get_hide_num(self, slider):
+        return self.lib.slider_test_get_hide_num(slider)
+
+    def test_get_kiosk_interval(self, slider):
+        return self.lib.slider_test_get_kiosk_interval(slider)
+
+    def test_get_line_has_anim(self, slider, slide_idx):
+        return self.lib.slider_test_get_line_has_anim(slider, slide_idx)

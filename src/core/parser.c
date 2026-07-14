@@ -214,6 +214,8 @@ static int parse_img_config(const char *raw, ImageConfig *cfg) {
         // Read value
         char val[64];
         int vi = 0;
+        // Allow '-' as first char (negative numbers), then stop at '-' for HTML comment boundaries
+        if (*p == '-') val[vi++] = *p++;
         while (*p && *p != ',' && *p != '>' && *p != '-' && *p != ' ' && vi < 63)
             val[vi++] = *p++;
         val[vi] = '\0';
@@ -649,4 +651,182 @@ void slider_print_notes(Slider *s, int index) {
     }
     printf("\n\033[1;30m----------------------------------------\033[0m\n");
     fflush(stdout);
+}
+
+// ── Test accessor functions ──────────────────────────────────────────────────
+
+int slider_test_get_transition(Slider *s, int slide_idx) {
+    if (!s || slide_idx < 0 || slide_idx >= s->n_slides) return -1;
+    return (int)s->slides[slide_idx].transition;
+}
+
+const char* slider_test_get_notes(Slider *s, int slide_idx) {
+    if (!s || slide_idx < 0 || slide_idx >= s->n_slides) return "";
+    return s->slides[slide_idx].notes;
+}
+
+int slider_test_get_nlines(Slider *s, int slide_idx) {
+    if (!s || slide_idx < 0 || slide_idx >= s->n_slides) return 0;
+    return s->slides[slide_idx].nlines;
+}
+
+int slider_test_get_line_type(Slider *s, int slide_idx, int line_idx) {
+    if (!s || slide_idx < 0 || slide_idx >= s->n_slides) return -1;
+    Slide *sl = &s->slides[slide_idx];
+    if (line_idx < 0 || line_idx >= sl->nlines) return -1;
+    return (int)sl->lines[line_idx].type;
+}
+
+const char* slider_test_get_line_text(Slider *s, int slide_idx, int line_idx) {
+    if (!s || slide_idx < 0 || slide_idx >= s->n_slides) return "";
+    Slide *sl = &s->slides[slide_idx];
+    if (line_idx < 0 || line_idx >= sl->nlines) return "";
+    return sl->lines[line_idx].text;
+}
+
+const char* slider_test_get_line_marker(Slider *s, int slide_idx, int line_idx) {
+    if (!s || slide_idx < 0 || slide_idx >= s->n_slides) return "";
+    Slide *sl = &s->slides[slide_idx];
+    if (line_idx < 0 || line_idx >= sl->nlines) return "";
+    return sl->lines[line_idx].marker;
+}
+
+int slider_test_get_line_ncols(Slider *s, int slide_idx, int line_idx) {
+    if (!s || slide_idx < 0 || slide_idx >= s->n_slides) return 0;
+    Slide *sl = &s->slides[slide_idx];
+    if (line_idx < 0 || line_idx >= sl->nlines) return 0;
+    return sl->lines[line_idx].ncols;
+}
+
+const char* slider_test_get_line_col(Slider *s, int slide_idx, int line_idx, int col_idx) {
+    if (!s || slide_idx < 0 || slide_idx >= s->n_slides) return "";
+    Slide *sl = &s->slides[slide_idx];
+    if (line_idx < 0 || line_idx >= sl->nlines) return "";
+    SlideLine *ln = &sl->lines[line_idx];
+    if (!ln->cols || col_idx < 0 || col_idx >= ln->ncols) return "";
+    return ln->cols[col_idx];
+}
+
+int slider_test_get_line_has_img_cfg(Slider *s, int slide_idx, int line_idx) {
+    if (!s || slide_idx < 0 || slide_idx >= s->n_slides) return 0;
+    Slide *sl = &s->slides[slide_idx];
+    if (line_idx < 0 || line_idx >= sl->nlines) return 0;
+    return sl->lines[line_idx].img_cfg ? 1 : 0;
+}
+
+int slider_test_get_img_cfg_active(Slider *s, int slide_idx, int line_idx) {
+    if (!s || slide_idx < 0 || slide_idx >= s->n_slides) return 0;
+    Slide *sl = &s->slides[slide_idx];
+    if (line_idx < 0 || line_idx >= sl->nlines) return 0;
+    if (!sl->lines[line_idx].img_cfg) return 0;
+    return sl->lines[line_idx].img_cfg->active;
+}
+
+double slider_test_get_img_cfg_opacity(Slider *s, int slide_idx, int line_idx) {
+    if (!s || slide_idx < 0 || slide_idx >= s->n_slides) return 0.0;
+    Slide *sl = &s->slides[slide_idx];
+    if (line_idx < 0 || line_idx >= sl->nlines) return 0.0;
+    if (!sl->lines[line_idx].img_cfg) return 0.0;
+    return sl->lines[line_idx].img_cfg->opacity;
+}
+
+double slider_test_get_img_cfg_rotate(Slider *s, int slide_idx, int line_idx) {
+    if (!s || slide_idx < 0 || slide_idx >= s->n_slides) return 0.0;
+    Slide *sl = &s->slides[slide_idx];
+    if (line_idx < 0 || line_idx >= sl->nlines) return 0.0;
+    if (!sl->lines[line_idx].img_cfg) return 0.0;
+    return sl->lines[line_idx].img_cfg->rotate;
+}
+
+int slider_test_get_img_cfg_fit(Slider *s, int slide_idx, int line_idx) {
+    if (!s || slide_idx < 0 || slide_idx >= s->n_slides) return -1;
+    Slide *sl = &s->slides[slide_idx];
+    if (line_idx < 0 || line_idx >= sl->nlines) return -1;
+    if (!sl->lines[line_idx].img_cfg) return -1;
+    return (int)sl->lines[line_idx].img_cfg->fit;
+}
+
+int slider_test_get_img_cfg_width(Slider *s, int slide_idx, int line_idx) {
+    if (!s || slide_idx < 0 || slide_idx >= s->n_slides) return -2;
+    Slide *sl = &s->slides[slide_idx];
+    if (line_idx < 0 || line_idx >= sl->nlines) return -2;
+    if (!sl->lines[line_idx].img_cfg) return -2;
+    return sl->lines[line_idx].img_cfg->width;
+}
+
+int slider_test_get_img_cfg_height(Slider *s, int slide_idx, int line_idx) {
+    if (!s || slide_idx < 0 || slide_idx >= s->n_slides) return -2;
+    Slide *sl = &s->slides[slide_idx];
+    if (line_idx < 0 || line_idx >= sl->nlines) return -2;
+    if (!sl->lines[line_idx].img_cfg) return -2;
+    return sl->lines[line_idx].img_cfg->height;
+}
+
+int slider_test_get_img_cfg_width_unit(Slider *s, int slide_idx, int line_idx) {
+    if (!s || slide_idx < 0 || slide_idx >= s->n_slides) return -1;
+    Slide *sl = &s->slides[slide_idx];
+    if (line_idx < 0 || line_idx >= sl->nlines) return -1;
+    if (!sl->lines[line_idx].img_cfg) return -1;
+    return (int)sl->lines[line_idx].img_cfg->width_unit;
+}
+
+int slider_test_get_img_cfg_height_unit(Slider *s, int slide_idx, int line_idx) {
+    if (!s || slide_idx < 0 || slide_idx >= s->n_slides) return -1;
+    Slide *sl = &s->slides[slide_idx];
+    if (line_idx < 0 || line_idx >= sl->nlines) return -1;
+    if (!sl->lines[line_idx].img_cfg) return -1;
+    return (int)sl->lines[line_idx].img_cfg->height_unit;
+}
+
+int slider_test_get_img_cfg_radius(Slider *s, int slide_idx, int line_idx) {
+    if (!s || slide_idx < 0 || slide_idx >= s->n_slides) return -2;
+    Slide *sl = &s->slides[slide_idx];
+    if (line_idx < 0 || line_idx >= sl->nlines) return -2;
+    if (!sl->lines[line_idx].img_cfg) return -2;
+    return sl->lines[line_idx].img_cfg->radius;
+}
+
+int slider_test_get_img_cfg_align(Slider *s, int slide_idx, int line_idx) {
+    if (!s || slide_idx < 0 || slide_idx >= s->n_slides) return -1;
+    Slide *sl = &s->slides[slide_idx];
+    if (line_idx < 0 || line_idx >= sl->nlines) return -1;
+    if (!sl->lines[line_idx].img_cfg) return -1;
+    return (int)sl->lines[line_idx].img_cfg->align;
+}
+
+int slider_test_get_transition_type(Slider *s) {
+    return s ? (int)s->transition_type : -1;
+}
+
+int slider_test_get_transition_from(Slider *s) {
+    return s ? s->transition_from : -1;
+}
+
+void slider_test_set_transition_type(Slider *s, int type) {
+    if (s) s->transition_type = (TransitionType)type;
+}
+
+void slider_test_set_transition_from(Slider *s, int from) {
+    if (s) s->transition_from = from;
+}
+
+const char* slider_test_get_filepath(Slider *s) {
+    return s ? s->filepath : "";
+}
+
+long long slider_test_get_mtime(Slider *s) {
+    return s ? s->last_mtime : 0;
+}
+
+int slider_test_get_hide_num(Slider *s) {
+    return s ? s->hide_num : -1;
+}
+
+int slider_test_get_kiosk_interval(Slider *s) {
+    return s ? s->kiosk_interval_ms : -1;
+}
+
+int slider_test_get_line_has_anim(Slider *s, int slide_idx) {
+    if (!s || slide_idx < 0 || slide_idx >= s->n_slides) return 0;
+    return s->slides[slide_idx].has_anim ? 1 : 0;
 }
