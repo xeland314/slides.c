@@ -8,8 +8,9 @@ _DLL_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "../.."))
 
 _LOADER_SCRIPT = """\
 import ctypes, sys, os
-dll = os.path.join(r"{dll_dir}", "slider.dll")
-lib = ctypes.CDLL(dll)
+dll_dir = r"{dll_dir}"
+name = "slider.dll" if sys.platform == "win32" else "libslider.so"
+lib = ctypes.CDLL(os.path.join(dll_dir, name))
 lib.slider_load.restype = ctypes.c_void_p
 lib.slider_load.argtypes = [ctypes.c_char_p]
 lib.slider_free.argtypes = [ctypes.c_void_p]
