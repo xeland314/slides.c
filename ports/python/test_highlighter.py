@@ -153,6 +153,80 @@ class TestHighlighter(unittest.TestCase):
                 self.assertIn("<span foreground=", out)
                 self.assertIn("if", out)
 
+    # ── C family aliases ─────────────────────────────────────────────────
+
+    def _lex_lang(self, code, lang):
+        return self.cs.highlight_lang(code, lang, self.cs.theme_default())
+
+    def test_alias_c(self):
+        out = self._lex_lang("int x = 1;", "c")
+        self.assertIn("int", out)
+        self.assertIn("<span foreground=", out)
+
+    def test_alias_cpp(self):
+        out = self._lex_lang("int x = 1;", "cpp")
+        self.assertIn("int", out)
+        self.assertIn("<span foreground=", out)
+
+    def test_alias_cplusplus(self):
+        out = self._lex_lang("int x = 1;", "c++")
+        self.assertIn("int", out)
+        self.assertIn("<span foreground=", out)
+
+    def test_alias_java(self):
+        out = self._lex_lang("public class Main {}", "java")
+        self.assertIn("class", out)
+        self.assertIn("<span foreground=", out)
+
+    def test_alias_cs(self):
+        out = self._lex_lang("var x = 1;", "cs")
+        self.assertIn("<span foreground=", out)
+
+    def test_alias_csharp(self):
+        out = self._lex_lang("var x = 1;", "csharp")
+        self.assertIn("<span foreground=", out)
+
+    def test_alias_c_hash(self):
+        out = self._lex_lang("var x = 1;", "c#")
+        self.assertIn("<span foreground=", out)
+
+    def test_alias_kotlin(self):
+        out = self._lex_lang("val x = 1", "kotlin")
+        self.assertIn("<span foreground=", out)
+
+    def test_alias_kt(self):
+        out = self._lex_lang("val x = 1", "kt")
+        self.assertIn("<span foreground=", out)
+
+    def test_alias_swift(self):
+        out = self._lex_lang("let x = 1", "swift")
+        self.assertIn("<span foreground=", out)
+
+    def test_alias_dart(self):
+        out = self._lex_lang("var x = 1;", "dart")
+        self.assertIn("<span foreground=", out)
+
+    def test_alias_rust(self):
+        out = self._lex_lang("let x = 1;", "rust")
+        self.assertIn("<span foreground=", out)
+
+    def test_alias_rs(self):
+        out = self._lex_lang("let x = 1;", "rs")
+        self.assertIn("<span foreground=", out)
+
+    def test_alias_php(self):
+        out = self._lex_lang("$x = 1;", "php")
+        self.assertIn("<span foreground=", out)
+
+    def test_alias_scala(self):
+        out = self._lex_lang("val x = 1", "scala")
+        self.assertIn("<span foreground=", out)
+
+    def test_alias_unknown_falls_back_to_c(self):
+        out = self._lex_lang("int x = 1;", "unknown_lang")
+        self.assertIn("int", out)
+        self.assertIn("<span foreground=", out)
+
 
 if __name__ == "__main__":
     unittest.main()

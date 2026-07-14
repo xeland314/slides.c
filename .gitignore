@@ -10,6 +10,7 @@ ports/dart/build/
 ports/python/__pycache__/
 slides.exe
 slider.dll
+ports/libslider.dll
 libslider.a
 *.ali
 slides_ada.exe

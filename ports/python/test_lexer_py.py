@@ -169,6 +169,11 @@ class TestLexerPy(unittest.TestCase):
         self.assertIn("def", out)
         self.assertIn("foo", out)
 
+    def test_via_highlighter_py_alias(self):
+        out = self._lex_lang("def foo(): pass", "py")
+        self.assertIn("def", out)
+        self.assertIn("foo", out)
+
     def test_keyword_not_and_or(self):
         out = self._lex_py("not True and False or True")
         self.assertIn("not", out)

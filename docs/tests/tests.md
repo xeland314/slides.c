@@ -32,8 +32,14 @@ ports/python/
   test_parser.py         Tests del parser de líneas Markdown
   test_markup.py         Tests del conversor Markdown → markup Pango (bold/italic/code)
   test_highlighter.py    Tests del resaltador de sintaxis genérico
-  test_lexer_py.py       Tests del lexer de Python (flex lexer)
-  test_themes.py         Tests del sistema de temas y color overrides
+   test_lexer_py.py       Tests del lexer de Python (flex lexer)
+   test_lexer_go.py       Tests del lexer de Go (flex lexer)
+   test_lexer_js.py       Tests del lexer de JavaScript (flex lexer)
+   test_lexer_ts.py       Tests del lexer de TypeScript (flex lexer)
+   test_lexer_tsx.py      Tests del lexer de TSX con JSX (flex lexer)
+   test_lexer_css.py       Tests del lexer de CSS (flex lexer)
+   test_lexer_sh.py        Tests del lexer de Shell/Bash (flex lexer)
+   test_themes.py         Tests del sistema de temas y color overrides
   test_export.py         Tests de exportación a PNG/JPG/SVG/PDF/GIF
   test_transitions.py    Tests de transiciones entre slides (render_transition.c)
   test_renderer_gaps.py  Tests de renderer, img_config, notes, parser limits, hot reload
@@ -171,6 +177,459 @@ Tests para `py_lexer_run()`, el lexer flex para código Python.
 | `test_star_import` | `from module import *` |
 | `test_walrus_operator` | `:=` operador |
 | `test_via_highlighter_python` | Llamada a `highlight_lang("python")` |
+
+### test_lexer_go.py — Lexer de Go (58 tests)
+
+Tests para `go_lexer_run()`, el lexer flex para código Go, con prefix `go_` para evitar
+conflictos de símbolos.
+
+| Test | Descripción |
+|:---|:---|
+| `test_keyword_func` | `func` resaltado |
+| `test_keyword_package` | `package` resaltado |
+| `test_keyword_import` | `import` resaltado |
+| `test_keyword_var` | `var` resaltado |
+| `test_keyword_const` | `const` resaltado |
+| `test_keyword_type` | `type` resaltado |
+| `test_keyword_struct` | `struct` resaltado |
+| `test_keyword_interface` | `interface` resaltado |
+| `test_keyword_map` | `map` resaltado |
+| `test_keyword_chan` | `chan` resaltado |
+| `test_keyword_go` | `go` resaltado |
+| `test_keyword_defer` | `defer` resaltado |
+| `test_keyword_select` | `select` resaltado |
+| `test_keyword_switch` | `switch` resaltado |
+| `test_keyword_case` | `case` resaltado |
+| `test_keyword_if_else` | `if`, `else` resaltados |
+| `test_keyword_for_range` | `for`, `range` resaltados |
+| `test_keyword_return` | `return` resaltado |
+| `test_keyword_break_continue_fallthrough` | `break`, `continue`, `fallthrough` resaltados |
+| `test_keyword_nil_true_false` | `nil`, `true`, `false` resaltados |
+| `test_keyword_iota` | `iota` resaltado |
+| `test_keyword_make_new_len_cap` | `make`, `new`, `len`, `cap` resaltados |
+| `test_keyword_append_copy_delete` | `append`, `copy`, `delete` resaltados |
+| `test_keyword_panic_recover` | `panic`, `recover` resaltados |
+| `test_keyword_print_println` | `print`, `println` resaltados |
+| `test_builtin_types` | 21 tipos: `int`, `int8`..`int64`, `uint*`, `float32/64`, `complex*`, `bool`, `byte`, `rune`, `string`, `error`, `any`, `comparable` |
+| `test_comment_single_line` | Comentario `// ...` resaltado |
+| `test_comment_inline` | Código + comentario en la misma línea |
+| `test_string_double_quotes` | `"string"` resaltado |
+| `test_string_escaped` | `"with \"escape\""` resaltado |
+| `test_string_rune` | `'a'` resaltado |
+| `test_number_integer` | Entero `42` resaltado |
+| `test_number_float` | Float `3.14` resaltado |
+| `test_number_hex` | Hex `0xFF` resaltado |
+| `test_number_binary` | Binario `0b1010` resaltado |
+| `test_number_octal` | Octal `0o77` resaltado |
+| `test_number_underscore` | `1_000_000` resaltado |
+| `test_number_scientific` | `6.022e23` resaltado |
+| `test_operator_short_declaration` | `:=` operador |
+| `test_operator_receive` | `<-` channel receive |
+| `test_operators_arithmetic` | Operadores aritméticos |
+| `test_operators_comparison` | `==`, `!=`, `>=`, etc. |
+| `test_brackets` | `m[key]` corchetes |
+| `test_braces` | `func() {}` llaves |
+| `test_identifier` | Identificador no resaltado |
+| `test_identifier_underscore_start` | `_private` identificador |
+| `test_empty_string` | Input vacío → output vacío |
+| `test_multiline_simulation` | 7 líneas de Go, una por una |
+| `test_complex_expression` | Expresión con múltiples tokens |
+| `test_switch_statement` | `switch` con identificador |
+| `test_go_routine` | `go processRequest(req)` |
+| `test_channel_operations` | `ch <- data` |
+| `test_type_declaration` | `type Server struct {` |
+| `test_interface_method` | Método de interfaz con tipos |
+| `test_map_literal` | `map[string]int{"a": 1}` |
+| `test_defer_close` | `defer f.Close()` |
+| `test_error_check_idiom` | `if err != nil {` |
+| `test_via_highlight_lang` | Llamada a `highlight_lang("go")` |
+
+### test_lexer_js.py — Lexer de JavaScript (54 tests)
+
+Tests para `js_lexer_run()`, el lexer flex para código JavaScript.
+
+| Test | Descripción |
+|:---|:---|
+| `test_keyword_var` | `var` resaltado |
+| `test_keyword_let` | `let` resaltado |
+| `test_keyword_const` | `const` resaltado |
+| `test_keyword_function` | `function` resaltado |
+| `test_keyword_return` | `return` resaltado |
+| `test_keyword_if_else` | `if`, `else` resaltados |
+| `test_keyword_for_while_do` | `for`, `while`, `do` resaltados |
+| `test_keyword_switch_case_default` | `switch`, `case`, `default` resaltados |
+| `test_keyword_break_continue` | `break`, `continue` resaltados |
+| `test_keyword_new_this` | `new`, `this` resaltados |
+| `test_keyword_class_extends_super` | `class`, `extends`, `super` resaltados |
+| `test_keyword_import_export_from` | `import`, `export`, `from` resaltados |
+| `test_keyword_try_catch_finally` | `try`, `catch`, `finally` resaltados |
+| `test_keyword_throw` | `throw` resaltado |
+| `test_keyword_async_await` | `async`, `await` resaltados |
+| `test_keyword_yield` | `yield` resaltado |
+| `test_keyword_instanceof_typeof_void_delete` | 4 keywords resaltados |
+| `test_keyword_true_false_null_undefined` | 4 literals resaltados |
+| `test_keyword_nan_infinity` | `NaN`, `Infinity` resaltados |
+| `test_keyword_static_get_set` | `static`, `get`, `set` resaltados |
+| `test_keyword_with_debugger` | `with`, `debugger` resaltados |
+| `test_keyword_of_in` | `of`, `in` resaltados |
+| `test_comment_single_line` | Comentario `// ...` resaltado |
+| `test_comment_inline` | Código + comentario en la misma línea |
+| `test_comment_multi_line` | Comentario multilinea `/* ... */` |
+| `test_string_double_quotes` | `"string"` resaltado |
+| `test_string_single_quotes` | `'string'` resaltado |
+| `test_string_template_literal` | `` `template` `` resaltado |
+| `test_string_escaped` | `"with \"escape\""` resaltado |
+| `test_number_integer` | Entero `42` resaltado |
+| `test_number_float` | Float `3.14` resaltado |
+| `test_number_hex` | Hex `0xFF` resaltado |
+| `test_number_binary` | Binario `0b1010` resaltado |
+| `test_number_octal` | Octal `0o77` resaltado |
+| `test_number_underscore` | `1_000_000` resaltado |
+| `test_number_scientific` | `6.022e23` resaltado |
+| `test_operators` | Operadores aritméticos |
+| `test_operators_comparison` | `==`, `!=`, `>=`, etc. |
+| `test_operator_ternary` | Operador ternario `? :` |
+| `test_identifier` | Identificador no resaltado |
+| `test_identifier_dollar` | `$element` identificador |
+| `test_identifier_underscore_start` | `_private` identificador |
+| `test_empty_string` | Input vacío → output vacío |
+| `test_multiline_simulation` | 5 líneas de JS, una por una |
+| `test_complex_expression` | Expresión con `map`/`filter` |
+| `test_destructuring` | Desestructuración `const { a } = obj` |
+| `test_arrow_function` | Arrow function `=>` |
+| `test_optional_chaining` | `?.` operador |
+| `test_nullish_coalescing` | `??` operador |
+| `test_spread_operator` | `...` spread |
+| `test_async_await_full` | async/await completo |
+| `test_class_with_constructor` | class + constructor + this |
+| `test_promise_chaining` | `.then().catch()` |
+| `test_via_highlight_lang` | Llamada a `highlight_lang("javascript")` |
+
+### test_lexer_ts.py — Lexer de TypeScript (43 tests)
+
+Tests para `ts_lexer_run()`, el lexer flex para código TypeScript puro.
+
+| Test | Descripción |
+|:---|:---|
+| `test_keyword_const` | `const` resaltado (heredado JS) |
+| `test_keyword_function` | `function` resaltado |
+| `test_keyword_class` | `class` resaltado |
+| `test_keyword_async_await` | `async`, `await` resaltados |
+| `test_keyword_import_export` | `import`, `from`, `export` resaltados |
+| `test_keyword_true_false_null_undefined` | 4 literals resaltados |
+| `test_keyword_type` | `type` resaltado (TS) |
+| `test_keyword_interface` | `interface` resaltado (TS) |
+| `test_keyword_enum` | `enum` resaltado (TS) |
+| `test_keyword_namespace` | `namespace` resaltado (TS) |
+| `test_keyword_module` | `module` resaltado (TS) |
+| `test_keyword_declare` | `declare` resaltado (TS) |
+| `test_keyword_abstract` | `abstract` resaltado (TS) |
+| `test_keyword_implements` | `implements` resaltado (TS) |
+| `test_keyword_readonly` | `readonly` resaltado (TS) |
+| `test_keyword_access_modifiers` | `private`, `protected`, `public` resaltados |
+| `test_keyword_keyof` | `keyof` resaltado (TS) |
+| `test_keyword_infer` | `infer` resaltado (TS) |
+| `test_keyword_is` | `is` resaltado (TS) |
+| `test_keyword_asserts` | `asserts` resaltado (TS) |
+| `test_keyword_satisfies` | `satisfies` resaltado (TS) |
+| `test_keyword_override` | `override` resaltado (TS) |
+| `test_comment_single_line` | Comentario `// ...` |
+| `test_comment_multi_line` | Comentario multilinea `/* ... */` |
+| `test_string_double_quotes` | `"string"` resaltado |
+| `test_string_single_quotes` | `'string'` resaltado |
+| `test_string_template_literal` | `` `template` `` resaltado |
+| `test_number_integer` | Entero `42` resaltado |
+| `test_number_hex` | Hex `0xFF` resaltado |
+| `test_number_float` | Float `3.14` resaltado |
+| `test_type_annotation` | Anotación de tipo `string`, `void` |
+| `test_generic_type` | Genérico `<T>` |
+| `test_union_type` | Unión `string \| number` |
+| `test_interface_with_methods` | Interface con métodos |
+| `test_enum_with_values` | Enum con valores |
+| `test_class_with_access_modifiers` | class + private/protected/public |
+| `test_abstract_class` | class abstracta |
+| `test_readonly_property` | Propiedad readonly |
+| `test_type_assertion` | `as Type` |
+| `test_satisfies_example` | `satisfies Record` |
+| `test_empty_string` | Input vacío → output vacío |
+| `test_multiline_simulation` | 11 líneas de TS |
+| `test_complex_expression` | Expresión con tipos |
+| `test_mapped_type` | Tipo mapeado `{ [K in keyof T] }` |
+| `test_conditional_type` | Tipo condicional `T extends U ? X : Y` |
+| `test_via_highlight_lang` | Llamada a `highlight_lang("typescript")` |
+
+### test_lexer_tsx.py — Lexer de TSX con JSX (37 tests)
+
+Tests para `tsx_lexer_run()`, el lexer flex para TSX con soporte JSX completo.
+Usa estados exclusivos `JSX_TAG` y `JSX_CHILD` para manejar etiquetas web.
+
+| Test | Descripción |
+|:---|:---|
+| `test_keyword_const` | `const` resaltado (heredado TS) |
+| `test_keyword_function` | `function` resaltado |
+| `test_keyword_type` | `type` resaltado (TS) |
+| `test_keyword_interface` | `interface` resaltado (TS) |
+| `test_keyword_class` | `class` resaltado |
+| `test_keyword_return` | `return` resaltado |
+| `test_keyword_async_await` | `async`, `await` resaltados |
+| `test_jsx_opening_tag` | `<div className="box">` — tag + attr + string |
+| `test_jsx_opening_tag_single_attr` | `<span>text</span>` — tag name resaltado |
+| `test_jsx_component_tag` | `<Button onClick={handler}>` — componente |
+| `test_jsx_nested_components` | `<App><Header /><Footer /></App>` |
+| `test_jsx_self_closing` | `<img src={url} />` — self-closing |
+| `test_jsx_self_closing_no_space` | `<br/>` — self-closing sin espacio |
+| `test_jsx_self_closing_with_props` | `<Input type="text" ... />` — múltiples props |
+| `test_jsx_closing_tag` | `</div>` — closing tag |
+| `test_jsx_closing_component` | `</Button>` — closing component |
+| `test_jsx_text_content` | `<p>Hello World</p>` — texto entre tags |
+| `test_jsx_expression_in_content` | `<span>{name}</span>` — expresión en contenido |
+| `test_jsx_mixed_content` | `<div>Hi {user.name}!</div>` — mixto |
+| `test_jsx_string_attribute` | `<div id="main">` — attr string |
+| `test_jsx_single_quote_attribute` | `<div className='active'>` |
+| `test_jsx_expression_attribute` | `<div onClick={handleClick}>` — attr expresión |
+| `test_jsx_full_component` | Componente completo con JSX |
+| `test_jsx_conditional_rendering` | `{cond ? <A /> : <B />}` |
+| `test_jsx_list_rendering` | `{items.map(item => <li>...)}` |
+| `test_jsx_fragment` | `<><Header /><Content /></>` |
+| `test_jsx_deep_nesting` | 4 niveles de anidación |
+| `test_jsx_html_entity` | `&lt; &gt; &amp;` en contenido |
+| `test_jsx_multiple_attributes` | 5 atributos en una etiqueta |
+| `test_jsx_closing_tag_in_expression` | `<div>{show && <Modal />}</div>` |
+| `test_comment_outside_jsx` | `// comment` fuera de JSX |
+| `test_string_outside_jsx` | `"React"` fuera de JSX |
+| `test_template_literal_outside_jsx` | `` `template` `` fuera de JSX |
+| `test_empty_string` | Input vacío → output vacío |
+| `test_multiline_simulation` | 12 líneas de TSX |
+| `test_complex_component` | Componente completo con useState |
+| `test_via_highlight_lang` | Llamada a `highlight_lang("tsx")` |
+
+### test_lexer_html.py — Lexer de HTML (51 tests)
+
+Tests para `html_lexer_run()`, el lexer flex para HTML con estados
+`TAG_OPEN`, `TAG_CLOSE` y `DOCTYPE` para manejar etiquetas, atributos, comentarios y entidades.
+
+| Test | Descripción |
+|:---|:---|
+| `test_tag_div` | `<div class="main">` — tag + attr |
+| `test_tag_h1` | `<h1>Title</h1>` — tag resaltado |
+| `test_tag_p` | `<p>Text</p>` — tag resaltado |
+| `test_tag_span` | `<span id="foo">bar</span>` |
+| `test_tag_a` | `<a href="url">Link</a>` |
+| `test_tag_img_self_closing` | `<img src="photo.jpg" alt="Photo" />` |
+| `test_tag_br` | `<br />` — self-closing |
+| `test_tag_meta` | `<meta charset="UTF-8" />` |
+| `test_tag_link` | `<link rel="stylesheet" href="style.css" />` |
+| `test_tag_script` | `<script>` |
+| `test_tag_style` | `<style>` |
+| `test_close_div` | `</div>` — closing tag |
+| `test_close_p` | `</p>` — closing tag |
+| `test_close_span` | `</span>` — closing tag |
+| `test_close_script` | `</script>` — closing tag |
+| `test_attribute_class` | `class` resaltado |
+| `test_attribute_id` | `id` resaltado |
+| `test_attribute_href` | `href` resaltado |
+| `test_attribute_src` | `src` resaltado |
+| `test_attribute_alt` | `alt` resaltado |
+| `test_attribute_style` | `style` resaltado |
+| `test_attribute_value` | `value` resaltado |
+| `test_attribute_data_attr` | `data-id` (data attribute) |
+| `test_attribute_aria_attr` | `aria-label` (aria attribute) |
+| `test_attribute_disabled` | `disabled` (boolean attribute) |
+| `test_attribute_checked` | `checked` (boolean attribute) |
+| `test_attribute_value_double_quote` | Valor entre comillas dobles |
+| `test_attribute_value_single_quote` | Valor entre comillas simples |
+| `test_attribute_value_with_dashes` | Valor con guiones |
+| `test_attribute_multiple` | Múltiples atributos |
+| `test_comment_simple` | `<!-- comment -->` resaltado |
+| `test_comment_multiline` | Comentario multilinea |
+| `test_comment_with_dashes` | Comentario con guiones |
+| `test_comment_empty` | `<!---->` vacío |
+| `test_doctype_html` | `<!DOCTYPE html>` resaltado |
+| `test_doctype_lowercase` | `<!doctype html>` resaltado |
+| `test_entity_amp` | `&amp;` resaltado |
+| `test_entity_lt` | `&lt;` resaltado |
+| `test_entity_gt` | `&gt;` resaltado |
+| `test_entity_nbsp` | `&nbsp;` resaltado |
+| `test_text_plain` | Texto plano sin tags |
+| `test_text_with_special_chars` | Texto con `<p>` y `&` |
+| `test_nested_tags` | Tags anidados `<div><p>...</p></div>` |
+| `test_full_element` | Elemento completo `<a href="...">` |
+| `test_form_element` | `<input type="text" placeholder="..." />` |
+| `test_table_element` | `<td colspan="2" rowspan="1">` |
+| `test_unknown_tag` | Tag personalizado `<my-component>` |
+| `test_lexer_dispatch_html` | Dispatch vía `highlight_lang("html")` |
+| `test_lexer_dispatch_html_from_bindings` | Dispatch vía bindings |
+| `test_empty_line` | Input vacío → output vacío |
+| `test_angle_brackets_alone` | `< >` solos |
+
+### test_lexer_css.py — Lexer de CSS (58 tests)
+
+Tests para `css_lexer_run()`, el lexer flex para CSS con selectors, properties, at-rules,
+comentarios, strings, números con unidades e important.
+
+| Test | Descripción |
+|:---|:---|
+| `test_class_selector` | `.container` resaltado |
+| `test_id_selector` | `#main` resaltado |
+| `test_tag_selector` | `h1 { font-size: 2rem; }` |
+| `test_pseudo_class` | `:hover` resaltado |
+| `test_pseudo_element` | `::first-line` resaltado |
+| `test_universal_selector` | `* { margin: 0; }` |
+| `test_child_combinator` | `>` combinador |
+| `test_adjacent_combinator` | `+` combinador |
+| `test_sibling_combinator` | `~` combinador |
+| `test_descendant_selector` | `.parent .child` |
+| `test_comma_separated` | `h1, h2, h3` |
+| `test_complex_selector` | `nav ul li a:hover` |
+| `test_property_color` | `color` resaltado |
+| `test_property_margin` | `margin` resaltado |
+| `test_property_display` | `display` resaltado |
+| `test_property_font_size` | `font-size` resaltado |
+| `test_property_background` | `background-color` resaltado |
+| `test_property_border` | `border` resaltado |
+| `test_value_hex_color` | `#ff0000` resaltado |
+| `test_value_hex_shorthand` | `#f00` resaltado |
+| `test_value_hex_8digit` | `#ff000080` resaltado |
+| `test_value_px` | `100px` resaltado |
+| `test_value_em` | `1.5em` resaltado |
+| `test_value_rem` | `2rem` resaltado |
+| `test_value_percent` | `50%` resaltado |
+| `test_value_vh` | `100vh` resaltado |
+| `test_value_vw` | `100vw` resaltado |
+| `test_value_deg` | `45deg` resaltado |
+| `test_value_ms` | `300ms` resaltado |
+| `test_value_negative` | `-10px` resaltado |
+| `test_value_positive_sign` | `+10px` resaltado |
+| `test_value_float` | `1.6` resaltado |
+| `test_value_zero` | `0` resaltado |
+| `test_string_double_quote` | `"Hello World"` resaltado |
+| `test_string_single_quote` | `'Hello World'` resaltado |
+| `test_string_empty` | `""` vacío |
+| `test_at_media` | `@media` resaltado |
+| `test_at_keyframes` | `@keyframes` resaltado |
+| `test_at_import` | `@import` resaltado |
+| `test_at_charset` | `@charset` resaltado |
+| `test_at_root` | `:root` resaltado |
+| `test_at_font_face` | `@font-face` resaltado |
+| `test_comment_simple` | `/* comment */` resaltado |
+| `test_comment_multiline` | Comentario multilinea |
+| `test_comment_empty` | `/**/` vacío |
+| `test_comment_with_asterisks` | `/* *** */` |
+| `test_important` | `!important` resaltado |
+| `test_braces` | `{ }` resaltado |
+| `test_parentheses` | `rgb(...)` resaltado |
+| `test_semicolon` | `;` resaltado |
+| `test_colon` | `:` resaltado |
+| `test_comma` | `,` resaltado |
+| `test_full_rule` | Regla completa con múltiples properties |
+| `test_media_query_full` | `@media` completa anidada |
+| `test_keyframes_full` | `@keyframes` completa |
+| `test_grid_layout` | Grid layout con `repeat`, `1fr` |
+| `test_animation` | Animación completa |
+| `test_lexer_dispatch_css` | Dispatch vía `highlight_lang("css")` |
+| `test_empty_line` | Input vacío → output vacío |
+
+### test_lexer_sh.py — Lexer de Shell/Bash (94 tests)
+
+Tests para `sh_lexer_run()`, el lexer flex para Shell/Bash con keywords de control de flujo,
+builtins, comandos del sistema, variables especiales, operadores de shell y strings.
+
+| Test | Descripción |
+|:---|:---|
+| `test_comment_simple` | `# comment` resaltado |
+| `test_comment_inline` | Código + `#` inline resaltado |
+| `test_comment_hashbang` | `#!/bin/bash` resaltado |
+| `test_comment_at_end_of_line` | Código + `# comment` al final |
+| `test_string_double_quoted` | `"string"` resaltado |
+| `test_string_single_quoted` | `'string'` resaltado |
+| `test_string_empty_double` | `""` vacío |
+| `test_string_empty_single` | `''` vacío |
+| `test_string_with_escaped_quote` | `"\"hi\""` con escape |
+| `test_string_with_variable` | `"Home: $HOME"` con variable |
+| `test_variable_simple` | `$HOME` resaltado |
+| `test_variable_with_braces` | `${NAME}` resaltado |
+| `test_variable_with_default` | `${VAR:-default}` resaltado |
+| `test_variable_with_assign` | `${VAR:=value}` resaltado |
+| `test_variable_with_offset` | `${VAR:0:3}` resaltado |
+| `test_variable_with_length` | `${#VAR}` resaltado |
+| `test_special_var_question` | `$?` (exit status) |
+| `test_special_var_hash` | `$#` (argument count) |
+| `test_special_var_at` | `$@` (all args) |
+| `test_special_var_star` | `$*` (all args) |
+| `test_special_var_pid` | `$$` (PID) |
+| `test_positional_param_1` | `$1` (first arg) |
+| `test_positional_param_9` | `$9` (ninth arg) |
+| `test_positional_param_large` | `$10` (arg > 9) |
+| `test_keyword_if` | `if`, `then` resaltados |
+| `test_keyword_elif` | `elif` resaltado |
+| `test_keyword_else_fi` | `else`, `fi` resaltados |
+| `test_keyword_for_do_done` | `for`, `do`, `done` resaltados |
+| `test_keyword_while_do_done` | `while`, `break` resaltados |
+| `test_keyword_case_esac` | `case`, `esac`, `in` resaltados |
+| `test_keyword_function` | `function` resaltado |
+| `test_keyword_return` | `return` resaltado |
+| `test_keyword_exit` | `exit` resaltado |
+| `test_keyword_break_continue` | `break`, `continue` resaltados |
+| `test_keyword_select` | `select` resaltado |
+| `test_keyword_until` | `until` resaltado |
+| `test_keyword_time` | `time` resaltado |
+| `test_builtin_echo` | `echo` resaltado |
+| `test_builtin_printf` | `printf` resaltado |
+| `test_builtin_read` | `read` resaltado |
+| `test_builtin_test` | `test` resaltado |
+| `test_builtin_eval` | `eval` resaltado |
+| `test_builtin_trap` | `trap` resaltado |
+| `test_builtin_set` | `set` resaltado |
+| `test_builtin_unset` | `unset` resaltado |
+| `test_builtin_export` | `export` resaltado |
+| `test_builtin_local` | `local` resaltado |
+| `test_builtin_source` | `source` resaltado |
+| `test_builtin_alias` | `alias` resaltado |
+| `test_builtin_cd` | `cd` resaltado |
+| `test_builtin_shift` | `shift` resaltado |
+| `test_builtin_typeset` | `typeset` resaltado |
+| `test_command_grep` | `grep` resaltado |
+| `test_command_sed` | `sed` resaltado |
+| `test_command_awk` | `awk` resaltado |
+| `test_command_find` | `find` resaltado |
+| `test_command_cat` | `cat` resaltado |
+| `test_command_ls` | `ls` resaltado |
+| `test_command_cp` | `cp` resaltado |
+| `test_command_mv` | `mv` resaltado |
+| `test_command_rm` | `rm` resaltado |
+| `test_command_mkdir` | `mkdir` resaltado |
+| `test_command_chmod` | `chmod` resaltado |
+| `test_command_curl` | `curl` resaltado |
+| `test_command_wget` | `wget` resaltado |
+| `test_command_git` | `git` resaltado |
+| `test_command_docker` | `docker` resaltado |
+| `test_command_ssh` | `ssh` resaltado |
+| `test_operator_and` | `&&` resaltado |
+| `test_operator_or` | `||` resaltado |
+| `test_operator_pipe` | `|` pipe |
+| `test_operator_redirect_out` | `>` redirect |
+| `test_operator_redirect_append` | `>>` append |
+| `test_operator_redirect_in` | `<` redirect input |
+| `test_operator_redirect_stderr` | `&>` stderr redirect |
+| `test_operator_heredoc` | `<<` heredoc |
+| `test_operator_semicolon` | `;` semicolon |
+| `test_operator_background` | `&` background |
+| `test_operator_not_equal` | `!=` |
+| `test_operator_equal` | `=` test |
+| `test_operator_regex` | `=~` regex match |
+| `test_assignment_simple` | `VAR=value` |
+| `test_assignment_with_quotes` | `VAR="hello world"` |
+| `test_assignment_with_command_substitution` | `COUNT=$(wc -l)` |
+| `test_if_else_fi` | If completo con source |
+| `test_for_loop` | For loop con glob |
+| `test_while_read` | While read pipeline |
+| `test_case_statement` | Case con múltiples patrones |
+| `test_function_definition` | Función con parámetro |
+| `test_pipe_chain` | Pipeline de 5 comandos |
+| `test_lexer_dispatch_sh` | `highlight_lang("sh")` |
+| `test_lexer_dispatch_bash` | `highlight_lang("bash")` |
+| `test_lexer_dispatch_shell` | `highlight_lang("shell")` |
+| `test_empty_line` | Input vacío → output vacío |
 
 ### test_themes.py — Sistema de temas y color overrides (16 tests)
 
@@ -392,8 +851,15 @@ Tests de exportación visual (pre-existente).
 |:---|:---:|:---|
 | `test_parser.py` | 26 | `parse_line()` |
 | `test_markup.py` | 7 | `md_to_markup()` |
-| `test_highlighter.py` | 21 | `highlighter_highlight()` |
-| `test_lexer_py.py` | 46 | `py_lexer_run()`, `highlighter_highlight("python")` |
+| `test_highlighter.py` | 21 | `highlighter_highlight()` — C family aliases: c/cpp/c++/java/cs/csharp/c#/kotlin/kt/swift/dart/rust/rs/php/scala |
+| `test_lexer_py.py` | 47 | `py_lexer_run()`, `highlighter_highlight("python"/"py")` |
+| `test_lexer_go.py` | 58 | `go_lexer_run()`, `highlighter_highlight("go")` |
+| `test_lexer_js.py` | 55 | `js_lexer_run()`, `highlighter_highlight("javascript"/"js")` |
+| `test_lexer_ts.py` | 44 | `ts_lexer_run()`, `highlighter_highlight("typescript"/"ts")` |
+| `test_lexer_tsx.py` | 37 | `tsx_lexer_run()`, `highlighter_highlight("tsx")` con JSX_TAG/JSX_CHILD |
+| `test_lexer_html.py` | 51 | `html_lexer_run()`, `highlighter_highlight("html")` con TAG_OPEN/CLOSE/DOCTYPE |
+| `test_lexer_css.py` | 58 | `css_lexer_run()`, `highlighter_highlight("css")` con selectors, at-rules, units |
+| `test_lexer_sh.py` | 97 | `sh_lexer_run()`, `highlighter_highlight("shell"/"bash"/"sh"/"fish"/"zsh"/"env")` con variables, builtins, comandos |
 | `test_themes.py` | 16 | `theme_default()`, `theme_find()`, `slider_set_theme()`, `slider_set_color()` |
 | `test_export.py` | 11 | `slider_export_png/jpg/svg/pdf/gif()` |
 | `test_transitions.py` | 14 | `do_transition()`, `slider_render()` con transiciones |
@@ -401,7 +867,7 @@ Tests de exportación visual (pre-existente).
 | `test_empty_warnings.py` | 7 | `slider_load()` warnings para archivos vacíos |
 | `test_integration.py` | 25 | `slider_load()`, `slider_free()`, `slider_get_count()`, getters/setters, frontmatter |
 | `test_visual.py` | 2 | `slider_export_png()`, `slider_set_theme()` |
-| **Total** | **240** | |
+| **Total** | **661** | |
 
 ## Cobertura de código (Coverage)
 

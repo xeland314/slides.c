@@ -268,7 +268,7 @@ src/
 make test
 ```
 
-Ejecuta 240 tests unitarios y de integración (Python + ctypes sobre `slider.dll`).
+Ejecuta 661 tests unitarios y de integración (Python + ctypes sobre `slider.dll`).
 
 ## Ports
 
