@@ -16,9 +16,9 @@ static double get_time_ms(void) {
   return (double)ts.tv_sec * 1000.0 + (double)ts.tv_nsec / 1000000.0;
 }
 
-int backend_run(Slider *s) {
+Slider* backend_run(Slider *s) {
   if (!s)
-    return 1;
+    return s;
 
   Display *disp = XOpenDisplay(NULL);
   if (!disp) {
@@ -390,5 +390,5 @@ int backend_run(Slider *s) {
   cairo_surface_destroy(sfc_screen);
   XCloseDisplay(disp);
 
-  return 0;
+  return s;
 }

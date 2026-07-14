@@ -7,8 +7,9 @@
  * @brief Inicia el backend gráfico (ventana, eventos, loop).
  *        Esta función bloquea hasta que el usuario cierra la aplicación.
  * @param s Puntero al Slider cargado con datos y configuración.
- * @return 0 si termina correctamente, >0 si hay error.
+ * @return El puntero final al Slider (puede cambiar durante hot-reload).
+ *         El caller es responsable de llamar slider_free() con el puntero devuelto.
  */
-int backend_run(Slider *s);
+Slider* backend_run(Slider *s);
 
 #endif // BACKEND_H

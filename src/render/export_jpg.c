@@ -22,6 +22,11 @@ int slider_export_jpg(Slider *s, int index, const char *path, int w, int h, int 
 
     cairo_surface_flush(sfc);
     unsigned char *data = cairo_image_surface_get_data(sfc);
+    if (!data) {
+        cairo_destroy(cr);
+        cairo_surface_destroy(sfc);
+        return -1;
+    }
     int stride = cairo_image_surface_get_stride(sfc);
 
     unsigned char *rgb = malloc(w * h * 3);
