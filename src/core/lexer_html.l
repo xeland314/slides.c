@@ -81,32 +81,37 @@ ATTR         "class"|"id"|"style"|"href"|"src"|"alt"|"title"|"name"|"type"|"valu
   }
 
 <TAG_OPEN>{ATTR}"="{STRING_DQ} {
-    /* attribute="value" */
-    size_t eq = 0;
-    while (eq < html_leng && html_text[eq] != '=') eq++;
-    char *attr = (char *)malloc(eq + 1);
-    if (attr) {
-      memcpy(attr, html_text, eq);
-      attr[eq] = '\0';
-      append_tagged_flex(attr, current_theme->code_kw);
-      free(attr);
-    }
-    escape_append_flex('=');
-    /* value part */
-    size_t vstart = eq + 1;
-    size_t vlen = html_leng - vstart;
-    char *val = (char *)malloc(vlen + 1);
-    if (val) {
-      memcpy(val, html_text + vstart, vlen);
-      val[vlen] = '\0';
-      append_tagged_flex(val, current_theme->code_str);
-      free(val);
+    char *eq_ptr = strchr(html_text, '=');
+    if (eq_ptr) {
+        size_t eq = (size_t)(eq_ptr - html_text);
+        
+        /* process attribute key */
+        char *attr = (char *)malloc(eq + 1);
+        if (attr) {
+            memcpy(attr, html_text, eq);
+            attr[eq] = '\0';
+            append_tagged_flex(attr, current_theme->code_kw);
+            free(attr);
+        }
+
+        escape_append_flex('=');
+
+        /* process value */
+        size_t vstart = eq + 1;
+        size_t vlen = (size_t)html_leng - vstart;
+        char *val = (char *)malloc(vlen + 1);
+        if (val) {
+            memcpy(val, html_text + vstart, vlen);
+            val[vlen] = '\0';
+            append_tagged_flex(val, current_theme->code_str);
+            free(val);
+        }
     }
   }
 
 <TAG_OPEN>{ATTR}"="{STRING_SQ} {
     size_t eq = 0;
-    while (eq < html_leng && html_text[eq] != '=') eq++;
+    while (eq < (size_t)html_leng && html_text[eq] != '=') eq++;
     char *attr = (char *)malloc(eq + 1);
     if (attr) {
       memcpy(attr, html_text, eq);
@@ -116,7 +121,7 @@ ATTR         "class"|"id"|"style"|"href"|"src"|"alt"|"title"|"name"|"type"|"valu
     }
     escape_append_flex('=');
     size_t vstart = eq + 1;
-    size_t vlen = html_leng - vstart;
+    size_t vlen = (size_t)html_leng - vstart;
     char *val = (char *)malloc(vlen + 1);
     if (val) {
       memcpy(val, html_text + vstart, vlen);

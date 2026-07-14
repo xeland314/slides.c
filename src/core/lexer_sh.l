@@ -65,18 +65,20 @@ COMMAND      "grep"|"sed"|"awk"|"find"|"xargs"|"cat"|"ls"|"sort"|"uniq"|"head"|"
   /* ── Variables (bare identifiers that are known env vars) ── */
 {IDENTIFIER}"="{IDENTIFIER} {
     /* VAR=value — highlight VAR as keyword */
-    size_t eq = 0;
-    while (eq < sh_leng && sh_text[eq] != '=') eq++;
-    char *name = (char *)malloc(eq + 1);
-    if (name) {
-      memcpy(name, sh_text, eq);
-      name[eq] = '\0';
-      append_tagged_flex(name, current_theme->code_kw);
-      free(name);
+    char *eq_ptr = strchr(sh_text, '=');
+    if (eq_ptr) {
+      size_t eq = (size_t)(eq_ptr - sh_text);
+      char *name = (char *)malloc(eq + 1);
+      if (name) {
+        memcpy(name, sh_text, eq);
+        name[eq] = '\0';
+        append_tagged_flex(name, current_theme->code_kw);
+        free(name);
+      }
+      escape_append_flex(sh_text[eq]);
+      const char *val = sh_text + eq + 1;
+      append_str_flex(val);
     }
-    escape_append_flex(sh_text[eq]);
-    const char *val = sh_text + eq + 1;
-    append_str_flex(val);
   }
 
   /* ── Identifiers ── */
