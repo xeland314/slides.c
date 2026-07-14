@@ -76,6 +76,111 @@ class TestParser(unittest.TestCase):
         self.assertEqual(sl.type, LineType.TASK_CHECKED)
         self.assertEqual(sl.text.decode("utf-8"), "Tarea completada 2")
 
+    def test_parse_empty_line(self):
+        sl = self.cs.parse_line("")
+        self.assertEqual(sl.type, LineType.EMPTY)
+
+    def test_parse_whitespace_only(self):
+        sl = self.cs.parse_line("   ")
+        self.assertEqual(sl.type, LineType.EMPTY)
+
+    def test_parse_body_text(self):
+        sl = self.cs.parse_line("Esto es un parrafo normal.")
+        self.assertEqual(sl.type, LineType.BODY)
+        self.assertEqual(sl.text.decode("utf-8"), "Esto es un parrafo normal.")
+
+    def test_parse_body_long_text(self):
+        long_text = "Palabra " * 50
+        sl = self.cs.parse_line(long_text.strip())
+        self.assertEqual(sl.type, LineType.BODY)
+        self.assertEqual(sl.text.decode("utf-8"), long_text.strip())
+
+    def test_parse_num_list_dot(self):
+        sl = self.cs.parse_line("1. Primer elemento")
+        self.assertEqual(sl.type, LineType.NUM_LIST)
+        self.assertEqual(sl.marker.decode("utf-8"), "1.")
+        self.assertEqual(sl.text.decode("utf-8"), "Primer elemento")
+
+    def test_parse_num_list_letter(self):
+        sl = self.cs.parse_line("a) Elemento con letra")
+        self.assertEqual(sl.type, LineType.NUM_LIST)
+        self.assertEqual(sl.marker.decode("utf-8"), "a)")
+        self.assertEqual(sl.text.decode("utf-8"), "Elemento con letra")
+
+    def test_parse_num_list_roman(self):
+        sl = self.cs.parse_line("i. Numero romano")
+        self.assertEqual(sl.type, LineType.NUM_LIST)
+        self.assertEqual(sl.marker.decode("utf-8"), "i.")
+        self.assertEqual(sl.text.decode("utf-8"), "Numero romano")
+
+    def test_parse_num_list_uppercase(self):
+        sl = self.cs.parse_line("A) Mayuscula")
+        self.assertEqual(sl.type, LineType.NUM_LIST)
+        self.assertEqual(sl.marker.decode("utf-8"), "A)")
+        self.assertEqual(sl.text.decode("utf-8"), "Mayuscula")
+
+    def test_parse_num_list_multi_digit(self):
+        sl = self.cs.parse_line("12. Numero grande")
+        self.assertEqual(sl.type, LineType.NUM_LIST)
+        self.assertEqual(sl.marker.decode("utf-8"), "12.")
+        self.assertEqual(sl.text.decode("utf-8"), "Numero grande")
+
+    def test_parse_code_fence_start(self):
+        # parse_line is a single-line parser; code fences are handled by slider_load.
+        # ````c` doesn't match any specific rule, so it's treated as BODY by parse_line.
+        sl = self.cs.parse_line("```c")
+        self.assertEqual(sl.type, LineType.BODY)
+
+    def test_parse_code_fence_end(self):
+        # Same as above — bare ``` is treated as BODY by the line parser.
+        sl = self.cs.parse_line("```")
+        self.assertEqual(sl.type, LineType.BODY)
+
+    def test_parse_table_multi_column(self):
+        sl = self.cs.parse_line("| A | B | C | D |")
+        self.assertEqual(sl.type, LineType.TABLE_ROW)
+        self.assertEqual(sl.ncols, 4)
+        self.assertEqual(sl.cols[0].value.decode("utf-8"), "A")
+        self.assertEqual(sl.cols[1].value.decode("utf-8"), "B")
+        self.assertEqual(sl.cols[2].value.decode("utf-8"), "C")
+        self.assertEqual(sl.cols[3].value.decode("utf-8"), "D")
+
+    def test_parse_table_with_alignment(self):
+        # | :--- | ---: | :---: | is a separator (contains only |, -, :, space)
+        sl = self.cs.parse_line("| :--- | ---: | :---: |")
+        self.assertEqual(sl.type, LineType.TABLE_SEP)
+
+    def test_parse_table_separator_variants(self):
+        for sep in ["|---|---|", "| --- | --- |", "|:---|---:|", "| :--- | :---: |"]:
+            with self.subTest(sep=sep):
+                sl = self.cs.parse_line(sep)
+                self.assertEqual(sl.type, LineType.TABLE_SEP)
+
+    def test_parse_bullet_with_special_chars(self):
+        sl = self.cs.parse_line("- Item con **negrita**")
+        self.assertEqual(sl.type, LineType.BULLET1)
+        self.assertEqual(sl.text.decode("utf-8"), "Item con **negrita**")
+
+    def test_parse_image_markdown_format(self):
+        sl = self.cs.parse_line("![descripcion larga](ruta/archivo.png)")
+        self.assertEqual(sl.type, LineType.IMAGE)
+        self.assertEqual(sl.text.decode("utf-8"), "ruta/archivo.png")
+
+    def test_parse_blockquote_long(self):
+        sl = self.cs.parse_line("> Esta es una cita muy larga que ocupara mucho espacio en la pantalla")
+        self.assertEqual(sl.type, LineType.BLOCKQUOTE)
+        self.assertTrue(len(sl.text.decode("utf-8")) > 20)
+
+    def test_parse_title_with_special_chars(self):
+        sl = self.cs.parse_line("# Titulo con符号 & <caracteres>")
+        self.assertEqual(sl.type, LineType.TITLE)
+        self.assertEqual(sl.text.decode("utf-8"), "Titulo con符号 & <caracteres>")
+
+    def test_parse_subtitle_deep(self):
+        sl = self.cs.parse_line("## Subtitulo profundo")
+        self.assertEqual(sl.type, LineType.SUBTITLE)
+        self.assertEqual(sl.text.decode("utf-8"), "Subtitulo profundo")
+
 
 if __name__ == "__main__":
     unittest.main()
