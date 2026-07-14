@@ -6,6 +6,9 @@ RM = rm -f
 PREFIX ?= /usr/local
 DESTDIR ?=
 
+# Versión unificada (fuente única: src/version.h)
+VERSION := $(shell grep '^#define VERSION ' src/version.h | sed 's/.*"\(.*\)"/\1/')
+
 # Detección de Sistema Operativo
 ifeq ($(OS),Windows_NT)
     PLATFORM_LIBS = -lgdi32 -luser32
@@ -77,6 +80,10 @@ $(TARGET_DLL): $(CORE_OBJ)
 $(TARGET_ADA): $(CORE_OBJ)
 	gnatmake -Iports/ada/ -D ports/ada/ -o $@ ports/ada/slides_main.adb -largs $(CORE_OBJ) $(LIBS)
 
+# --- Man page ---
+slides.1: slides.1.in
+	sed 's/@VERSION@/$(VERSION)/g' $< > $@
+
 # --- Tests (Python) ---
 test: $(TARGET_DLL)
 	python3 ports/python/run_all_tests.py
@@ -119,13 +126,14 @@ src/core/lexer_%.c: src/core/lexer_%.l
 clean:
 	$(RM) $(CORE_OBJ) $(MAIN_OBJ) $(TARGET_EXE) $(TARGET_ADA) $(TARGET_DLL)
 	$(RM) slides libslider.so slides_ada.exe
+	$(RM) slides.1
 	$(RM) ports/ada/*.o ports/ada/*.ali
 	$(RM) src/core/lexer_c.c src/core/lexer_py.c
 	$(RM) *.gcda *.gcno *.gcov
 	$(RM) slider_coverage.dll libslider_coverage.so
 	$(RM) coverage -rf
 
-install: $(TARGET_EXE)
+install: $(TARGET_EXE) slides.1
 	install -d $(DESTDIR)$(PREFIX)/bin
 	install -m 755 $(TARGET_EXE) $(DESTDIR)$(PREFIX)/bin/
 	install -d $(DESTDIR)$(PREFIX)/share/man/man1

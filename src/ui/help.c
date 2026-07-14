@@ -1,4 +1,5 @@
 #include "help.h"
+#include "../version.h"
 #include <stdio.h>
 
 void print_help(const char *prog) {
@@ -35,5 +36,5 @@ void print_help(const char *prog) {
 }
 
 void print_version(void) {
-    printf("c-slides v0.2.2\n");
+    printf("c-slides v%s\n", VERSION);
 }
