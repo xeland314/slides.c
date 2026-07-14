@@ -32,6 +32,8 @@ void highlighter_highlight(const char *line, const char *lang,
     ts_lexer_run(line, theme, out, out_size);
   } else if (lang && strcmp(lang, "tsx") == 0) {
     tsx_lexer_run(line, theme, out, out_size);
+  } else if (lang && strcmp(lang, "jsx") == 0) {
+    tsx_lexer_run(line, theme, out, out_size);
   } else {
     // Por defecto usamos C
     c_lexer_run(line, theme, out, out_size);
