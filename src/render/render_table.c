@@ -23,7 +23,7 @@ double render_table(cairo_t *cr, PangoLayout *lay_body,
         SlideLine *sl = &lines[start + i];
         if (sl->type != LINE_TABLE_ROW) continue;
         for (int c = 0; c < sl->ncols && c < max_cols; c++) {
-            char markup[MAX_LINE_LEN * 4];
+            static char markup[MAX_LINE_LEN * 4];
             md_to_markup(sl->cols[c], markup, sizeof(markup));
             pango_layout_set_markup(lay_body, markup, -1);
             pango_layout_set_width(lay_body, -1);
@@ -55,7 +55,7 @@ double render_table(cairo_t *cr, PangoLayout *lay_body,
         double row_h = 40.0 * s->font_scale;
         for (int c = 0; c < sl->ncols && c < max_cols; c++) {
             pango_layout_set_width(lay_body, (int)((col_w[c] - 12.0 * s->font_scale) * PANGO_SCALE));
-            char markup[MAX_LINE_LEN * 4];
+            static char markup[MAX_LINE_LEN * 4];
             md_to_markup(sl->cols[c], markup, sizeof(markup));
             pango_layout_set_markup(lay_body, markup, -1);
             int tw, th;
@@ -90,7 +90,7 @@ double render_table(cairo_t *cr, PangoLayout *lay_body,
         double cur_text_x = x;
         for (int c = 0; c < sl->ncols && c < max_cols; c++) {
             pango_layout_set_width(lay_body, (int)((col_w[c] - 12.0 * s->font_scale) * PANGO_SCALE));
-            char markup[MAX_LINE_LEN * 4];
+            static char markup[MAX_LINE_LEN * 4];
             md_to_markup(sl->cols[c], markup, sizeof(markup));
             pango_layout_set_markup(lay_body, markup, -1);
             int tw, th;

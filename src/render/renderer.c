@@ -10,6 +10,55 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+/* ── Layout cache: avoids 7 create/destroy cycles per frame ─────────────── */
+#define NUM_LAYOUTS 7
+static PangoLayout *lcached[NUM_LAYOUTS] = {0};
+static cairo_t     *lcached_cr = NULL;
+static double       lcached_content_w = 0;
+static char         lcached_fonts[6][128]; /* title,subtitle,body,bullet,num,code */
+static int          lcached_valid = 0;
+
+void layouts_invalidate(void) {
+    for (int i = 0; i < NUM_LAYOUTS; i++) {
+        if (lcached[i]) { g_object_unref(lcached[i]); lcached[i] = NULL; }
+    }
+    lcached_valid = 0;
+}
+
+static void layouts_ensure(cairo_t *cr, Slider *s, double content_w) {
+    char f_title[128], f_subtitle[128], f_body[128], f_bullet[128], f_num[128], f_code[128];
+    snprintf(f_title,    sizeof(f_title),    "%s Bold %d", s->font_family, (int)(44 * s->font_scale));
+    snprintf(f_subtitle, sizeof(f_subtitle), "%s %d",      s->font_family, (int)(26 * s->font_scale));
+    snprintf(f_body,     sizeof(f_body),     "%s %d",      s->font_family, (int)(20 * s->font_scale));
+    snprintf(f_bullet,   sizeof(f_bullet),   "%s %d",      s->font_family, (int)(18 * s->font_scale));
+    snprintf(f_num,      sizeof(f_num),      "%s %d",      s->font_family, (int)(13 * s->font_scale));
+    snprintf(f_code,     sizeof(f_code),     "Monospace %d",             (int)(16 * s->font_scale));
+
+    if (lcached_valid && lcached_cr == cr && lcached_content_w == content_w &&
+        strcmp(lcached_fonts[0], f_title) == 0 && strcmp(lcached_fonts[1], f_subtitle) == 0 &&
+        strcmp(lcached_fonts[2], f_body) == 0 && strcmp(lcached_fonts[3], f_bullet) == 0 &&
+        strcmp(lcached_fonts[4], f_num) == 0 && strcmp(lcached_fonts[5], f_code) == 0) {
+        return;
+    }
+    layouts_invalidate();
+    lcached_cr = cr;
+    lcached_content_w = content_w;
+    strncpy(lcached_fonts[0], f_title,    127); lcached_fonts[0][127] = '\0';
+    strncpy(lcached_fonts[1], f_subtitle, 127); lcached_fonts[1][127] = '\0';
+    strncpy(lcached_fonts[2], f_body,     127); lcached_fonts[2][127] = '\0';
+    strncpy(lcached_fonts[3], f_bullet,   127); lcached_fonts[3][127] = '\0';
+    strncpy(lcached_fonts[4], f_num,      127); lcached_fonts[4][127] = '\0';
+    strncpy(lcached_fonts[5], f_code,     127); lcached_fonts[5][127] = '\0';
+    lcached[0] = make_layout(cr, f_title,    content_w);
+    lcached[1] = make_layout(cr, f_subtitle, content_w);
+    lcached[2] = make_layout(cr, f_body,     content_w);
+    lcached[3] = make_layout(cr, f_body,     content_w - 30.0 * s->font_scale);
+    lcached[4] = make_layout(cr, f_bullet,   content_w - 60.0 * s->font_scale);
+    lcached[5] = make_layout(cr, f_num,      200.0 * s->font_scale);
+    lcached[6] = make_layout(cr, f_code,     content_w - 30.0 * s->font_scale);
+    lcached_valid = 1;
+}
+
 void slider_render(Slider *s, int index, cairo_t *cr, int win_w, int win_h, double time_ms) {
     if (!s || index < 0 || index >= s->n_slides) return;
 
@@ -33,21 +82,14 @@ void slider_render(Slider *s, int index, cairo_t *cr, int win_w, int win_h, doub
 
     slide->has_anim = false;
 
-    char f_title[128], f_subtitle[128], f_body[128], f_bullet[128], f_num[128], f_code[128];
-    snprintf(f_title,    sizeof(f_title),    "%s Bold %d", s->font_family, (int)(44 * s->font_scale));
-    snprintf(f_subtitle, sizeof(f_subtitle), "%s %d",      s->font_family, (int)(26 * s->font_scale));
-    snprintf(f_body,     sizeof(f_body),     "%s %d",      s->font_family, (int)(20 * s->font_scale));
-    snprintf(f_bullet,   sizeof(f_bullet),   "%s %d",      s->font_family, (int)(18 * s->font_scale));
-    snprintf(f_num,      sizeof(f_num),      "%s %d",      s->font_family, (int)(13 * s->font_scale));
-    snprintf(f_code,     sizeof(f_code),     "Monospace %d",             (int)(16 * s->font_scale));
-
-    PangoLayout *lay_title    = make_layout(cr, f_title,    content_w);
-    PangoLayout *lay_subtitle = make_layout(cr, f_subtitle, content_w);
-    PangoLayout *lay_body     = make_layout(cr, f_body,     content_w);
-    PangoLayout *lay_bullet   = make_layout(cr, f_body,     content_w - 30.0 * s->font_scale);
-    PangoLayout *lay_bullet2  = make_layout(cr, f_bullet,   content_w - 60.0 * s->font_scale);
-    PangoLayout *lay_num      = make_layout(cr, f_num,      200.0 * s->font_scale);
-    PangoLayout *lay_code     = make_layout(cr, f_code,     content_w - 30.0 * s->font_scale);
+    layouts_ensure(cr, s, content_w);
+    PangoLayout *lay_title    = lcached[0];
+    PangoLayout *lay_subtitle = lcached[1];
+    PangoLayout *lay_body     = lcached[2];
+    PangoLayout *lay_bullet   = lcached[3];
+    PangoLayout *lay_bullet2  = lcached[4];
+    PangoLayout *lay_num      = lcached[5];
+    PangoLayout *lay_code     = lcached[6];
 
     double y = MARGIN_Y;
     int i = 0;
@@ -77,7 +119,7 @@ void slider_render(Slider *s, int index, cairo_t *cr, int win_w, int win_h, doub
             double t_x = b_x + 25.0 * s->font_scale;
             SET_COLOR(cr, s->theme->accent);
             cairo_set_line_width(cr, 4.0 * s->font_scale);
-            char markup[MAX_LINE_LEN * 4];
+            static char markup[MAX_LINE_LEN * 4];
             md_to_markup(sl->text, markup, sizeof(markup));
             pango_layout_set_markup(lay_body, markup, -1);
             int tw, th;
@@ -92,7 +134,7 @@ void slider_render(Slider *s, int index, cairo_t *cr, int win_w, int win_h, doub
             i++; break;
         }
         case LINE_BULLET1: {
-            char markup[MAX_LINE_LEN * 4];
+            static char markup[MAX_LINE_LEN * 4];
             md_to_markup(sl->text, markup, sizeof(markup));
             pango_layout_set_markup(lay_bullet, markup, -1);
 
@@ -123,7 +165,7 @@ void slider_render(Slider *s, int index, cairo_t *cr, int win_w, int win_h, doub
             i++; break;
         case LINE_TASK_UNCHECKED:
         case LINE_TASK_CHECKED: {
-            char markup[MAX_LINE_LEN * 4];
+            static char markup[MAX_LINE_LEN * 4];
             md_to_markup(sl->text, markup, sizeof(markup));
             pango_layout_set_markup(lay_bullet, markup, -1);
 
@@ -158,7 +200,7 @@ void slider_render(Slider *s, int index, cairo_t *cr, int win_w, int win_h, doub
             i++; break;
         }
         case LINE_BULLET2: {
-            char markup[MAX_LINE_LEN * 4];
+            static char markup[MAX_LINE_LEN * 4];
             md_to_markup(sl->text, markup, sizeof(markup));
             pango_layout_set_markup(lay_bullet2, markup, -1);
 
@@ -314,7 +356,4 @@ void slider_render(Slider *s, int index, cairo_t *cr, int win_w, int win_h, doub
         set_color(cr, COLOR_R(s->theme->bg)*1.5, COLOR_G(s->theme->bg)*1.5, COLOR_B(s->theme->bg)*1.5); cairo_rectangle(cr, 0, win_h - 4, win_w, 4); cairo_fill(cr);
         SET_COLOR(cr, s->theme->accent); cairo_rectangle(cr, 0, win_h - 4, win_w * prog, 4); cairo_fill(cr);
     }
-    g_object_unref(lay_title); g_object_unref(lay_subtitle); g_object_unref(lay_body);
-    g_object_unref(lay_bullet); g_object_unref(lay_bullet2); g_object_unref(lay_num);
-    g_object_unref(lay_code);
 }

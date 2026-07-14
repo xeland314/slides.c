@@ -9,6 +9,25 @@
 
 static ImgCache img_cache[MAX_IMG_CACHE];
 static int      img_cache_count = 0;
+static unsigned long img_cache_tick = 0;
+
+static void evict_lru(void) {
+    int oldest = 0;
+    for (int i = 1; i < img_cache_count; i++) {
+        if (img_cache[i].last_access < img_cache[oldest].last_access)
+            oldest = i;
+    }
+    ImgCache *c = &img_cache[oldest];
+    if (c->surfaces) {
+        for (int f = 0; f < c->n_frames; f++)
+            if (c->surfaces[f]) cairo_surface_destroy(c->surfaces[f]);
+        free(c->surfaces);
+    }
+    free(c->delays);
+    /* compact: move last slot into evicted slot */
+    img_cache[oldest] = img_cache[img_cache_count - 1];
+    img_cache_count--;
+}
 
 static cairo_surface_t *create_cairo_surface_from_stbi(unsigned char *data, int w, int h, int channels) {
     if (!data) return NULL;
@@ -59,11 +78,14 @@ static cairo_surface_t *create_cairo_surface_from_stbi(unsigned char *data, int 
 }
 
 ImgCache *get_image_cache(const char *path) {
-    for (int i = 0; i < img_cache_count; i++)
-        if (strcmp(img_cache[i].path, path) == 0)
+    for (int i = 0; i < img_cache_count; i++) {
+        if (strcmp(img_cache[i].path, path) == 0) {
+            img_cache[i].last_access = ++img_cache_tick;
             return &img_cache[i];
+        }
+    }
 
-    if (img_cache_count >= MAX_IMG_CACHE) return NULL;
+    if (img_cache_count >= MAX_IMG_CACHE) evict_lru();
 
     ImgCache *cache = &img_cache[img_cache_count];
     strncpy(cache->path, path, 511);
@@ -125,6 +147,7 @@ ImgCache *get_image_cache(const char *path) {
         stbi_image_free(data);
     }
 
+    cache->last_access = ++img_cache_tick;
     img_cache_count++;
     return cache;
 }
@@ -147,6 +170,7 @@ void img_cache_free_all(void) {
         c->total_duration = 0;
     }
     img_cache_count = 0;
+    img_cache_tick = 0;
 }
 
 PangoLayout *make_layout(cairo_t *cr, const char *font_desc_str, double max_width_px) {
@@ -219,7 +243,7 @@ void md_to_markup(const char *in, char *out, size_t out_size) {
 }
 
 double render_pango(cairo_t *cr, PangoLayout *lay, const char *text, double x, double y) {
-    char markup[MAX_LINE_LEN * 4];
+    static char markup[MAX_LINE_LEN * 4];
     md_to_markup(text, markup, sizeof(markup));
     pango_layout_set_markup(lay, markup, -1);
     int tw, th;

@@ -13,5 +13,6 @@ void md_to_markup(const char *in, char *out, size_t out_size);
 double render_pango(cairo_t *cr, PangoLayout *lay, const char *text, double x, double y);
 ImgCache *get_image_cache(const char *path);
 void img_cache_free_all(void);
+void layouts_invalidate(void);
 
 #endif

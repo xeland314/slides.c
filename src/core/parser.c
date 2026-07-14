@@ -557,6 +557,7 @@ void slider_free(Slider *s) {
     if (!s) return;
     for (int i = 0; i < s->n_slides; i++)
         slider_free_slide_lines(&s->slides[i]);
+    layouts_invalidate();
     img_cache_free_all();
     free(s);
 }

@@ -130,6 +130,7 @@ typedef struct {
     cairo_surface_t **surfaces; // Array de superficies
     int              *delays;   // Array de delays en ms
     int               total_duration;
+    unsigned long     last_access; // LRU timestamp (monotonic counter)
 } ImgCache;
 
 #endif // INTERNAL_H
