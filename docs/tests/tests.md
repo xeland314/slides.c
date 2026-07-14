@@ -37,6 +37,8 @@ ports/python/
    test_lexer_js.py       Tests del lexer de JavaScript (flex lexer)
    test_lexer_ts.py       Tests del lexer de TypeScript (flex lexer)
    test_lexer_tsx.py      Tests del lexer de TSX con JSX (flex lexer)
+   test_lexer_css.py       Tests del lexer de CSS (flex lexer)
+   test_lexer_sh.py        Tests del lexer de Shell/Bash (flex lexer)
    test_themes.py         Tests del sistema de temas y color overrides
   test_export.py         Tests de exportación a PNG/JPG/SVG/PDF/GIF
   test_transitions.py    Tests de transiciones entre slides (render_transition.c)
@@ -527,6 +529,108 @@ comentarios, strings, números con unidades e important.
 | `test_lexer_dispatch_css` | Dispatch vía `highlight_lang("css")` |
 | `test_empty_line` | Input vacío → output vacío |
 
+### test_lexer_sh.py — Lexer de Shell/Bash (94 tests)
+
+Tests para `sh_lexer_run()`, el lexer flex para Shell/Bash con keywords de control de flujo,
+builtins, comandos del sistema, variables especiales, operadores de shell y strings.
+
+| Test | Descripción |
+|:---|:---|
+| `test_comment_simple` | `# comment` resaltado |
+| `test_comment_inline` | Código + `#` inline resaltado |
+| `test_comment_hashbang` | `#!/bin/bash` resaltado |
+| `test_comment_at_end_of_line` | Código + `# comment` al final |
+| `test_string_double_quoted` | `"string"` resaltado |
+| `test_string_single_quoted` | `'string'` resaltado |
+| `test_string_empty_double` | `""` vacío |
+| `test_string_empty_single` | `''` vacío |
+| `test_string_with_escaped_quote` | `"\"hi\""` con escape |
+| `test_string_with_variable` | `"Home: $HOME"` con variable |
+| `test_variable_simple` | `$HOME` resaltado |
+| `test_variable_with_braces` | `${NAME}` resaltado |
+| `test_variable_with_default` | `${VAR:-default}` resaltado |
+| `test_variable_with_assign` | `${VAR:=value}` resaltado |
+| `test_variable_with_offset` | `${VAR:0:3}` resaltado |
+| `test_variable_with_length` | `${#VAR}` resaltado |
+| `test_special_var_question` | `$?` (exit status) |
+| `test_special_var_hash` | `$#` (argument count) |
+| `test_special_var_at` | `$@` (all args) |
+| `test_special_var_star` | `$*` (all args) |
+| `test_special_var_pid` | `$$` (PID) |
+| `test_positional_param_1` | `$1` (first arg) |
+| `test_positional_param_9` | `$9` (ninth arg) |
+| `test_positional_param_large` | `$10` (arg > 9) |
+| `test_keyword_if` | `if`, `then` resaltados |
+| `test_keyword_elif` | `elif` resaltado |
+| `test_keyword_else_fi` | `else`, `fi` resaltados |
+| `test_keyword_for_do_done` | `for`, `do`, `done` resaltados |
+| `test_keyword_while_do_done` | `while`, `break` resaltados |
+| `test_keyword_case_esac` | `case`, `esac`, `in` resaltados |
+| `test_keyword_function` | `function` resaltado |
+| `test_keyword_return` | `return` resaltado |
+| `test_keyword_exit` | `exit` resaltado |
+| `test_keyword_break_continue` | `break`, `continue` resaltados |
+| `test_keyword_select` | `select` resaltado |
+| `test_keyword_until` | `until` resaltado |
+| `test_keyword_time` | `time` resaltado |
+| `test_builtin_echo` | `echo` resaltado |
+| `test_builtin_printf` | `printf` resaltado |
+| `test_builtin_read` | `read` resaltado |
+| `test_builtin_test` | `test` resaltado |
+| `test_builtin_eval` | `eval` resaltado |
+| `test_builtin_trap` | `trap` resaltado |
+| `test_builtin_set` | `set` resaltado |
+| `test_builtin_unset` | `unset` resaltado |
+| `test_builtin_export` | `export` resaltado |
+| `test_builtin_local` | `local` resaltado |
+| `test_builtin_source` | `source` resaltado |
+| `test_builtin_alias` | `alias` resaltado |
+| `test_builtin_cd` | `cd` resaltado |
+| `test_builtin_shift` | `shift` resaltado |
+| `test_builtin_typeset` | `typeset` resaltado |
+| `test_command_grep` | `grep` resaltado |
+| `test_command_sed` | `sed` resaltado |
+| `test_command_awk` | `awk` resaltado |
+| `test_command_find` | `find` resaltado |
+| `test_command_cat` | `cat` resaltado |
+| `test_command_ls` | `ls` resaltado |
+| `test_command_cp` | `cp` resaltado |
+| `test_command_mv` | `mv` resaltado |
+| `test_command_rm` | `rm` resaltado |
+| `test_command_mkdir` | `mkdir` resaltado |
+| `test_command_chmod` | `chmod` resaltado |
+| `test_command_curl` | `curl` resaltado |
+| `test_command_wget` | `wget` resaltado |
+| `test_command_git` | `git` resaltado |
+| `test_command_docker` | `docker` resaltado |
+| `test_command_ssh` | `ssh` resaltado |
+| `test_operator_and` | `&&` resaltado |
+| `test_operator_or` | `||` resaltado |
+| `test_operator_pipe` | `|` pipe |
+| `test_operator_redirect_out` | `>` redirect |
+| `test_operator_redirect_append` | `>>` append |
+| `test_operator_redirect_in` | `<` redirect input |
+| `test_operator_redirect_stderr` | `&>` stderr redirect |
+| `test_operator_heredoc` | `<<` heredoc |
+| `test_operator_semicolon` | `;` semicolon |
+| `test_operator_background` | `&` background |
+| `test_operator_not_equal` | `!=` |
+| `test_operator_equal` | `=` test |
+| `test_operator_regex` | `=~` regex match |
+| `test_assignment_simple` | `VAR=value` |
+| `test_assignment_with_quotes` | `VAR="hello world"` |
+| `test_assignment_with_command_substitution` | `COUNT=$(wc -l)` |
+| `test_if_else_fi` | If completo con source |
+| `test_for_loop` | For loop con glob |
+| `test_while_read` | While read pipeline |
+| `test_case_statement` | Case con múltiples patrones |
+| `test_function_definition` | Función con parámetro |
+| `test_pipe_chain` | Pipeline de 5 comandos |
+| `test_lexer_dispatch_sh` | `highlight_lang("sh")` |
+| `test_lexer_dispatch_bash` | `highlight_lang("bash")` |
+| `test_lexer_dispatch_shell` | `highlight_lang("shell")` |
+| `test_empty_line` | Input vacío → output vacío |
+
 ### test_themes.py — Sistema de temas y color overrides (16 tests)
 
 Tests para `theme_default()`, `theme_find()`, `slider_set_theme()` y `slider_set_color()`.
@@ -755,6 +859,7 @@ Tests de exportación visual (pre-existente).
 | `test_lexer_tsx.py` | 37 | `tsx_lexer_run()`, `highlighter_highlight("tsx")` con JSX_TAG/JSX_CHILD |
 | `test_lexer_html.py` | 51 | `html_lexer_run()`, `highlighter_highlight("html")` con TAG_OPEN/CLOSE/DOCTYPE |
 | `test_lexer_css.py` | 58 | `css_lexer_run()`, `highlighter_highlight("css")` con selectors, at-rules, units |
+| `test_lexer_sh.py` | 94 | `sh_lexer_run()`, `highlighter_highlight("shell"/"bash"/"sh")` con variables, builtins, comandos |
 | `test_themes.py` | 16 | `theme_default()`, `theme_find()`, `slider_set_theme()`, `slider_set_color()` |
 | `test_export.py` | 11 | `slider_export_png/jpg/svg/pdf/gif()` |
 | `test_transitions.py` | 14 | `do_transition()`, `slider_render()` con transiciones |
@@ -762,7 +867,7 @@ Tests de exportación visual (pre-existente).
 | `test_empty_warnings.py` | 7 | `slider_load()` warnings para archivos vacíos |
 | `test_integration.py` | 25 | `slider_load()`, `slider_free()`, `slider_get_count()`, getters/setters, frontmatter |
 | `test_visual.py` | 2 | `slider_export_png()`, `slider_set_theme()` |
-| **Total** | **545** | |
+| **Total** | **639** | |
 
 ## Cobertura de código (Coverage)
 
