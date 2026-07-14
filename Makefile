@@ -81,6 +81,33 @@ $(TARGET_ADA): $(CORE_OBJ)
 test: $(TARGET_DLL)
 	python3 ports/python/run_all_tests.py
 
+# --- Coverage ---
+ifeq ($(OS),Windows_NT)
+    COV_DLL = slider_coverage.dll
+else
+    COV_DLL = libslider_coverage.so
+endif
+COV_CFLAGS = $(CFLAGS) -fprofile-arcs -ftest-coverage
+
+coverage: clean_coverage
+	$(CC) -shared -o $(COV_DLL) $(CORE_SRC) $(LIBS) $(COV_CFLAGS)
+	python3 ports/python/run_all_tests.py
+	cp $(COV_DLL) $(TARGET_DLL)
+	@echo ""
+	@echo "=== Coverage Report ==="
+	@for src in parser themes highlighter renderer render_util render_table \
+	            render_code render_transition export_png export_jpg export_pdf \
+	            export_gif export_svg; do \
+		gcov $(COV_DLL)-$$src.gcno 2>/dev/null | grep -E "File|Lines executed" | head -2; \
+	done
+	@echo ""
+	@echo "=== Per-file .gcov generated. Use 'gcov <file>.gcov' for line-by-line details ==="
+
+clean_coverage:
+	$(RM) *.gcda *.gcno *.gcov
+	$(RM) slider_coverage.dll libslider_coverage.so
+	$(RM) coverage -rf
+
 # Regla para compilar archivos .l usando Flex automáticamente
 src/core/lexer_%.c: src/core/lexer_%.l
 	flex -o $@ $<
@@ -94,6 +121,9 @@ clean:
 	$(RM) slides libslider.so slides_ada.exe
 	$(RM) ports/ada/*.o ports/ada/*.ali
 	$(RM) src/core/lexer_c.c src/core/lexer_py.c
+	$(RM) *.gcda *.gcno *.gcov
+	$(RM) slider_coverage.dll libslider_coverage.so
+	$(RM) coverage -rf
 
 install: $(TARGET_EXE)
 	install -d $(DESTDIR)$(PREFIX)/bin
@@ -101,4 +131,4 @@ install: $(TARGET_EXE)
 	install -d $(DESTDIR)$(PREFIX)/share/man/man1
 	install -m 644 slides.1 $(DESTDIR)$(PREFIX)/share/man/man1/
 
-.PHONY: all clean test install
+.PHONY: all clean test install coverage clean_coverage

@@ -164,6 +164,10 @@ class CSlides:
         self.lib.theme_default.argtypes = []
         self.lib.theme_default.restype = ctypes.POINTER(Theme)
 
+        # const Theme* theme_find(const char *name)
+        self.lib.theme_find.argtypes = [ctypes.c_char_p]
+        self.lib.theme_find.restype = ctypes.POINTER(Theme)
+
         # void highlighter_highlight(const char *line, const char *lang,
         #                            const Theme *theme, char *out, size_t out_size)
         self.lib.highlighter_highlight.argtypes = [
@@ -174,6 +178,41 @@ class CSlides:
             ctypes.c_size_t,
         ]
         self.lib.highlighter_highlight.restype = None
+
+        # int slider_export_jpg(Slider *s, int index, const char *path, int w, int h, int quality)
+        self.lib.slider_export_jpg.argtypes = [
+            ctypes.POINTER(Slider), ctypes.c_int, ctypes.c_char_p,
+            ctypes.c_int, ctypes.c_int, ctypes.c_int
+        ]
+        self.lib.slider_export_jpg.restype = ctypes.c_int
+
+        # int slider_export_svg(Slider *s, int index, const char *path, int w, int h)
+        self.lib.slider_export_svg.argtypes = [
+            ctypes.POINTER(Slider), ctypes.c_int, ctypes.c_char_p, ctypes.c_int, ctypes.c_int
+        ]
+        self.lib.slider_export_svg.restype = ctypes.c_int
+
+        # int slider_export_pdf(Slider *s, const char *path, int w, int h)
+        self.lib.slider_export_pdf.argtypes = [
+            ctypes.POINTER(Slider), ctypes.c_char_p, ctypes.c_int, ctypes.c_int
+        ]
+        self.lib.slider_export_pdf.restype = ctypes.c_int
+
+        # int slider_export_gif(Slider *s, const char *path, int w, int h)
+        self.lib.slider_export_gif.argtypes = [
+            ctypes.POINTER(Slider), ctypes.c_char_p, ctypes.c_int, ctypes.c_int
+        ]
+        self.lib.slider_export_gif.restype = ctypes.c_int
+
+        # void slider_set_color(Slider *s, const char *key, const char *hex)
+        self.lib.slider_set_color.argtypes = [
+            ctypes.POINTER(Slider), ctypes.c_char_p, ctypes.c_char_p
+        ]
+        self.lib.slider_set_color.restype = None
+
+        # void slider_print_notes(Slider *s, int index)
+        self.lib.slider_print_notes.argtypes = [ctypes.POINTER(Slider), ctypes.c_int]
+        self.lib.slider_print_notes.restype = None
 
         # void parse_line(const char *raw, SlideLine *out)
         self.lib.parse_line.argtypes = [ctypes.c_char_p, ctypes.POINTER(SlideLine)]
@@ -222,12 +261,35 @@ class CSlides:
     def theme_default(self):
         return self.lib.theme_default()
 
+    def theme_find(self, name):
+        if name is None:
+            return self.lib.theme_find(None)
+        return self.lib.theme_find(name.encode('utf-8'))
+
     def highlight(self, line, theme):
         out = ctypes.create_string_buffer(4096)
         self.lib.highlighter_highlight(
             line.encode('utf-8'), None, theme, out, len(out)
         )
         return out.value.decode('utf-8')
+
+    def export_jpg(self, slider, index, path, w=1080, h=1080, quality=90):
+        return self.lib.slider_export_jpg(slider, index, path.encode('utf-8'), w, h, quality)
+
+    def export_svg(self, slider, index, path, w=1080, h=1080):
+        return self.lib.slider_export_svg(slider, index, path.encode('utf-8'), w, h)
+
+    def export_pdf(self, slider, path, w=1080, h=1080):
+        return self.lib.slider_export_pdf(slider, path.encode('utf-8'), w, h)
+
+    def export_gif(self, slider, path, w=1080, h=1080):
+        return self.lib.slider_export_gif(slider, path.encode('utf-8'), w, h)
+
+    def set_color(self, slider, key, hex_color):
+        self.lib.slider_set_color(slider, key.encode('utf-8'), hex_color.encode('utf-8'))
+
+    def print_notes(self, slider, index):
+        self.lib.slider_print_notes(slider, index)
 
     def parse_line(self, line):
         sl = SlideLine()
