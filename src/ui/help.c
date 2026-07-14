@@ -15,11 +15,10 @@ void print_help(const char *prog) {
     printf("  --title <hex>           Title color (e.g. '#ff6b6b')\n");
     printf("  --sub <hex>             Subtitle color (e.g. '#a9b1d6')\n");
     printf("  --text <hex>            Body text color (e.g. '#c0caf5')\n");
-    printf("  --accent <hex>          Accent color (e.g. '#7aa2f7')\n");
-    printf("  --kiosk <sec>           Auto-advance every N seconds (infinite loop)\n");
-    printf("  --auto-advance <sec>    Same as --kiosk\n");
     printf("  --bullet <hex>          Bullet point color (e.g. '#7dcfff')\n");
     printf("  --accent <hex>          Accent color (also sets bullet) (e.g. '#7aa2f7')\n");
+    printf("  --kiosk <sec>           Auto-advance every N seconds (infinite loop)\n");
+    printf("  --auto-advance <sec>    Same as --kiosk\n");
     printf("  --num <hex>             Slide number color (e.g. '#565f89')\n");
     printf("  --table-hdr <hex>       Table header background (e.g. '#1a1b26')\n");
     printf("  --table-row <hex>       Table row background (e.g. '#24283b')\n");
