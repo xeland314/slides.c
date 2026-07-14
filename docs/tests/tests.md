@@ -401,6 +401,132 @@ Usa estados exclusivos `JSX_TAG` y `JSX_CHILD` para manejar etiquetas web.
 | `test_complex_component` | Componente completo con useState |
 | `test_via_highlight_lang` | Llamada a `highlight_lang("tsx")` |
 
+### test_lexer_html.py — Lexer de HTML (51 tests)
+
+Tests para `html_lexer_run()`, el lexer flex para HTML con estados
+`TAG_OPEN`, `TAG_CLOSE` y `DOCTYPE` para manejar etiquetas, atributos, comentarios y entidades.
+
+| Test | Descripción |
+|:---|:---|
+| `test_tag_div` | `<div class="main">` — tag + attr |
+| `test_tag_h1` | `<h1>Title</h1>` — tag resaltado |
+| `test_tag_p` | `<p>Text</p>` — tag resaltado |
+| `test_tag_span` | `<span id="foo">bar</span>` |
+| `test_tag_a` | `<a href="url">Link</a>` |
+| `test_tag_img_self_closing` | `<img src="photo.jpg" alt="Photo" />` |
+| `test_tag_br` | `<br />` — self-closing |
+| `test_tag_meta` | `<meta charset="UTF-8" />` |
+| `test_tag_link` | `<link rel="stylesheet" href="style.css" />` |
+| `test_tag_script` | `<script>` |
+| `test_tag_style` | `<style>` |
+| `test_close_div` | `</div>` — closing tag |
+| `test_close_p` | `</p>` — closing tag |
+| `test_close_span` | `</span>` — closing tag |
+| `test_close_script` | `</script>` — closing tag |
+| `test_attribute_class` | `class` resaltado |
+| `test_attribute_id` | `id` resaltado |
+| `test_attribute_href` | `href` resaltado |
+| `test_attribute_src` | `src` resaltado |
+| `test_attribute_alt` | `alt` resaltado |
+| `test_attribute_style` | `style` resaltado |
+| `test_attribute_value` | `value` resaltado |
+| `test_attribute_data_attr` | `data-id` (data attribute) |
+| `test_attribute_aria_attr` | `aria-label` (aria attribute) |
+| `test_attribute_disabled` | `disabled` (boolean attribute) |
+| `test_attribute_checked` | `checked` (boolean attribute) |
+| `test_attribute_value_double_quote` | Valor entre comillas dobles |
+| `test_attribute_value_single_quote` | Valor entre comillas simples |
+| `test_attribute_value_with_dashes` | Valor con guiones |
+| `test_attribute_multiple` | Múltiples atributos |
+| `test_comment_simple` | `<!-- comment -->` resaltado |
+| `test_comment_multiline` | Comentario multilinea |
+| `test_comment_with_dashes` | Comentario con guiones |
+| `test_comment_empty` | `<!---->` vacío |
+| `test_doctype_html` | `<!DOCTYPE html>` resaltado |
+| `test_doctype_lowercase` | `<!doctype html>` resaltado |
+| `test_entity_amp` | `&amp;` resaltado |
+| `test_entity_lt` | `&lt;` resaltado |
+| `test_entity_gt` | `&gt;` resaltado |
+| `test_entity_nbsp` | `&nbsp;` resaltado |
+| `test_text_plain` | Texto plano sin tags |
+| `test_text_with_special_chars` | Texto con `<p>` y `&` |
+| `test_nested_tags` | Tags anidados `<div><p>...</p></div>` |
+| `test_full_element` | Elemento completo `<a href="...">` |
+| `test_form_element` | `<input type="text" placeholder="..." />` |
+| `test_table_element` | `<td colspan="2" rowspan="1">` |
+| `test_unknown_tag` | Tag personalizado `<my-component>` |
+| `test_lexer_dispatch_html` | Dispatch vía `highlight_lang("html")` |
+| `test_lexer_dispatch_html_from_bindings` | Dispatch vía bindings |
+| `test_empty_line` | Input vacío → output vacío |
+| `test_angle_brackets_alone` | `< >` solos |
+
+### test_lexer_css.py — Lexer de CSS (58 tests)
+
+Tests para `css_lexer_run()`, el lexer flex para CSS con selectors, properties, at-rules,
+comentarios, strings, números con unidades e important.
+
+| Test | Descripción |
+|:---|:---|
+| `test_class_selector` | `.container` resaltado |
+| `test_id_selector` | `#main` resaltado |
+| `test_tag_selector` | `h1 { font-size: 2rem; }` |
+| `test_pseudo_class` | `:hover` resaltado |
+| `test_pseudo_element` | `::first-line` resaltado |
+| `test_universal_selector` | `* { margin: 0; }` |
+| `test_child_combinator` | `>` combinador |
+| `test_adjacent_combinator` | `+` combinador |
+| `test_sibling_combinator` | `~` combinador |
+| `test_descendant_selector` | `.parent .child` |
+| `test_comma_separated` | `h1, h2, h3` |
+| `test_complex_selector` | `nav ul li a:hover` |
+| `test_property_color` | `color` resaltado |
+| `test_property_margin` | `margin` resaltado |
+| `test_property_display` | `display` resaltado |
+| `test_property_font_size` | `font-size` resaltado |
+| `test_property_background` | `background-color` resaltado |
+| `test_property_border` | `border` resaltado |
+| `test_value_hex_color` | `#ff0000` resaltado |
+| `test_value_hex_shorthand` | `#f00` resaltado |
+| `test_value_hex_8digit` | `#ff000080` resaltado |
+| `test_value_px` | `100px` resaltado |
+| `test_value_em` | `1.5em` resaltado |
+| `test_value_rem` | `2rem` resaltado |
+| `test_value_percent` | `50%` resaltado |
+| `test_value_vh` | `100vh` resaltado |
+| `test_value_vw` | `100vw` resaltado |
+| `test_value_deg` | `45deg` resaltado |
+| `test_value_ms` | `300ms` resaltado |
+| `test_value_negative` | `-10px` resaltado |
+| `test_value_positive_sign` | `+10px` resaltado |
+| `test_value_float` | `1.6` resaltado |
+| `test_value_zero` | `0` resaltado |
+| `test_string_double_quote` | `"Hello World"` resaltado |
+| `test_string_single_quote` | `'Hello World'` resaltado |
+| `test_string_empty` | `""` vacío |
+| `test_at_media` | `@media` resaltado |
+| `test_at_keyframes` | `@keyframes` resaltado |
+| `test_at_import` | `@import` resaltado |
+| `test_at_charset` | `@charset` resaltado |
+| `test_at_root` | `:root` resaltado |
+| `test_at_font_face` | `@font-face` resaltado |
+| `test_comment_simple` | `/* comment */` resaltado |
+| `test_comment_multiline` | Comentario multilinea |
+| `test_comment_empty` | `/**/` vacío |
+| `test_comment_with_asterisks` | `/* *** */` |
+| `test_important` | `!important` resaltado |
+| `test_braces` | `{ }` resaltado |
+| `test_parentheses` | `rgb(...)` resaltado |
+| `test_semicolon` | `;` resaltado |
+| `test_colon` | `:` resaltado |
+| `test_comma` | `,` resaltado |
+| `test_full_rule` | Regla completa con múltiples properties |
+| `test_media_query_full` | `@media` completa anidada |
+| `test_keyframes_full` | `@keyframes` completa |
+| `test_grid_layout` | Grid layout con `repeat`, `1fr` |
+| `test_animation` | Animación completa |
+| `test_lexer_dispatch_css` | Dispatch vía `highlight_lang("css")` |
+| `test_empty_line` | Input vacío → output vacío |
+
 ### test_themes.py — Sistema de temas y color overrides (16 tests)
 
 Tests para `theme_default()`, `theme_find()`, `slider_set_theme()` y `slider_set_color()`.
@@ -627,6 +753,8 @@ Tests de exportación visual (pre-existente).
 | `test_lexer_js.py` | 54 | `js_lexer_run()`, `highlighter_highlight("javascript")` |
 | `test_lexer_ts.py` | 43 | `ts_lexer_run()`, `highlighter_highlight("typescript")` |
 | `test_lexer_tsx.py` | 37 | `tsx_lexer_run()`, `highlighter_highlight("tsx")` con JSX_TAG/JSX_CHILD |
+| `test_lexer_html.py` | 51 | `html_lexer_run()`, `highlighter_highlight("html")` con TAG_OPEN/CLOSE/DOCTYPE |
+| `test_lexer_css.py` | 58 | `css_lexer_run()`, `highlighter_highlight("css")` con selectors, at-rules, units |
 | `test_themes.py` | 16 | `theme_default()`, `theme_find()`, `slider_set_theme()`, `slider_set_color()` |
 | `test_export.py` | 11 | `slider_export_png/jpg/svg/pdf/gif()` |
 | `test_transitions.py` | 14 | `do_transition()`, `slider_render()` con transiciones |
@@ -634,7 +762,7 @@ Tests de exportación visual (pre-existente).
 | `test_empty_warnings.py` | 7 | `slider_load()` warnings para archivos vacíos |
 | `test_integration.py` | 25 | `slider_load()`, `slider_free()`, `slider_get_count()`, getters/setters, frontmatter |
 | `test_visual.py` | 2 | `slider_export_png()`, `slider_set_theme()` |
-| **Total** | **435** | |
+| **Total** | **545** | |
 
 ## Cobertura de código (Coverage)
 

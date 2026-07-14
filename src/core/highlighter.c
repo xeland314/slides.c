@@ -13,6 +13,10 @@ void ts_lexer_run(const char *line, const Theme *theme, char *out,
                   size_t out_size);
 void tsx_lexer_run(const char *line, const Theme *theme, char *out,
                    size_t out_size);
+void html_lexer_run(const char *line, const Theme *theme, char *out,
+                    size_t out_size);
+void css_lexer_run(const char *line, const Theme *theme, char *out,
+                   size_t out_size);
 
 void highlighter_highlight(const char *line, const char *lang,
                            const Theme *theme, char *out, size_t out_size) {
@@ -34,6 +38,10 @@ void highlighter_highlight(const char *line, const char *lang,
     tsx_lexer_run(line, theme, out, out_size);
   } else if (lang && strcmp(lang, "jsx") == 0) {
     tsx_lexer_run(line, theme, out, out_size);
+  } else if (lang && strcmp(lang, "html") == 0) {
+    html_lexer_run(line, theme, out, out_size);
+  } else if (lang && strcmp(lang, "css") == 0) {
+    css_lexer_run(line, theme, out, out_size);
   } else {
     // Por defecto usamos C
     c_lexer_run(line, theme, out, out_size);
