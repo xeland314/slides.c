@@ -37,6 +37,7 @@ ports/python/
   test_export.py         Tests de exportación a PNG/JPG/SVG/PDF/GIF
   test_transitions.py    Tests de transiciones entre slides (render_transition.c)
   test_renderer_gaps.py  Tests de renderer, img_config, notes, parser limits, hot reload
+  test_empty_warnings.py Tests de warnings para archivos vacíos/blank
   test_integration.py    Tests de integración: carga de archivos, frontmatter, propiedades
   test_visual.py         Tests visuales: exportación y renderizado con distintos temas
 ```
@@ -329,6 +330,21 @@ notas del presentador, límites del parser, y hot reload.
 | `test_last_mtime_nonzero` | `last_mtime > 0` tras carga |
 | `test_reload_preserves_theme` | Recarga preserva theme configurado |
 
+### test_empty_warnings.py — Warnings para archivos vacíos (7 tests)
+
+Tests que verifican que `slider_load()` emite `[LINTER WARNING]` en stderr cuando
+el archivo markdown está vacío o no contiene contenido significativo.
+
+| Test | Descripción |
+|:---|:---|
+| `test_empty_file_warning` | Archivo vacío (0 bytes) → NULL + warning "Archivo vacio" |
+| `test_spaces_only_warning` | Solo espacios → warning "sin contenido" |
+| `test_tabs_only_warning` | Solo tabs → warning "sin contenido" |
+| `test_newlines_only_warning` | Solo saltos de línea → warning "sin contenido" |
+| `test_only_separators_warning` | Solo separadores `---` → warning "sin contenido" |
+| `test_content_no_warning` | Archivo con contenido real → sin warning |
+| `test_single_line_no_warning` | Una línea de texto → sin warning |
+
 ### test_integration.py — Tests de integración (25 tests)
 
 Tests que verifican el comportamiento completo de carga → configuración → exportación.
@@ -382,9 +398,10 @@ Tests de exportación visual (pre-existente).
 | `test_export.py` | 11 | `slider_export_png/jpg/svg/pdf/gif()` |
 | `test_transitions.py` | 14 | `do_transition()`, `slider_render()` con transiciones |
 | `test_renderer_gaps.py` | 65 | `slider_render()` (bullet2/tasks/numlist/table/code), `ImageConfig`, notas, límites, hot reload |
+| `test_empty_warnings.py` | 7 | `slider_load()` warnings para archivos vacíos |
 | `test_integration.py` | 25 | `slider_load()`, `slider_free()`, `slider_get_count()`, getters/setters, frontmatter |
 | `test_visual.py` | 2 | `slider_export_png()`, `slider_set_theme()` |
-| **Total** | **233** | |
+| **Total** | **240** | |
 
 ## Cobertura de código (Coverage)
 

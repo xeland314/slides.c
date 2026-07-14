@@ -283,6 +283,7 @@ Slider* slider_load(const char *path) {
     long size = ftell(fp);
     fseek(fp, 0, SEEK_SET);
     if (size <= 0) {
+        fprintf(stderr, "\033[1;33m[LINTER WARNING] Archivo vacio: %s\033[0m\n", path);
         fclose(fp);
         return NULL;
     }
@@ -527,6 +528,18 @@ Slider* slider_load(const char *path) {
         if (t_notes != s->slides[idx].notes) {
             memmove(s->slides[idx].notes, t_notes, strlen(t_notes) + 1);
         }
+    }
+
+    // Warn if the file had no meaningful content
+    int content_lines = 0;
+    for (int idx = 0; idx < s->n_slides; idx++) {
+        for (int li = 0; li < s->slides[idx].nlines; li++) {
+            if (s->slides[idx].lines[li].type != LINE_EMPTY)
+                content_lines++;
+        }
+    }
+    if (content_lines == 0) {
+        fprintf(stderr, "\033[1;33m[LINTER WARNING] %s: sin contenido de diapositivas\033[0m\n", path);
     }
 
     fclose(fp);
