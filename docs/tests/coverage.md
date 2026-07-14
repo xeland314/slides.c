@@ -12,10 +12,12 @@ Este comando funciona tanto en Linux como en Windows (MSYS2 MinGW64). Genera:
 
 El proceso es:
 1. Limpia artefactos de coverage anteriores
-2. Compila la biblioteca compartida con `-fprofile-arcs -ftest-coverage` (GCC instrumentation)
-3. Ejecuta la suite completa de 108 tests (Python + ctypes)
-4. Ejecuta `gcov` sobre cada archivo fuente del core
-5. Muestra un resumen de cobertura en la terminal
+2. Genera lexer C/Python desde archivos `.l` con flex
+3. Compila la biblioteca compartida con `-fprofile-arcs -ftest-coverage` (GCC instrumentation)
+4. Copia la DLL de coverage como `slider.dll` para que los tests la carguen
+5. Ejecuta la suite completa de 233 tests (Python + ctypes)
+6. Ejecuta `gcov` sobre cada archivo fuente del core
+7. Muestra un resumen de cobertura en la terminal
 
 ## Herramientas utilizadas
 
@@ -30,51 +32,60 @@ El proceso es:
 
 | Archivo | Cobertura | Líneas ejecutadas |
 |:---|:---:|:---|
-| `src/core/parser.c` | **87.5%** | 391 / 447 |
+| `src/core/parser.c` | **95.3%** | ~544 / 571 |
 | `src/core/themes.c` | **100.0%** | 8 / 8 |
-| `src/core/highlighter.c` | **66.7%** | 6 / 9 |
-| `src/core/lexer_c.c` | **42.4%** | 155 / 366 |
-| `src/render/renderer.c` | **41.1%** | 101 / 246 |
-| `src/render/render_util.c` | **41.5%** | 54 / 130 |
+| `src/core/highlighter.c` | **77.8%** | 7 / 9 |
+| `src/render/renderer.c` | **95.9%** | ~236 / 246 |
+| `src/render/render_util.c` | **76.0%** | ~111 / 146 |
 | `src/render/render_table.c` | **100.0%** | 75 / 75 |
-| `src/render/render_code.c` | **97.2%** | 35 / 36 |
-| `src/render/render_transition.c` | **0.0%** | 0 / 79 |
+| `src/render/render_code.c` | **97.2%** | ~35 / 36 |
+| `src/render/render_transition.c` | **89.9%** | ~71 / 79 |
 | `src/render/export_png.c` | **100.0%** | 14 / 14 |
-| `src/render/export_jpg.c` | **100.0%** | 26 / 26 |
-| `src/render/export_pdf.c` | **94.4%** | 17 / 18 |
-| `src/render/export_gif.c` | **73.0%** | 65 / 89 |
+| `src/render/export_jpg.c` | **90.0%** | 27 / 30 |
+| `src/render/export_pdf.c` | **94.4%** | ~17 / 18 |
+| `src/render/export_gif.c` | **73.0%** | ~65 / 89 |
 | `src/render/export_svg.c` | **93.8%** | 15 / 16 |
-| `src/ui/backend_win32.c` | **0.0%** | 0 / 297 |
+| `src/ui/backend_win32.c` | **0.0%** | 0 / ~297 |
 
 ### Resumen por módulo
 
 | Módulo | Cobertura |
 |:---|:---:|
-| **Core** (parser + themes + highlighter) | **84.5%** |
-| **Render** (renderer + exports + tables + code) | **54.3%** |
-| **Lexer C** | **42.4%** |
-| **Lexer Python** | **0.0%** |
-| **Backend Win32** | **0.0%** |
-| **Total proyecto** (sin stb/msf_gif) | **~48%** |
+| **Core** (parser + themes + highlighter) | **~95%** |
+| **Render** (renderer + util + table + code + transition) | **~92%** |
+| **Exports** (png + jpg + pdf + gif + svg) | **~88%** |
+| **Lexer C** | No incluido (auto-generado) |
+| **Lexer Python** | No incluido (auto-generado) |
+| **Backend Win32** | **0.0%** (requiere ventana real) |
+| **Total proyecto** (archivos propios, sin stb/msf_gif) | **~91.6%** |
 
 ### Detalles por archivo
 
-#### `src/core/parser.c` — 87.5%
+#### `src/core/parser.c` — 95.3%
 
-Muy bien cubierto. Las líneas sin ejecutar corresponden mayormente a:
+Excelente cobertura. Las líneas sin ejecutar corresponden mayormente a:
 - Ramas defensivas de NULL checks que no se alcanzan en tests
-- Parsing de notas del presentador (multilinea)
-- Algunas ramas del parsing de frontmatter (colores anidados)
+- Algunas ramas del parsing de frontmatter (colores anidados menos comunes)
+- Funciones de acceso de test (`slider_test_get_*`) que solo se usan en tests específicos
 
 #### `src/core/themes.c` — 100%
 
 Cobertura completa. `theme_default()` y `theme_find()` están testeados con los 11 temas,
 nombres inválidos y NULL.
 
-#### `src/core/highlighter.c` — 66.7%
+#### `src/core/highlighter.c` — 77.8%
 
-El resaltador genérico tiene cobertura parcial. Las líneas no cubiertas son la detección
-de Python (`#` comment) que pasa por un camino diferente.
+El resaltador genérico tiene buena cobertura. La línea no cubierta corresponde a la
+detección de Python (`#` comment) que pasa por un camino diferente al genérico.
+
+#### `src/render/renderer.c` — 95.9%
+
+Excelente cobertura. Solo faltan unas pocas ramas de manejo de error poco probables.
+
+#### `src/render/render_util.c` — 76.0%
+
+Buena cobertura. Las líneas no cubiertas son mayormente funciones de cache de imágenes
+que solo se ejecutan en ciertos escenarios de carga.
 
 #### `src/render/render_table.c` — 100%
 
@@ -84,13 +95,19 @@ Cobertura completa vía tests de exportación de slides con tablas.
 
 Casi completa. Solo falta una línea de manejo de error.
 
+#### `src/render/render_transition.c` — 89.9%
+
+Muy buena cobertura (antes era 0%). Las transiciones ahora se testean directamente
+vía `do_transition()` y `slider_render()` con transiciones configuradas.
+
 #### `src/render/export_png.c` — 100%
 
 Cobertura completa.
 
-#### `src/render/export_jpg.c` — 100%
+#### `src/render/export_jpg.c` — 90.0%
 
-Cobertura completa.
+Casi completa. La línea no cubierta es el check de NULL en `cairo_image_surface_get_data()`
+que se agregó como fix de bug.
 
 #### `src/render/export_pdf.c` — 94.4%
 
@@ -104,11 +121,6 @@ intermedios y manejo de GIFs animados.
 #### `src/render/export_svg.c` — 93.8%
 
 Casi completa. Solo falta una rama de error.
-
-#### `src/render/render_transition.c` — 0%
-
-Las transiciones no se testean porque requieren un contexto de renderizado con tiempo
-(timeline de animación). Solo se ejecutan en el backend gráfico interactivo.
 
 #### `src/ui/backend_win32.c` — 0%
 
@@ -124,12 +136,14 @@ Los siguientes archivos son bibliotecas de terceros incluidas en el proyecto:
 
 Su coverage no es representativo ya que se incluyen como headers completos.
 
+Los archivos lexer generados (`src/core/lexer_c.c`, `src/core/lexer_py.c`) son
+auto-generados por flex y no se cuentan en el coverage del proyecto.
+
 ## Funciones NO cubiertas por los tests automatizados
 
 | Función | Razón |
 |:---|:---|
 | `backend_run()` | Requiere ventana gráfica (X11/Win32). Solo ejecutable en modo interactivo. |
-| `slider_render()` directamente | Solo se invoca internamente por exportaciones con contexto Cairo. |
 | `main()` / `help.c` | CLI entry point, no testeable vía la biblioteca. |
 
 ## Generar reporte HTML (opcional)

@@ -20,18 +20,23 @@ python3 ports/python/run_all_tests.py
 - Python 3.6+
 - La biblioteca compartida compilada (`slider.dll` en Windows, `libslider.so` en Linux)
 - Ninguna dependencia externa de Python (solo `unittest` y `ctypes` de la stdlib)
+- `libcairo-2.dll` / `libcairo.so` (solo para tests de transiciones e img_config render)
 
 ## Estructura
 
 ```
 ports/python/
   c_slides_bindings.py   Bindings FFI (ctypes) de la API pública de C-Slides
+  cairo_helpers.py       Helper ctypes para operaciones Cairo (superficies, contextos)
   run_all_tests.py       Descubridor y ejecutor de la suite de tests
   test_parser.py         Tests del parser de líneas Markdown
   test_markup.py         Tests del conversor Markdown → markup Pango (bold/italic/code)
   test_highlighter.py    Tests del resaltador de sintaxis genérico
+  test_lexer_py.py       Tests del lexer de Python (flex lexer)
   test_themes.py         Tests del sistema de temas y color overrides
   test_export.py         Tests de exportación a PNG/JPG/SVG/PDF/GIF
+  test_transitions.py    Tests de transiciones entre slides (render_transition.c)
+  test_renderer_gaps.py  Tests de renderer, img_config, notes, parser limits, hot reload
   test_integration.py    Tests de integración: carga de archivos, frontmatter, propiedades
   test_visual.py         Tests visuales: exportación y renderizado con distintos temas
 ```
@@ -113,6 +118,59 @@ Tests para `highlighter_highlight()`, el resaltador genérico multi-lenguaje.
 | `test_highlighter_multiline_simulation` | 5 líneas de código C, una por una |
 | `test_highlighter_different_themes` | Mismo código con 4 temas distintos |
 
+### test_lexer_py.py — Lexer de Python (46 tests)
+
+Tests para `py_lexer_run()`, el lexer flex para código Python.
+
+| Test | Descripción |
+|:---|:---|
+| `test_keyword_def` | `def` resaltado |
+| `test_keyword_class` | `class` resaltado |
+| `test_keyword_return` | `return` resaltado |
+| `test_keyword_if_else` | `if`, `elif`, `else` resaltados |
+| `test_keyword_for_while` | `for`, `while` resaltados |
+| `test_keyword_import_from` | `import`, `from` resaltados |
+| `test_keyword_in_is` | `in`, `is`, `not` resaltados |
+| `test_keyword_lambda` | `lambda` resaltado |
+| `test_keyword_none_true_false` | `None`, `True`, `False` resaltados |
+| `test_keyword_not_and_or` | `not`, `and`, `or` resaltados |
+| `test_keyword_pass_break_continue` | `pass`, `break`, `continue` resaltados |
+| `test_keyword_raise` | `raise` resaltado |
+| `test_keyword_try_except` | `try`, `except` resaltados |
+| `test_keyword_with_as` | `with`, `as` resaltados |
+| `test_comment_single` | Comentario `# ...` resaltado |
+| `test_comment_inline` | Código + comentario en la misma línea |
+| `test_string_double_quotes` | `"string"` resaltado |
+| `test_string_single_quotes` | `'string'` resaltado |
+| `test_string_triple_double` | `"""docstring"""` resaltado |
+| `test_string_triple_single` | `'''docstring'''` resaltado |
+| `test_string_escaped` | `"with \"escape\""` resaltado |
+| `test_number_integer` | Entero `42` resaltado |
+| `test_number_float` | Float `3.14` resaltado |
+| `test_number_hex` | Hex `0xFF` resaltado |
+| `test_number_binary` | Binario `0b1010` resaltado |
+| `test_number_octal` | Octal `0o77` resaltado |
+| `test_number_scientific` | `6.022e23` resaltado |
+| `test_number_complex` | `3j` resaltado |
+| `test_number_underscore` | `1_000_000` resaltado |
+| `test_operators` | Operadores aritméticos y lógicos |
+| `test_comparison_operators` | `==`, `!=`, `<`, `>`, `<=`, `>=` |
+| `test_brackets` | Paréntesis, corchetes, llaves |
+| `test_identifier` | Identificadores alfanuméricos |
+| `test_identifier_underscore_start` | `_private` identificador |
+| `test_attribute_access` | `obj.attr` identificador |
+| `test_decorator` | `@decorator` resaltado |
+| `test_fstring` | `f"format"` resaltado |
+| `test_ellipsis` | `...` (Ellipsis) resaltado |
+| `test_empty_string` | Input vacío → output vacío |
+| `test_negative_number` | `-42` resaltado |
+| `test_complex_expression` | Expresión completa con múltiples tokens |
+| `test_multiline_simulation` | 5 líneas de Python, una por una |
+| `test_power_operator` | `**` operador |
+| `test_star_import` | `from module import *` |
+| `test_walrus_operator` | `:=` operador |
+| `test_via_highlighter_python` | Llamada a `highlight_lang("python")` |
+
 ### test_themes.py — Sistema de temas y color overrides (16 tests)
 
 Tests para `theme_default()`, `theme_find()`, `slider_set_theme()` y `slider_set_color()`.
@@ -154,6 +212,122 @@ Tests de `slider_export_png()`, `slider_export_jpg()`, `slider_export_svg()`,
 | `test_export_with_different_themes` | Exporta PNG con 3 temas distintos |
 | `test_export_svg_all_slides` | Exporta todas las slides de basic.md a SVG |
 | `test_export_formats_with_all_themes` | Matriz 5 temas × 3 formatos (PNG/JPG/SVG) |
+
+### test_transitions.py — Transiciones entre slides (14 tests)
+
+Tests de `do_transition()`, `slider_render()` con transiciones, y parsing de transiciones.
+
+| Test | Descripción |
+|:---|:---|
+| `test_transition_types_parsed` | transitions.md: fade, slide-left/right/up/down, none |
+| `test_do_transition_fade` | Transición fade al 50% sin crash |
+| `test_do_transition_slide_left` | Transición slide-left al 50% |
+| `test_do_transition_slide_right` | Transición slide-right al 50% |
+| `test_do_transition_slide_up` | Transición slide-up al 50% |
+| `test_do_transition_slide_down` | Transición slide-down al 50% |
+| `test_do_transition_progress_zero` | Progress 0.0 sin crash |
+| `test_do_transition_progress_one` | Progress 1.0 sin crash |
+| `test_do_transition_same_index_returns` | from==to retorna sin hacer nada |
+| `test_do_transition_invalid_from` | from=-1 no crashea |
+| `test_do_transition_all_progress_values` | 5 valores de progress (0.0–1.0) |
+| `test_render_slide_with_transition_at_midpoint` | `slider_render()` con transición a 150ms |
+| `test_render_slide_with_transition_expired` | Transición expirada (>300ms) resetea a NONE |
+| `test_transition_export_png_triggers` | `export_png` en slide con transición no crashea |
+
+### test_renderer_gaps.py — Renderer, img_config, notes, limits, hot reload (65 tests)
+
+Tests que cubren las brechas del renderer: bullet2, tasks, num_list, img_config parsing,
+notas del presentador, límites del parser, y hot reload.
+
+#### TestRendererGaps (14 tests)
+
+| Test | Descripción |
+|:---|:---|
+| `test_bullet_level2_parsed` | `  - Sub item` → `LINE_BULLET2` con texto correcto |
+| `test_task_unchecked_parsed` | `- [ ] Todo item` → `LINE_TASK_UNCHECKED` |
+| `test_task_checked_parsed` | `- [x] Done item` → `LINE_TASK_CHECKED` |
+| `test_num_list_parsed` | 3 items numerados → 3 × `LINE_NUM_LIST` |
+| `test_mixed_content_types` | Slide con title, subtitle, body, bullets, tasks, quote |
+| `test_render_slide_with_all_line_types` | Render slide con todos los tipos de línea |
+| `test_render_slide_bullet2` | Render slide con 3 niveles de viñetas |
+| `test_render_tasks_checked_and_unchecked` | Render slide con tasks pendientes y completadas |
+| `test_render_num_list` | Render slide con listas numeradas |
+| `test_render_code_block` | Render slide con bloque de código C |
+| `test_render_table` | Render slide con tabla |
+| `test_render_blockquote` | Render slide con blockquote multilinea |
+| `test_render_invalid_index` | `render_slide(-1)` y `render_slide(999)` no crashean |
+| `test_render_null_slider` | `render_slide(NULL)` no crashea |
+
+#### TestImgConfig (29 tests)
+
+| Test | Descripción |
+|:---|:---|
+| `test_img_config_fit_cover` | `fit=cover` parseado correctamente |
+| `test_img_config_fit_fill` | `fit=fill` parseado correctamente |
+| `test_img_config_fit_contain` | `fit=contain` parseado correctamente |
+| `test_img_config_width_px` | `width=300` → 300px |
+| `test_img_config_width_pct` | `width=50%` → 50 con unit=PCT |
+| `test_img_config_height_px` | `height=200` → 200px |
+| `test_img_config_height_pct` | `height=75%` → 75 con unit=PCT |
+| `test_img_config_opacity_float` | `opacity=0.5` → 0.5 |
+| `test_img_config_opacity_pct` | `opacity=80%` → 0.8 |
+| `test_img_config_radius` | `radius=20` → 20 |
+| `test_img_config_rotate` | `rotate=-6.5` → -6.5 (valores negativos) |
+| `test_img_config_align_left` | `align=left` |
+| `test_img_config_align_right` | `align=right` |
+| `test_img_config_align_center` | `align=center` |
+| `test_img_config_all_combined` | Todos los parámetros juntos |
+| `test_img_config_malformed_ignored` | Clave inválida ignorada, válida procesada |
+| `test_img_config_negative_radius_clamped` | `radius=-10` → 0 (clamped) |
+| `test_img_config_opacity_clamped_above` | `opacity=2.0` → 1.0 (clamped) |
+| `test_img_config_opacity_clamped_below` | `opacity=-0.5` → 0.0 (clamped) |
+| `test_img_config_render_cover` | Render con `fit=cover` |
+| `test_img_config_render_fill` | Render con `fit=fill` |
+| `test_img_config_render_align_right` | Render con `align=right, width=200` |
+| `test_img_config_render_rotate` | Render con `rotate=15, opacity=0.7` |
+| `test_img_config_render_radius` | Render con `radius=30, opacity=0.6` |
+| `test_img_config_render_width_height` | Render con `width=300, height=200` |
+| `test_img_config_render_height_only` | Render con solo `height=200` |
+| `test_img_config_render_width_pct` | Render con `width=50%` |
+| `test_img_config_render_height_pct` | Render con `height=60%` |
+| `test_missing_image_placeholder` | Imagen inexistente → placeholder |
+
+#### TestNotes (10 tests)
+
+| Test | Descripción |
+|:---|:---|
+| `test_notes_inline` | `<!-- notes: Hello -->` → notas presentes |
+| `test_notes_multiline` | Notas multilinea con 3 líneas |
+| `test_notes_note_alias` | `<!-- note: -->` alias funcional |
+| `test_notes_uppercase` | `<!-- NOTES: -->` mayúsculas funcional |
+| `test_notes_per_slide` | Cada slide tiene sus propias notas |
+| `test_notes_with_content_after` | Notas seguidas de contenido body |
+| `test_notes_empty_slide` | Slide sin notas → cadena vacía |
+| `test_notes_trimmed` | Notas con espacios extra → trimming |
+| `test_notes_multiline_no_close` | Nota sin `-->` de cierre |
+| `test_notes_print_does_not_crash` | `slider_print_notes()` no crashea |
+
+#### TestParserLimits (9 tests)
+
+| Test | Descripción |
+|:---|:---|
+| `test_many_slides` | 50 slides cargadas correctamente |
+| `test_max_approaching_slides` | 255 slides (cerca de MAX_SLIDES=256) |
+| `test_long_line` | Línea de 900 chars (cerca de MAX_LINE_LEN=1024) |
+| `test_many_columns_table` | Tabla de 15 columnas (cerca de MAX_COLS=16) |
+| `test_empty_file` | Archivo vacío → NULL |
+| `test_single_slide_no_separator` | Slide único sin separador `---` |
+| `test_code_block_unclosed` | Bloque de código sin ` ``` ` de cierre |
+| `test_transition_on_first_slide` | Transición en slide 0 parseada |
+| `test_kiosk_interval` | `kiosk_interval_ms` legible |
+
+#### TestHotReload (3 tests)
+
+| Test | Descripción |
+|:---|:---|
+| `test_filepath_stored` | `filepath` contiene la ruta del archivo |
+| `test_last_mtime_nonzero` | `last_mtime > 0` tras carga |
+| `test_reload_preserves_theme` | Recarga preserva theme configurado |
 
 ### test_integration.py — Tests de integración (25 tests)
 
@@ -203,11 +377,14 @@ Tests de exportación visual (pre-existente).
 | `test_parser.py` | 26 | `parse_line()` |
 | `test_markup.py` | 7 | `md_to_markup()` |
 | `test_highlighter.py` | 21 | `highlighter_highlight()` |
+| `test_lexer_py.py` | 46 | `py_lexer_run()`, `highlighter_highlight("python")` |
 | `test_themes.py` | 16 | `theme_default()`, `theme_find()`, `slider_set_theme()`, `slider_set_color()` |
 | `test_export.py` | 11 | `slider_export_png/jpg/svg/pdf/gif()` |
+| `test_transitions.py` | 14 | `do_transition()`, `slider_render()` con transiciones |
+| `test_renderer_gaps.py` | 65 | `slider_render()` (bullet2/tasks/numlist/table/code), `ImageConfig`, notas, límites, hot reload |
 | `test_integration.py` | 25 | `slider_load()`, `slider_free()`, `slider_get_count()`, getters/setters, frontmatter |
 | `test_visual.py` | 2 | `slider_export_png()`, `slider_set_theme()` |
-| **Total** | **108** | |
+| **Total** | **233** | |
 
 ## Cobertura de código (Coverage)
 
@@ -217,8 +394,8 @@ Para generar un reporte de cobertura de código C:
 make coverage
 ```
 
-Esto compila con `--coverage`, ejecuta los tests, y genera un reporte en `coverage/`.
-Ver [coverage.md](coverage.md) para más detalles.
+Esto compila con `-fprofile-arcs -ftest-coverage`, ejecuta los tests, y genera un reporte
+con `gcov`. Ver [coverage.md](coverage.md) para más detalles.
 
 ## Notas técnicas
 
@@ -228,12 +405,18 @@ Los tests usan `ports/python/c_slides_bindings.py` para cargar la biblioteca com
 y llamar a las funciones C vía `ctypes`. Esto permite testear la lógica de negocio
 sin necesidad de compilar un ejecutable separado para tests.
 
-### Opaque struct
+### Acceso a estado interno
 
-El tipo `Slider` es una estructura opaca en C. Los tests no pueden acceder directamente
-a sus campos internos (como `theme_storage`). Para verificar que `slider_set_color()`
-funciona correctamente, se valida a través de exportación: si la exportación produce
-un archivo válido, los colores se aplicaron correctamente.
+Los tests que necesitan leer el estado interno del `Slider` (transiciones, notas,
+img_config, etc.) usan funciones de acceso (`slider_test_get_*`) definidas en
+`parser.c`. Estas funciones exponen campos internos de la struct opaca sin requerir
+una definición de struct en Python (que sería frágil y dependiente de la plataforma).
+
+### Cairo para tests de renderizado
+
+Los tests de transiciones e img_config render crean superficies Cairo vía
+`cairo_helpers.py`, que carga `libcairo-2.dll` / `libcairo.so` vía `ctypes`.
+Esto permite crear superficies y contextos de renderizado sin un backend de ventana real.
 
 ### Linux vs Windows
 

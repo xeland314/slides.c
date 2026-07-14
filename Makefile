@@ -96,10 +96,10 @@ else
 endif
 COV_CFLAGS = $(CFLAGS) -fprofile-arcs -ftest-coverage
 
-coverage: clean_coverage
+coverage: clean_coverage src/core/lexer_c.c src/core/lexer_py.c
 	$(CC) -shared -o $(COV_DLL) $(CORE_SRC) $(LIBS) $(COV_CFLAGS)
-	python3 ports/python/run_all_tests.py
 	cp $(COV_DLL) $(TARGET_DLL)
+	python3 ports/python/run_all_tests.py
 	@echo ""
 	@echo "=== Coverage Report ==="
 	@for src in parser themes highlighter renderer render_util render_table \
