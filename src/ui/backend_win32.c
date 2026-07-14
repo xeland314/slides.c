@@ -33,7 +33,9 @@ static void toggle_fullscreen(HWND hwnd) {
         
         // Monitor actual
         HMONITOR monitor = MonitorFromWindow(hwnd, MONITOR_DEFAULTTONEAREST);
-        MONITORINFO mi = { sizeof(mi) };
+        MONITORINFO mi;
+        memset(&mi, 0, sizeof(mi));
+        mi.cbSize = sizeof(mi);
         GetMonitorInfo(monitor, &mi);
 
         SetWindowLong(hwnd, GWL_STYLE, g_prev_style & ~WS_OVERLAPPEDWINDOW);
