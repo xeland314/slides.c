@@ -129,6 +129,26 @@ ImgCache *get_image_cache(const char *path) {
     return cache;
 }
 
+void img_cache_free_all(void) {
+    for (int i = 0; i < img_cache_count; i++) {
+        ImgCache *c = &img_cache[i];
+        if (c->surfaces) {
+            for (int f = 0; f < c->n_frames; f++) {
+                if (c->surfaces[f])
+                    cairo_surface_destroy(c->surfaces[f]);
+            }
+            free(c->surfaces);
+        }
+        free(c->delays);
+        c->path[0] = '\0';
+        c->n_frames = 0;
+        c->surfaces = NULL;
+        c->delays = NULL;
+        c->total_duration = 0;
+    }
+    img_cache_count = 0;
+}
+
 PangoLayout *make_layout(cairo_t *cr, const char *font_desc_str, double max_width_px) {
     PangoLayout *l = pango_cairo_create_layout(cr);
     PangoFontDescription *fd = pango_font_description_from_string(font_desc_str);

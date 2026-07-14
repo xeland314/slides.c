@@ -389,8 +389,8 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
     return DefWindowProc(hwnd, uMsg, wParam, lParam);
 }
 
-int backend_run(Slider *s) {
-    if (!s) return 1;
+Slider* backend_run(Slider *s) {
+    if (!s) return s;
     g_slider = s;
     g_n_slides = slider_get_count(s);
     g_current_slide = 0;
@@ -406,7 +406,7 @@ int backend_run(Slider *s) {
     wc.lpszClassName = CLASS_NAME;
     wc.hCursor       = LoadCursor(NULL, IDC_ARROW);
 
-    if (!RegisterClass(&wc)) return 1;
+    if (!RegisterClass(&wc)) return NULL;
 
     HWND hwnd = CreateWindowEx(
         0, CLASS_NAME, "C-Slides (Win32)",
@@ -415,7 +415,7 @@ int backend_run(Slider *s) {
         NULL, NULL, hInstance, NULL
     );
 
-    if (hwnd == NULL) return 1;
+    if (hwnd == NULL) return NULL;
 
     // Timer para animaciones (16ms ~ 60fps)
     SetTimer(hwnd, 1, 16, NULL);
@@ -428,5 +428,5 @@ int backend_run(Slider *s) {
     
     KillTimer(hwnd, 1);
 
-    return 0;
+    return g_slider;
 }

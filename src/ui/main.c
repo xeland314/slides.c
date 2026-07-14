@@ -243,8 +243,8 @@ int main(int argc, char *argv[]) {
     }
 
     // Delegar al backend gráfico (X11, Win32, etc.)
-    int ret = backend_run(s);
+    s = backend_run(s);
     
     slider_free(s);
-    return ret;
+    return 0;
 }
