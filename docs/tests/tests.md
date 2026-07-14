@@ -32,8 +32,9 @@ ports/python/
   test_parser.py         Tests del parser de líneas Markdown
   test_markup.py         Tests del conversor Markdown → markup Pango (bold/italic/code)
   test_highlighter.py    Tests del resaltador de sintaxis genérico
-  test_lexer_py.py       Tests del lexer de Python (flex lexer)
-  test_themes.py         Tests del sistema de temas y color overrides
+   test_lexer_py.py       Tests del lexer de Python (flex lexer)
+   test_lexer_go.py       Tests del lexer de Go (flex lexer)
+   test_themes.py         Tests del sistema de temas y color overrides
   test_export.py         Tests de exportación a PNG/JPG/SVG/PDF/GIF
   test_transitions.py    Tests de transiciones entre slides (render_transition.c)
   test_renderer_gaps.py  Tests de renderer, img_config, notes, parser limits, hot reload
@@ -171,6 +172,72 @@ Tests para `py_lexer_run()`, el lexer flex para código Python.
 | `test_star_import` | `from module import *` |
 | `test_walrus_operator` | `:=` operador |
 | `test_via_highlighter_python` | Llamada a `highlight_lang("python")` |
+
+### test_lexer_go.py — Lexer de Go (58 tests)
+
+Tests para `go_lexer_run()`, el lexer flex para código Go, con prefix `go_` para evitar
+conflictos de símbolos.
+
+| Test | Descripción |
+|:---|:---|
+| `test_keyword_func` | `func` resaltado |
+| `test_keyword_package` | `package` resaltado |
+| `test_keyword_import` | `import` resaltado |
+| `test_keyword_var` | `var` resaltado |
+| `test_keyword_const` | `const` resaltado |
+| `test_keyword_type` | `type` resaltado |
+| `test_keyword_struct` | `struct` resaltado |
+| `test_keyword_interface` | `interface` resaltado |
+| `test_keyword_map` | `map` resaltado |
+| `test_keyword_chan` | `chan` resaltado |
+| `test_keyword_go` | `go` resaltado |
+| `test_keyword_defer` | `defer` resaltado |
+| `test_keyword_select` | `select` resaltado |
+| `test_keyword_switch` | `switch` resaltado |
+| `test_keyword_case` | `case` resaltado |
+| `test_keyword_if_else` | `if`, `else` resaltados |
+| `test_keyword_for_range` | `for`, `range` resaltados |
+| `test_keyword_return` | `return` resaltado |
+| `test_keyword_break_continue_fallthrough` | `break`, `continue`, `fallthrough` resaltados |
+| `test_keyword_nil_true_false` | `nil`, `true`, `false` resaltados |
+| `test_keyword_iota` | `iota` resaltado |
+| `test_keyword_make_new_len_cap` | `make`, `new`, `len`, `cap` resaltados |
+| `test_keyword_append_copy_delete` | `append`, `copy`, `delete` resaltados |
+| `test_keyword_panic_recover` | `panic`, `recover` resaltados |
+| `test_keyword_print_println` | `print`, `println` resaltados |
+| `test_builtin_types` | 21 tipos: `int`, `int8`..`int64`, `uint*`, `float32/64`, `complex*`, `bool`, `byte`, `rune`, `string`, `error`, `any`, `comparable` |
+| `test_comment_single_line` | Comentario `// ...` resaltado |
+| `test_comment_inline` | Código + comentario en la misma línea |
+| `test_string_double_quotes` | `"string"` resaltado |
+| `test_string_escaped` | `"with \"escape\""` resaltado |
+| `test_string_rune` | `'a'` resaltado |
+| `test_number_integer` | Entero `42` resaltado |
+| `test_number_float` | Float `3.14` resaltado |
+| `test_number_hex` | Hex `0xFF` resaltado |
+| `test_number_binary` | Binario `0b1010` resaltado |
+| `test_number_octal` | Octal `0o77` resaltado |
+| `test_number_underscore` | `1_000_000` resaltado |
+| `test_number_scientific` | `6.022e23` resaltado |
+| `test_operator_short_declaration` | `:=` operador |
+| `test_operator_receive` | `<-` channel receive |
+| `test_operators_arithmetic` | Operadores aritméticos |
+| `test_operators_comparison` | `==`, `!=`, `>=`, etc. |
+| `test_brackets` | `m[key]` corchetes |
+| `test_braces` | `func() {}` llaves |
+| `test_identifier` | Identificador no resaltado |
+| `test_identifier_underscore_start` | `_private` identificador |
+| `test_empty_string` | Input vacío → output vacío |
+| `test_multiline_simulation` | 7 líneas de Go, una por una |
+| `test_complex_expression` | Expresión con múltiples tokens |
+| `test_switch_statement` | `switch` con identificador |
+| `test_go_routine` | `go processRequest(req)` |
+| `test_channel_operations` | `ch <- data` |
+| `test_type_declaration` | `type Server struct {` |
+| `test_interface_method` | Método de interfaz con tipos |
+| `test_map_literal` | `map[string]int{"a": 1}` |
+| `test_defer_close` | `defer f.Close()` |
+| `test_error_check_idiom` | `if err != nil {` |
+| `test_via_highlight_lang` | Llamada a `highlight_lang("go")` |
 
 ### test_themes.py — Sistema de temas y color overrides (16 tests)
 
@@ -394,6 +461,7 @@ Tests de exportación visual (pre-existente).
 | `test_markup.py` | 7 | `md_to_markup()` |
 | `test_highlighter.py` | 21 | `highlighter_highlight()` |
 | `test_lexer_py.py` | 46 | `py_lexer_run()`, `highlighter_highlight("python")` |
+| `test_lexer_go.py` | 58 | `go_lexer_run()`, `highlighter_highlight("go")` |
 | `test_themes.py` | 16 | `theme_default()`, `theme_find()`, `slider_set_theme()`, `slider_set_color()` |
 | `test_export.py` | 11 | `slider_export_png/jpg/svg/pdf/gif()` |
 | `test_transitions.py` | 14 | `do_transition()`, `slider_render()` con transiciones |
@@ -401,7 +469,7 @@ Tests de exportación visual (pre-existente).
 | `test_empty_warnings.py` | 7 | `slider_load()` warnings para archivos vacíos |
 | `test_integration.py` | 25 | `slider_load()`, `slider_free()`, `slider_get_count()`, getters/setters, frontmatter |
 | `test_visual.py` | 2 | `slider_export_png()`, `slider_set_theme()` |
-| **Total** | **240** | |
+| **Total** | **298** | |
 
 ## Cobertura de código (Coverage)
 

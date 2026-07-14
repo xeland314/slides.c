@@ -62,7 +62,7 @@ CFLAGS += $(PKG_CFLAGS)
 LIBS = $(PKG_LIBS) $(PLATFORM_LIBS)
 
 # Fuentes y Objetos
-CORE_COMMON_SRC = src/core/parser.c src/core/themes.c src/core/highlighter.c src/render/renderer.c src/render/render_util.c src/render/render_table.c src/render/render_code.c src/render/render_transition.c src/render/export_png.c src/render/export_jpg.c src/render/export_pdf.c src/render/export_gif.c src/render/export_svg.c src/core/lexer_c.c src/core/lexer_py.c
+CORE_COMMON_SRC = src/core/parser.c src/core/themes.c src/core/highlighter.c src/render/renderer.c src/render/render_util.c src/render/render_table.c src/render/render_code.c src/render/render_transition.c src/render/export_png.c src/render/export_jpg.c src/render/export_pdf.c src/render/export_gif.c src/render/export_svg.c src/core/lexer_c.c src/core/lexer_py.c src/core/lexer_go.c
 CORE_SRC = $(CORE_COMMON_SRC) $(BACKEND_SRC)
 CORE_OBJ = $(CORE_SRC:.c=.o)
 
@@ -96,7 +96,7 @@ else
 endif
 COV_CFLAGS = $(CFLAGS) -fprofile-arcs -ftest-coverage
 
-coverage: clean_coverage src/core/lexer_c.c src/core/lexer_py.c
+coverage: clean_coverage src/core/lexer_c.c src/core/lexer_py.c src/core/lexer_go.c
 	$(CC) -shared -o $(COV_DLL) $(CORE_SRC) $(LIBS) $(COV_CFLAGS)
 	cp $(COV_DLL) $(TARGET_DLL)
 	python3 ports/python/run_all_tests.py
@@ -128,7 +128,7 @@ clean:
 	$(RM) slides libslider.so slides_ada.exe
 	$(RM) slides.1
 	$(RM) ports/ada/*.o ports/ada/*.ali
-	$(RM) src/core/lexer_c.c src/core/lexer_py.c
+	$(RM) src/core/lexer_c.c src/core/lexer_py.c src/core/lexer_go.c
 	$(RM) *.gcda *.gcno *.gcov
 	$(RM) slider_coverage.dll libslider_coverage.so
 	$(RM) coverage -rf
