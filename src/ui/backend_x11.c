@@ -23,7 +23,7 @@ Slider* backend_run(Slider *s) {
   Display *disp = XOpenDisplay(NULL);
   if (!disp) {
     fputs("No se pudo abrir display X11\n", stderr);
-    return 1;
+    return NULL;
   }
 
   int scr = DefaultScreen(disp);
