@@ -537,6 +537,21 @@ class TestLexerShell(unittest.TestCase):
         self.assertIn("echo", out)
         self._assert_highlighted(out)
 
+    def test_lexer_dispatch_fish(self):
+        out = self.cs.highlight_lang("echo hello", "fish", self.theme_ptr)
+        self.assertIn("echo", out)
+        self._assert_highlighted(out)
+
+    def test_lexer_dispatch_zsh(self):
+        out = self.cs.highlight_lang("echo hello", "zsh", self.theme_ptr)
+        self.assertIn("echo", out)
+        self._assert_highlighted(out)
+
+    def test_lexer_dispatch_env(self):
+        out = self.cs.highlight_lang("echo hello", "env", self.theme_ptr)
+        self.assertIn("echo", out)
+        self._assert_highlighted(out)
+
     def test_empty_line(self):
         out = self._lex("")
         self.assertEqual(out, "")

@@ -851,15 +851,15 @@ Tests de exportación visual (pre-existente).
 |:---|:---:|:---|
 | `test_parser.py` | 26 | `parse_line()` |
 | `test_markup.py` | 7 | `md_to_markup()` |
-| `test_highlighter.py` | 21 | `highlighter_highlight()` |
-| `test_lexer_py.py` | 46 | `py_lexer_run()`, `highlighter_highlight("python")` |
+| `test_highlighter.py` | 21 | `highlighter_highlight()` — C family aliases: c/cpp/c++/java/cs/csharp/c#/kotlin/kt/swift/dart/rust/rs/php/scala |
+| `test_lexer_py.py` | 47 | `py_lexer_run()`, `highlighter_highlight("python"/"py")` |
 | `test_lexer_go.py` | 58 | `go_lexer_run()`, `highlighter_highlight("go")` |
-| `test_lexer_js.py` | 54 | `js_lexer_run()`, `highlighter_highlight("javascript")` |
-| `test_lexer_ts.py` | 43 | `ts_lexer_run()`, `highlighter_highlight("typescript")` |
+| `test_lexer_js.py` | 55 | `js_lexer_run()`, `highlighter_highlight("javascript"/"js")` |
+| `test_lexer_ts.py` | 44 | `ts_lexer_run()`, `highlighter_highlight("typescript"/"ts")` |
 | `test_lexer_tsx.py` | 37 | `tsx_lexer_run()`, `highlighter_highlight("tsx")` con JSX_TAG/JSX_CHILD |
 | `test_lexer_html.py` | 51 | `html_lexer_run()`, `highlighter_highlight("html")` con TAG_OPEN/CLOSE/DOCTYPE |
 | `test_lexer_css.py` | 58 | `css_lexer_run()`, `highlighter_highlight("css")` con selectors, at-rules, units |
-| `test_lexer_sh.py` | 94 | `sh_lexer_run()`, `highlighter_highlight("shell"/"bash"/"sh")` con variables, builtins, comandos |
+| `test_lexer_sh.py` | 97 | `sh_lexer_run()`, `highlighter_highlight("shell"/"bash"/"sh"/"fish"/"zsh"/"env")` con variables, builtins, comandos |
 | `test_themes.py` | 16 | `theme_default()`, `theme_find()`, `slider_set_theme()`, `slider_set_color()` |
 | `test_export.py` | 11 | `slider_export_png/jpg/svg/pdf/gif()` |
 | `test_transitions.py` | 14 | `do_transition()`, `slider_render()` con transiciones |
@@ -867,7 +867,7 @@ Tests de exportación visual (pre-existente).
 | `test_empty_warnings.py` | 7 | `slider_load()` warnings para archivos vacíos |
 | `test_integration.py` | 25 | `slider_load()`, `slider_free()`, `slider_get_count()`, getters/setters, frontmatter |
 | `test_visual.py` | 2 | `slider_export_png()`, `slider_set_theme()` |
-| **Total** | **639** | |
+| **Total** | **661** | |
 
 ## Cobertura de código (Coverage)
 

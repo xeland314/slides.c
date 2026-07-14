@@ -319,6 +319,11 @@ class TestLexerJS(unittest.TestCase):
         self.assertIn("const", out)
         self._assert_highlighted(out)
 
+    def test_via_highlight_lang_js_alias(self):
+        out = self.cs.highlight_lang("const x = 5;", "js", self.theme_ptr)
+        self.assertIn("const", out)
+        self._assert_highlighted(out)
+
 
 if __name__ == "__main__":
     unittest.main()
