@@ -15,7 +15,7 @@ El proceso es:
 2. Genera lexer C/Python desde archivos `.l` con flex
 3. Compila la biblioteca compartida con `-fprofile-arcs -ftest-coverage` (GCC instrumentation)
 4. Copia la DLL de coverage como `slider.dll` para que los tests la carguen
-5. Ejecuta la suite completa de 298 tests (Python + ctypes)
+5. Ejecuta la suite completa de 435 tests (Python + ctypes)
 6. Ejecuta `gcov` sobre cada archivo fuente del core
 7. Muestra un resumen de cobertura en la terminal
 

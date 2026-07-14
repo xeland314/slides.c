@@ -34,6 +34,9 @@ ports/python/
   test_highlighter.py    Tests del resaltador de sintaxis genérico
    test_lexer_py.py       Tests del lexer de Python (flex lexer)
    test_lexer_go.py       Tests del lexer de Go (flex lexer)
+   test_lexer_js.py       Tests del lexer de JavaScript (flex lexer)
+   test_lexer_ts.py       Tests del lexer de TypeScript (flex lexer)
+   test_lexer_tsx.py      Tests del lexer de TSX con JSX (flex lexer)
    test_themes.py         Tests del sistema de temas y color overrides
   test_export.py         Tests de exportación a PNG/JPG/SVG/PDF/GIF
   test_transitions.py    Tests de transiciones entre slides (render_transition.c)
@@ -238,6 +241,165 @@ conflictos de símbolos.
 | `test_defer_close` | `defer f.Close()` |
 | `test_error_check_idiom` | `if err != nil {` |
 | `test_via_highlight_lang` | Llamada a `highlight_lang("go")` |
+
+### test_lexer_js.py — Lexer de JavaScript (54 tests)
+
+Tests para `js_lexer_run()`, el lexer flex para código JavaScript.
+
+| Test | Descripción |
+|:---|:---|
+| `test_keyword_var` | `var` resaltado |
+| `test_keyword_let` | `let` resaltado |
+| `test_keyword_const` | `const` resaltado |
+| `test_keyword_function` | `function` resaltado |
+| `test_keyword_return` | `return` resaltado |
+| `test_keyword_if_else` | `if`, `else` resaltados |
+| `test_keyword_for_while_do` | `for`, `while`, `do` resaltados |
+| `test_keyword_switch_case_default` | `switch`, `case`, `default` resaltados |
+| `test_keyword_break_continue` | `break`, `continue` resaltados |
+| `test_keyword_new_this` | `new`, `this` resaltados |
+| `test_keyword_class_extends_super` | `class`, `extends`, `super` resaltados |
+| `test_keyword_import_export_from` | `import`, `export`, `from` resaltados |
+| `test_keyword_try_catch_finally` | `try`, `catch`, `finally` resaltados |
+| `test_keyword_throw` | `throw` resaltado |
+| `test_keyword_async_await` | `async`, `await` resaltados |
+| `test_keyword_yield` | `yield` resaltado |
+| `test_keyword_instanceof_typeof_void_delete` | 4 keywords resaltados |
+| `test_keyword_true_false_null_undefined` | 4 literals resaltados |
+| `test_keyword_nan_infinity` | `NaN`, `Infinity` resaltados |
+| `test_keyword_static_get_set` | `static`, `get`, `set` resaltados |
+| `test_keyword_with_debugger` | `with`, `debugger` resaltados |
+| `test_keyword_of_in` | `of`, `in` resaltados |
+| `test_comment_single_line` | Comentario `// ...` resaltado |
+| `test_comment_inline` | Código + comentario en la misma línea |
+| `test_comment_multi_line` | Comentario multilinea `/* ... */` |
+| `test_string_double_quotes` | `"string"` resaltado |
+| `test_string_single_quotes` | `'string'` resaltado |
+| `test_string_template_literal` | `` `template` `` resaltado |
+| `test_string_escaped` | `"with \"escape\""` resaltado |
+| `test_number_integer` | Entero `42` resaltado |
+| `test_number_float` | Float `3.14` resaltado |
+| `test_number_hex` | Hex `0xFF` resaltado |
+| `test_number_binary` | Binario `0b1010` resaltado |
+| `test_number_octal` | Octal `0o77` resaltado |
+| `test_number_underscore` | `1_000_000` resaltado |
+| `test_number_scientific` | `6.022e23` resaltado |
+| `test_operators` | Operadores aritméticos |
+| `test_operators_comparison` | `==`, `!=`, `>=`, etc. |
+| `test_operator_ternary` | Operador ternario `? :` |
+| `test_identifier` | Identificador no resaltado |
+| `test_identifier_dollar` | `$element` identificador |
+| `test_identifier_underscore_start` | `_private` identificador |
+| `test_empty_string` | Input vacío → output vacío |
+| `test_multiline_simulation` | 5 líneas de JS, una por una |
+| `test_complex_expression` | Expresión con `map`/`filter` |
+| `test_destructuring` | Desestructuración `const { a } = obj` |
+| `test_arrow_function` | Arrow function `=>` |
+| `test_optional_chaining` | `?.` operador |
+| `test_nullish_coalescing` | `??` operador |
+| `test_spread_operator` | `...` spread |
+| `test_async_await_full` | async/await completo |
+| `test_class_with_constructor` | class + constructor + this |
+| `test_promise_chaining` | `.then().catch()` |
+| `test_via_highlight_lang` | Llamada a `highlight_lang("javascript")` |
+
+### test_lexer_ts.py — Lexer de TypeScript (43 tests)
+
+Tests para `ts_lexer_run()`, el lexer flex para código TypeScript puro.
+
+| Test | Descripción |
+|:---|:---|
+| `test_keyword_const` | `const` resaltado (heredado JS) |
+| `test_keyword_function` | `function` resaltado |
+| `test_keyword_class` | `class` resaltado |
+| `test_keyword_async_await` | `async`, `await` resaltados |
+| `test_keyword_import_export` | `import`, `from`, `export` resaltados |
+| `test_keyword_true_false_null_undefined` | 4 literals resaltados |
+| `test_keyword_type` | `type` resaltado (TS) |
+| `test_keyword_interface` | `interface` resaltado (TS) |
+| `test_keyword_enum` | `enum` resaltado (TS) |
+| `test_keyword_namespace` | `namespace` resaltado (TS) |
+| `test_keyword_module` | `module` resaltado (TS) |
+| `test_keyword_declare` | `declare` resaltado (TS) |
+| `test_keyword_abstract` | `abstract` resaltado (TS) |
+| `test_keyword_implements` | `implements` resaltado (TS) |
+| `test_keyword_readonly` | `readonly` resaltado (TS) |
+| `test_keyword_access_modifiers` | `private`, `protected`, `public` resaltados |
+| `test_keyword_keyof` | `keyof` resaltado (TS) |
+| `test_keyword_infer` | `infer` resaltado (TS) |
+| `test_keyword_is` | `is` resaltado (TS) |
+| `test_keyword_asserts` | `asserts` resaltado (TS) |
+| `test_keyword_satisfies` | `satisfies` resaltado (TS) |
+| `test_keyword_override` | `override` resaltado (TS) |
+| `test_comment_single_line` | Comentario `// ...` |
+| `test_comment_multi_line` | Comentario multilinea `/* ... */` |
+| `test_string_double_quotes` | `"string"` resaltado |
+| `test_string_single_quotes` | `'string'` resaltado |
+| `test_string_template_literal` | `` `template` `` resaltado |
+| `test_number_integer` | Entero `42` resaltado |
+| `test_number_hex` | Hex `0xFF` resaltado |
+| `test_number_float` | Float `3.14` resaltado |
+| `test_type_annotation` | Anotación de tipo `string`, `void` |
+| `test_generic_type` | Genérico `<T>` |
+| `test_union_type` | Unión `string \| number` |
+| `test_interface_with_methods` | Interface con métodos |
+| `test_enum_with_values` | Enum con valores |
+| `test_class_with_access_modifiers` | class + private/protected/public |
+| `test_abstract_class` | class abstracta |
+| `test_readonly_property` | Propiedad readonly |
+| `test_type_assertion` | `as Type` |
+| `test_satisfies_example` | `satisfies Record` |
+| `test_empty_string` | Input vacío → output vacío |
+| `test_multiline_simulation` | 11 líneas de TS |
+| `test_complex_expression` | Expresión con tipos |
+| `test_mapped_type` | Tipo mapeado `{ [K in keyof T] }` |
+| `test_conditional_type` | Tipo condicional `T extends U ? X : Y` |
+| `test_via_highlight_lang` | Llamada a `highlight_lang("typescript")` |
+
+### test_lexer_tsx.py — Lexer de TSX con JSX (37 tests)
+
+Tests para `tsx_lexer_run()`, el lexer flex para TSX con soporte JSX completo.
+Usa estados exclusivos `JSX_TAG` y `JSX_CHILD` para manejar etiquetas web.
+
+| Test | Descripción |
+|:---|:---|
+| `test_keyword_const` | `const` resaltado (heredado TS) |
+| `test_keyword_function` | `function` resaltado |
+| `test_keyword_type` | `type` resaltado (TS) |
+| `test_keyword_interface` | `interface` resaltado (TS) |
+| `test_keyword_class` | `class` resaltado |
+| `test_keyword_return` | `return` resaltado |
+| `test_keyword_async_await` | `async`, `await` resaltados |
+| `test_jsx_opening_tag` | `<div className="box">` — tag + attr + string |
+| `test_jsx_opening_tag_single_attr` | `<span>text</span>` — tag name resaltado |
+| `test_jsx_component_tag` | `<Button onClick={handler}>` — componente |
+| `test_jsx_nested_components` | `<App><Header /><Footer /></App>` |
+| `test_jsx_self_closing` | `<img src={url} />` — self-closing |
+| `test_jsx_self_closing_no_space` | `<br/>` — self-closing sin espacio |
+| `test_jsx_self_closing_with_props` | `<Input type="text" ... />` — múltiples props |
+| `test_jsx_closing_tag` | `</div>` — closing tag |
+| `test_jsx_closing_component` | `</Button>` — closing component |
+| `test_jsx_text_content` | `<p>Hello World</p>` — texto entre tags |
+| `test_jsx_expression_in_content` | `<span>{name}</span>` — expresión en contenido |
+| `test_jsx_mixed_content` | `<div>Hi {user.name}!</div>` — mixto |
+| `test_jsx_string_attribute` | `<div id="main">` — attr string |
+| `test_jsx_single_quote_attribute` | `<div className='active'>` |
+| `test_jsx_expression_attribute` | `<div onClick={handleClick}>` — attr expresión |
+| `test_jsx_full_component` | Componente completo con JSX |
+| `test_jsx_conditional_rendering` | `{cond ? <A /> : <B />}` |
+| `test_jsx_list_rendering` | `{items.map(item => <li>...)}` |
+| `test_jsx_fragment` | `<><Header /><Content /></>` |
+| `test_jsx_deep_nesting` | 4 niveles de anidación |
+| `test_jsx_html_entity` | `&lt; &gt; &amp;` en contenido |
+| `test_jsx_multiple_attributes` | 5 atributos en una etiqueta |
+| `test_jsx_closing_tag_in_expression` | `<div>{show && <Modal />}</div>` |
+| `test_comment_outside_jsx` | `// comment` fuera de JSX |
+| `test_string_outside_jsx` | `"React"` fuera de JSX |
+| `test_template_literal_outside_jsx` | `` `template` `` fuera de JSX |
+| `test_empty_string` | Input vacío → output vacío |
+| `test_multiline_simulation` | 12 líneas de TSX |
+| `test_complex_component` | Componente completo con useState |
+| `test_via_highlight_lang` | Llamada a `highlight_lang("tsx")` |
 
 ### test_themes.py — Sistema de temas y color overrides (16 tests)
 
@@ -462,6 +624,9 @@ Tests de exportación visual (pre-existente).
 | `test_highlighter.py` | 21 | `highlighter_highlight()` |
 | `test_lexer_py.py` | 46 | `py_lexer_run()`, `highlighter_highlight("python")` |
 | `test_lexer_go.py` | 58 | `go_lexer_run()`, `highlighter_highlight("go")` |
+| `test_lexer_js.py` | 54 | `js_lexer_run()`, `highlighter_highlight("javascript")` |
+| `test_lexer_ts.py` | 43 | `ts_lexer_run()`, `highlighter_highlight("typescript")` |
+| `test_lexer_tsx.py` | 37 | `tsx_lexer_run()`, `highlighter_highlight("tsx")` con JSX_TAG/JSX_CHILD |
 | `test_themes.py` | 16 | `theme_default()`, `theme_find()`, `slider_set_theme()`, `slider_set_color()` |
 | `test_export.py` | 11 | `slider_export_png/jpg/svg/pdf/gif()` |
 | `test_transitions.py` | 14 | `do_transition()`, `slider_render()` con transiciones |
@@ -469,7 +634,7 @@ Tests de exportación visual (pre-existente).
 | `test_empty_warnings.py` | 7 | `slider_load()` warnings para archivos vacíos |
 | `test_integration.py` | 25 | `slider_load()`, `slider_free()`, `slider_get_count()`, getters/setters, frontmatter |
 | `test_visual.py` | 2 | `slider_export_png()`, `slider_set_theme()` |
-| **Total** | **298** | |
+| **Total** | **435** | |
 
 ## Cobertura de código (Coverage)
 
