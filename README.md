@@ -142,8 +142,7 @@ make
 
 Esto produce:
 - `slides` / `slides.exe` — Presentador interactivo
-- `libslider.so` / `slider.dll` — Librería compartida (para ports FFI)
-- `slides_ada` / `slides_ada.exe` — Versión Ada
+- `libslider.so` / `slider.dll` — Librería compartida (para Python ctypes)
 
 En Windows, el Makefile auto-detecta MSYS2 (`C:/msys64/mingw64`, `C:/msys2/mingw64`).
 Si usas Cygwin GCC, el Makefile muestra una advertencia.
@@ -268,15 +267,4 @@ src/
 make test
 ```
 
-Ejecuta 661 tests unitarios y de integración (Python + ctypes sobre `slider.dll`).
-
-## Ports
-
-El proyecto incluye bindings FFI funcionales en varios lenguajes:
-
-- **Ada** (`ports/ada/`) — System.Address FFI, CLI completo
-- **Dart** (`ports/dart/`) — dart:ffi + package:ffi
-- **Python** (`ports/python/`) — ctypes + tests
-- **Zig** (`ports/zig/`) — @cImport, Zig build system
-- **Lua** (`ports/lua/`) — LuaJIT FFI
-- **Go** (`ports/go/`) — cgo + flag package
+Ejecuta 661 tests unitarios y de integración (Python + ctypes sobre `slider.dll` / `libslider.so`).

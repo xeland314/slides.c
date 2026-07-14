@@ -16,7 +16,6 @@ ifeq ($(OS),Windows_NT)
     BACKEND_SRC = src/ui/backend_win32.c
     TARGET_EXE = slides.exe
     TARGET_DLL = slider.dll
-    TARGET_ADA = slides_ada.exe
 
     # Auto-detectar directorio MSYS2 MinGW64
     ifneq (,$(wildcard C:/msys64/mingw64/bin/gcc.exe))
@@ -47,7 +46,6 @@ else
     BACKEND_SRC = src/ui/backend_x11.c
     TARGET_EXE = slides
     TARGET_DLL = libslider.so
-    TARGET_ADA = slides_ada
 endif
 
 # Flags de pkg-config (con fallback informativo)
@@ -69,16 +67,13 @@ CORE_OBJ = $(CORE_SRC:.c=.o)
 MAIN_SRC = src/ui/main.c src/ui/help.c
 MAIN_OBJ = $(MAIN_SRC:.c=.o)
 
-all: $(TARGET_EXE) $(TARGET_ADA) $(TARGET_DLL)
+all: $(TARGET_EXE) $(TARGET_DLL)
 
 $(TARGET_EXE): $(CORE_OBJ) $(MAIN_OBJ)
 	$(CC) $^ -o $@ $(LIBS)
 
 $(TARGET_DLL): $(CORE_OBJ)
 	$(CC) -shared -o $@ $(CORE_OBJ) $(LIBS)
-
-$(TARGET_ADA): $(CORE_OBJ)
-	gnatmake -Iports/ada/ -D ports/ada/ -o $@ ports/ada/slides_main.adb -largs $(CORE_OBJ) $(LIBS)
 
 # --- Man page ---
 slides.1: slides.1.in
@@ -124,10 +119,9 @@ src/core/lexer_%.c: src/core/lexer_%.l
 	$(CC) $(CFLAGS) -c $< -o $@
 
 clean:
-	$(RM) $(CORE_OBJ) $(MAIN_OBJ) $(TARGET_EXE) $(TARGET_ADA) $(TARGET_DLL)
-	$(RM) slides libslider.so slides_ada.exe
+	$(RM) $(CORE_OBJ) $(MAIN_OBJ) $(TARGET_EXE) $(TARGET_DLL)
+	$(RM) slides libslider.so
 	$(RM) slides.1
-	$(RM) ports/ada/*.o ports/ada/*.ali
 	$(RM) src/core/lexer_c.c src/core/lexer_py.c src/core/lexer_go.c src/core/lexer_js.c src/core/lexer_ts.c src/core/lexer_tsx.c src/core/lexer_html.c src/core/lexer_css.c src/core/lexer_sh.c
 	$(RM) *.gcda *.gcno *.gcov
 	$(RM) slider_coverage.dll libslider_coverage.so
