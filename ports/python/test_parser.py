@@ -21,6 +21,32 @@ class TestParser(unittest.TestCase):
         self.assertEqual(sl.type, LineType.SUBTITLE)
         self.assertEqual(sl.text.decode("utf-8"), "Mi Subtitulo")
 
+    def test_parse_h3(self):
+        sl = self.cs.parse_line("### Tercer nivel")
+        self.assertEqual(sl.type, LineType.H3)
+        self.assertEqual(sl.text.decode("utf-8"), "Tercer nivel")
+
+    def test_parse_h4(self):
+        sl = self.cs.parse_line("#### Cuarto nivel")
+        self.assertEqual(sl.type, LineType.H4)
+        self.assertEqual(sl.text.decode("utf-8"), "Cuarto nivel")
+
+    def test_parse_h5(self):
+        sl = self.cs.parse_line("##### Quinto nivel")
+        self.assertEqual(sl.type, LineType.H5)
+        self.assertEqual(sl.text.decode("utf-8"), "Quinto nivel")
+
+    def test_parse_h6(self):
+        sl = self.cs.parse_line("###### Sexto nivel")
+        self.assertEqual(sl.type, LineType.H6)
+        self.assertEqual(sl.text.decode("utf-8"), "Sexto nivel")
+
+    def test_parse_h6_no_false_match(self):
+        sl = self.cs.parse_line("####### Demasiado hashes")
+        self.assertEqual(sl.type, LineType.BODY)
+        sl = self.cs.parse_line("# #####:mixed")
+        self.assertEqual(sl.type, LineType.TITLE)
+
     def test_parse_blockquote(self):
         sl = self.cs.parse_line("> Nota importante")
         self.assertEqual(sl.type, LineType.BLOCKQUOTE)

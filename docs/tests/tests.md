@@ -50,7 +50,7 @@ ports/python/
 
 ## Archivos de test detallados
 
-### test_parser.py — Parser de líneas Markdown (26 tests)
+### test_parser.py — Parser de líneas Markdown (33 tests)
 
 Tests unitarios para `parse_line()`, la función que clasifica una línea individual de Markdown.
 
@@ -58,6 +58,11 @@ Tests unitarios para `parse_line()`, la función que clasifica una línea indivi
 |:---|:---|
 | `test_parse_title` | Línea `# Titulo` → `LINE_TITLE` |
 | `test_parse_subtitle` | Línea `## Subtitulo` → `LINE_SUBTITLE` |
+| `test_parse_h3` | Línea `### Texto` → `LINE_H3` |
+| `test_parse_h4` | Línea `#### Texto` → `LINE_H4` |
+| `test_parse_h5` | Línea `##### Texto` → `LINE_H5` |
+| `test_parse_h6` | Línea `###### Texto` → `LINE_H6` |
+| `test_parse_h6_no_false_match` | `#######` → BODY, `# #####:x` → TITLE |
 | `test_parse_blockquote` | Línea `> Texto` → `LINE_BLOCKQUOTE` |
 | `test_parse_bullets` | Viñetas nivel 1 (`- item`) y nivel 2 (`  - item`) |
 | `test_parse_image` | Formato corto `!archivo.png` y Markdown `![alt](path)` |
@@ -694,7 +699,7 @@ Tests de `do_transition()`, `slider_render()` con transiciones, y parsing de tra
 | `test_render_slide_with_transition_expired` | Transición expirada (>300ms) resetea a NONE |
 | `test_transition_export_png_triggers` | `export_png` en slide con transición no crashea |
 
-### test_renderer_gaps.py — Renderer, img_config, notes, limits, hot reload (65 tests)
+### test_renderer_gaps.py — Renderer, img_config, notes, limits, hot reload (67 tests)
 
 Tests que cubren las brechas del renderer: bullet2, tasks, num_list, img_config parsing,
 notas del presentador, límites del parser, y hot reload.
@@ -708,6 +713,8 @@ notas del presentador, límites del parser, y hot reload.
 | `test_task_checked_parsed` | `- [x] Done item` → `LINE_TASK_CHECKED` |
 | `test_num_list_parsed` | 3 items numerados → 3 × `LINE_NUM_LIST` |
 | `test_mixed_content_types` | Slide con title, subtitle, body, bullets, tasks, quote |
+| `test_heading_levels_parsed` | Slide con #, ##, ###, ####, #####, ###### parseados correctamente |
+| `test_heading_levels_render` | Render slide con los 6 niveles de encabezado sin crash |
 | `test_render_slide_with_all_line_types` | Render slide con todos los tipos de línea |
 | `test_render_slide_bullet2` | Render slide con 3 niveles de viñetas |
 | `test_render_tasks_checked_and_unchecked` | Render slide con tasks pendientes y completadas |
@@ -849,7 +856,7 @@ Tests de exportación visual (pre-existente).
 
 | Archivo | Tests | Función C cubierta |
 |:---|:---:|:---|
-| `test_parser.py` | 26 | `parse_line()` |
+| `test_parser.py` | 33 | `parse_line()` |
 | `test_markup.py` | 7 | `md_to_markup()` |
 | `test_highlighter.py` | 21 | `highlighter_highlight()` — C family aliases: c/cpp/c++/java/cs/csharp/c#/kotlin/kt/swift/dart/rust/rs/php/scala |
 | `test_lexer_py.py` | 47 | `py_lexer_run()`, `highlighter_highlight("python"/"py")` |
@@ -863,11 +870,11 @@ Tests de exportación visual (pre-existente).
 | `test_themes.py` | 16 | `theme_default()`, `theme_find()`, `slider_set_theme()`, `slider_set_color()` |
 | `test_export.py` | 11 | `slider_export_png/jpg/svg/pdf/gif()` |
 | `test_transitions.py` | 14 | `do_transition()`, `slider_render()` con transiciones |
-| `test_renderer_gaps.py` | 65 | `slider_render()` (bullet2/tasks/numlist/table/code), `ImageConfig`, notas, límites, hot reload |
+| `test_renderer_gaps.py` | 67 | `slider_render()` (bullet2/tasks/numlist/table/code/headings), `ImageConfig`, notas, límites, hot reload |
 | `test_empty_warnings.py` | 7 | `slider_load()` warnings para archivos vacíos |
 | `test_integration.py` | 25 | `slider_load()`, `slider_free()`, `slider_get_count()`, getters/setters, frontmatter |
 | `test_visual.py` | 2 | `slider_export_png()`, `slider_set_theme()` |
-| **Total** | **661** | |
+| **Total** | **668** | |
 
 ## Cobertura de código (Coverage)
 
