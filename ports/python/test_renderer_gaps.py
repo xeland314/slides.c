@@ -106,6 +106,43 @@ class TestRendererGaps(unittest.TestCase):
         finally:
             os.unlink(path)
 
+    def test_heading_levels_parsed(self):
+        content = "# H1\n\n## H2\n\n### H3\n\n#### H4\n\n##### H5\n\n###### H6\n\nBody\n"
+        path = self._tmp_md(content)
+        try:
+            s = self.cs.load(path)
+            self.assertTrue(bool(s))
+            nlines = self.cs.test_get_nlines(s, 0)
+            types = []
+            for i in range(nlines):
+                types.append(self.cs.test_get_line_type(s, 0, i))
+            self.assertIn(LineType.TITLE, types)
+            self.assertIn(LineType.SUBTITLE, types)
+            self.assertIn(LineType.H3, types)
+            self.assertIn(LineType.H4, types)
+            self.assertIn(LineType.H5, types)
+            self.assertIn(LineType.H6, types)
+            self.assertIn(LineType.BODY, types)
+            self.cs.free(s)
+        finally:
+            os.unlink(path)
+
+    def test_heading_levels_render(self):
+        content = "# H1\n\n## H2\n\n### H3\n\n#### H4\n\n##### H5\n\n###### H6\n"
+        path = self._tmp_md(content)
+        try:
+            from cairo_helpers import create_image_surface, create_context, destroy_context, destroy_surface
+            s = self.cs.load(path)
+            self.assertTrue(bool(s))
+            surface = create_image_surface(1280, 720)
+            ctx = create_context(surface)
+            self.cs.render_slide(s, 0, ctx, 1280, 720, 0.0)
+            destroy_context(ctx)
+            destroy_surface(surface)
+            self.cs.free(s)
+        finally:
+            os.unlink(path)
+
     def test_render_slide_with_all_line_types(self):
         content = "# T\n\nBody\n\n- B1\n  - B2\n\n1. Num\n\n- [ ] T1\n\n- [x] T2\n\n> Quote\n"
         path = self._tmp_md(content)

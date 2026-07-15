@@ -31,7 +31,7 @@ Un presentador de diapositivas minimalista y de alto rendimiento escrito en **C*
 ## Características
 
 ### Contenido Markdown
-- Títulos (`#`, `##`) con barra inferior decorativa
+- Títulos (`#` a `######`) con tamaños decrecientes
 - Párrafos con word-wrapping automático
 - Listas con viñetas (anidadas nivel 1 y 2)
 - Listas numeradas (`1.`, `a)`, `i)`, etc.)
@@ -267,4 +267,4 @@ src/
 make test
 ```
 
-Ejecuta 661 tests unitarios y de integración (Python + ctypes sobre `slider.dll` / `libslider.so`).
+Ejecuta 668 tests unitarios y de integración (Python + ctypes sobre `slider.dll` / `libslider.so`).

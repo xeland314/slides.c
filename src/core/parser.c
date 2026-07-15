@@ -70,13 +70,32 @@ void parse_line(const char *raw, SlideLine *out) {
     while (*s == ' ' || *s == '\t') s++;
     if (*s == '\0') { out->type = LINE_EMPTY; out->text[0] = '\0'; return; }
 
-    // Título ##
+    // Títulos: ###### … # (orden descendente para evitar falsos positivos)
+    if (strncmp(s, "###### ", 7) == 0) {
+        out->type = LINE_H6;
+        strncpy(out->text, s + 7, MAX_LINE_LEN - 1);
+        return;
+    }
+    if (strncmp(s, "##### ", 6) == 0) {
+        out->type = LINE_H5;
+        strncpy(out->text, s + 6, MAX_LINE_LEN - 1);
+        return;
+    }
+    if (strncmp(s, "#### ", 5) == 0) {
+        out->type = LINE_H4;
+        strncpy(out->text, s + 5, MAX_LINE_LEN - 1);
+        return;
+    }
+    if (strncmp(s, "### ", 4) == 0) {
+        out->type = LINE_H3;
+        strncpy(out->text, s + 4, MAX_LINE_LEN - 1);
+        return;
+    }
     if (strncmp(s, "## ", 3) == 0) {
         out->type = LINE_SUBTITLE;
         strncpy(out->text, s + 3, MAX_LINE_LEN - 1);
         return;
     }
-    // Título #
     if (strncmp(s, "# ", 2) == 0) {
         out->type = LINE_TITLE;
         strncpy(out->text, s + 2, MAX_LINE_LEN - 1);

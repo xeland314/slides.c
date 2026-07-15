@@ -74,6 +74,10 @@ typedef enum {
     LINE_EMPTY,
     LINE_TITLE,       // # texto
     LINE_SUBTITLE,    // ## texto
+    LINE_H3,          // ### texto
+    LINE_H4,          // #### texto
+    LINE_H5,          // ##### texto
+    LINE_H6,          // ###### texto
     LINE_BODY,        // texto normal
     LINE_BULLET1,     // - texto
     LINE_BULLET2,     //   - texto (subviñeta)

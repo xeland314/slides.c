@@ -10,12 +10,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-/* ── Layout cache: avoids 7 create/destroy cycles per frame ─────────────── */
-#define NUM_LAYOUTS 7
+/* ── Layout cache: avoids create/destroy cycles per frame ─────────────── */
+#define NUM_LAYOUTS 11
 static PangoLayout *lcached[NUM_LAYOUTS] = {0};
 static cairo_t     *lcached_cr = NULL;
 static double       lcached_content_w = 0;
-static char         lcached_fonts[6][128]; /* title,subtitle,body,bullet,num,code */
+static char         lcached_fonts[10][128]; /* title,subtitle,body,bullet,num,code,h3,h4,h5,h6 */
 static int          lcached_valid = 0;
 
 void layouts_invalidate(void) {
@@ -27,17 +27,24 @@ void layouts_invalidate(void) {
 
 static void layouts_ensure(cairo_t *cr, Slider *s, double content_w) {
     char f_title[128], f_subtitle[128], f_body[128], f_bullet[128], f_num[128], f_code[128];
+    char f_h3[128], f_h4[128], f_h5[128], f_h6[128];
     snprintf(f_title,    sizeof(f_title),    "%s Bold %d", s->font_family, (int)(44 * s->font_scale));
     snprintf(f_subtitle, sizeof(f_subtitle), "%s %d",      s->font_family, (int)(26 * s->font_scale));
     snprintf(f_body,     sizeof(f_body),     "%s %d",      s->font_family, (int)(20 * s->font_scale));
     snprintf(f_bullet,   sizeof(f_bullet),   "%s %d",      s->font_family, (int)(18 * s->font_scale));
     snprintf(f_num,      sizeof(f_num),      "%s %d",      s->font_family, (int)(13 * s->font_scale));
     snprintf(f_code,     sizeof(f_code),     "Monospace %d",             (int)(16 * s->font_scale));
+    snprintf(f_h3,       sizeof(f_h3),       "%s Bold %d", s->font_family, (int)(22 * s->font_scale));
+    snprintf(f_h4,       sizeof(f_h4),       "%s Bold %d", s->font_family, (int)(18 * s->font_scale));
+    snprintf(f_h5,       sizeof(f_h5),       "%s %d",      s->font_family, (int)(16 * s->font_scale));
+    snprintf(f_h6,       sizeof(f_h6),       "%s %d",      s->font_family, (int)(14 * s->font_scale));
 
     if (lcached_valid && lcached_cr == cr && lcached_content_w == content_w &&
         strcmp(lcached_fonts[0], f_title) == 0 && strcmp(lcached_fonts[1], f_subtitle) == 0 &&
         strcmp(lcached_fonts[2], f_body) == 0 && strcmp(lcached_fonts[3], f_bullet) == 0 &&
-        strcmp(lcached_fonts[4], f_num) == 0 && strcmp(lcached_fonts[5], f_code) == 0) {
+        strcmp(lcached_fonts[4], f_num) == 0 && strcmp(lcached_fonts[5], f_code) == 0 &&
+        strcmp(lcached_fonts[6], f_h3) == 0 && strcmp(lcached_fonts[7], f_h4) == 0 &&
+        strcmp(lcached_fonts[8], f_h5) == 0 && strcmp(lcached_fonts[9], f_h6) == 0) {
         return;
     }
     layouts_invalidate();
@@ -49,13 +56,21 @@ static void layouts_ensure(cairo_t *cr, Slider *s, double content_w) {
     strncpy(lcached_fonts[3], f_bullet,   127); lcached_fonts[3][127] = '\0';
     strncpy(lcached_fonts[4], f_num,      127); lcached_fonts[4][127] = '\0';
     strncpy(lcached_fonts[5], f_code,     127); lcached_fonts[5][127] = '\0';
-    lcached[0] = make_layout(cr, f_title,    content_w);
-    lcached[1] = make_layout(cr, f_subtitle, content_w);
-    lcached[2] = make_layout(cr, f_body,     content_w);
-    lcached[3] = make_layout(cr, f_body,     content_w - 30.0 * s->font_scale);
-    lcached[4] = make_layout(cr, f_bullet,   content_w - 60.0 * s->font_scale);
-    lcached[5] = make_layout(cr, f_num,      200.0 * s->font_scale);
-    lcached[6] = make_layout(cr, f_code,     content_w - 30.0 * s->font_scale);
+    strncpy(lcached_fonts[6], f_h3,       127); lcached_fonts[6][127] = '\0';
+    strncpy(lcached_fonts[7], f_h4,       127); lcached_fonts[7][127] = '\0';
+    strncpy(lcached_fonts[8], f_h5,       127); lcached_fonts[8][127] = '\0';
+    strncpy(lcached_fonts[9], f_h6,       127); lcached_fonts[9][127] = '\0';
+    lcached[0]  = make_layout(cr, f_title,    content_w);
+    lcached[1]  = make_layout(cr, f_subtitle, content_w);
+    lcached[2]  = make_layout(cr, f_body,     content_w);
+    lcached[3]  = make_layout(cr, f_body,     content_w - 30.0 * s->font_scale);
+    lcached[4]  = make_layout(cr, f_bullet,   content_w - 60.0 * s->font_scale);
+    lcached[5]  = make_layout(cr, f_num,      200.0 * s->font_scale);
+    lcached[6]  = make_layout(cr, f_code,     content_w - 30.0 * s->font_scale);
+    lcached[7]  = make_layout(cr, f_h3,       content_w);
+    lcached[8]  = make_layout(cr, f_h4,       content_w);
+    lcached[9]  = make_layout(cr, f_h5,       content_w);
+    lcached[10] = make_layout(cr, f_h6,       content_w);
     lcached_valid = 1;
 }
 
@@ -90,6 +105,10 @@ void slider_render(Slider *s, int index, cairo_t *cr, int win_w, int win_h, doub
     PangoLayout *lay_bullet2  = lcached[4];
     PangoLayout *lay_num      = lcached[5];
     PangoLayout *lay_code     = lcached[6];
+    PangoLayout *lay_h3       = lcached[7];
+    PangoLayout *lay_h4       = lcached[8];
+    PangoLayout *lay_h5       = lcached[9];
+    PangoLayout *lay_h6       = lcached[10];
 
     double y = MARGIN_Y;
     int i = 0;
@@ -110,6 +129,22 @@ void slider_render(Slider *s, int index, cairo_t *cr, int win_w, int win_h, doub
             SET_COLOR(cr, s->theme->sub);
             y += render_pango(cr, lay_subtitle, sl->text, MARGIN_X, y);
             y += 14.0 * s->font_scale; i++; break;
+        case LINE_H3:
+            SET_COLOR(cr, s->theme->title);
+            y += render_pango(cr, lay_h3, sl->text, MARGIN_X, y);
+            y += 12.0 * s->font_scale; i++; break;
+        case LINE_H4:
+            SET_COLOR(cr, s->theme->sub);
+            y += render_pango(cr, lay_h4, sl->text, MARGIN_X, y);
+            y += 10.0 * s->font_scale; i++; break;
+        case LINE_H5:
+            SET_COLOR(cr, s->theme->body);
+            y += render_pango(cr, lay_h5, sl->text, MARGIN_X, y);
+            y += 8.0 * s->font_scale; i++; break;
+        case LINE_H6:
+            SET_COLOR(cr, s->theme->body);
+            y += render_pango(cr, lay_h6, sl->text, MARGIN_X, y);
+            y += 6.0 * s->font_scale; i++; break;
         case LINE_BODY:
             SET_COLOR(cr, s->theme->body);
             y += render_pango(cr, lay_body, sl->text, MARGIN_X, y);

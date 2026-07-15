@@ -8,19 +8,23 @@ class LineType:
     EMPTY = 0
     TITLE = 1
     SUBTITLE = 2
-    BODY = 3
-    BULLET1 = 4
-    BULLET2 = 5
-    IMAGE = 6
-    TABLE_ROW = 7
-    TABLE_SEP = 8
-    BLOCKQUOTE = 9
-    CODE_START = 10
-    CODE_END = 11
-    CODE = 12
-    TASK_UNCHECKED = 13
-    TASK_CHECKED = 14
-    NUM_LIST = 15
+    H3 = 3
+    H4 = 4
+    H5 = 5
+    H6 = 6
+    BODY = 7
+    BULLET1 = 8
+    BULLET2 = 9
+    IMAGE = 10
+    TABLE_ROW = 11
+    TABLE_SEP = 12
+    BLOCKQUOTE = 13
+    CODE_START = 14
+    CODE_END = 15
+    CODE = 16
+    TASK_UNCHECKED = 17
+    TASK_CHECKED = 18
+    NUM_LIST = 19
 
 class ImgFit:
     NONE = 0
