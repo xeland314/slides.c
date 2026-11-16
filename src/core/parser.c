@@ -297,6 +297,7 @@ typedef struct {
     int      at_start;                     // diapositiva recién creada: descartar vacías
     int      has_heading;                  // hay un H1/H2 previo
     LineType last_type;                    // tipo de la última línea almacenada
+    LineType last_content;                 // tipo de la última línea no vacía
     char     heading[MAX_LINE_LEN];        // texto del último H1/H2
     char     fence_lang[MAX_LINE_LEN];     // info del bloque ``` abierto
 } AutoSplit;
@@ -318,6 +319,7 @@ static int slide_store(Slide *sl, SlideLine *ln, AutoSplit *as) {
     if (ln->type != LINE_EMPTY) {
         as->count++;
         as->at_start = 0;
+        as->last_content = ln->type;
     }
     as->last_type = ln->type;
     return 1;
@@ -333,6 +335,7 @@ static int autosplit_nueva(Slider *s, int *n, AutoSplit *as, const char *subtitu
     as->count = 0;
     as->pending_break = 0;
     as->last_type = LINE_EMPTY;
+    as->last_content = LINE_EMPTY;
     if (subtitulo) {
         SlideLine ln;
         memset(&ln, 0, sizeof(ln));
@@ -376,8 +379,10 @@ static int autosplit_antes(Slider *s, int *n, AutoSplit *as, SlideLine *ln, int 
         if (ty == LINE_EMPTY) return 0;
     }
 
-    // Títulos H1/H2: siempre inician diapositiva si la actual ya tiene contenido
-    if (!in_code && (ty == LINE_TITLE || ty == LINE_SUBTITLE) && as->count > 0) {
+    // Títulos H1/H2: inician diapositiva si la actual ya tiene contenido.
+    // Excepción: un H2 justo después de un H1 (portada título + subtítulo) se queda junto.
+    int h2_tras_h1 = (ty == LINE_SUBTITLE && as->count == 1 && as->last_content == LINE_TITLE);
+    if (!in_code && (ty == LINE_TITLE || ty == LINE_SUBTITLE) && as->count > 0 && !h2_tras_h1) {
         autosplit_nueva(s, n, as, NULL);
     }
 
@@ -385,7 +390,13 @@ static int autosplit_antes(Slider *s, int *n, AutoSplit *as, SlideLine *ln, int 
     if (!in_code) {
         if (ty == LINE_EMPTY) {
             if (as->count >= AUTOSPLIT_MAX_CONTENT) as->pending_break = 1;
-        } else if (as->pending_break && as->count >= AUTOSPLIT_MAX_CONTENT &&
+        } else if (((as->pending_break && as->count >= AUTOSPLIT_MAX_CONTENT) ||
+                    // Bloques densos sin líneas vacías (listas largas): cortar en un
+                    // elemento de primer nivel tras un margen extra
+                    (as->count >= AUTOSPLIT_MAX_CONTENT + AUTOSPLIT_DENSE_SLACK &&
+                     (ty == LINE_BULLET1 || ty == LINE_NUM_LIST || ty == LINE_BODY ||
+                      ty == LINE_TASK_CHECKED || ty == LINE_TASK_UNCHECKED ||
+                      ty == LINE_BLOCKQUOTE || ty == LINE_IMAGE))) &&
                    ty != LINE_BULLET2 && !cont_tabla) {
             char sub[MAX_LINE_LEN + 16];
             if (as->has_heading) {

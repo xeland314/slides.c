@@ -53,6 +53,7 @@ typedef struct {
 
 // ── Auto-división para archivos sin separadores '---' ─────────────────────────
 #define AUTOSPLIT_MAX_CONTENT 12   // líneas no vacías antes de buscar un corte en línea vacía
+#define AUTOSPLIT_DENSE_SLACK 4    // margen extra para cortar listas/párrafos sin líneas vacías
 #define AUTOSPLIT_HARD_LINES  (MAX_LINES - 4) // corte forzado (deja margen para cerrar ```)
 
 // ── Definir COL_LABEL para el placeholder ────────────────────────────────────

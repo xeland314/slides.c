@@ -108,19 +108,19 @@ class TestAutosplit(unittest.TestCase):
     def test_frontmatter_autosplit_false_disables(self):
         for val in ("false", "off", "no"):
             with self.subTest(val=val):
-                s = self._load("---\nautosplit: %s\n---\n# A\n\n## B\n\n## C\n" % val)
+                s = self._load("---\nautosplit: %s\n---\n# A\n\n# B\n\n## C\n" % val)
                 self.assertEqual(self.cs.get_count(s), 1)
                 self.assertEqual(self.cs.test_get_auto_split(s), 0)
 
     def test_frontmatter_autosplit_auto_enables(self):
         for val in ("auto", "true", "on", "yes"):
             with self.subTest(val=val):
-                s = self._load("---\nautosplit: %s\n---\n# A\n\n## B\n" % val)
+                s = self._load("---\nautosplit: %s\n---\n# A\n\n# B\n" % val)
                 self.assertEqual(self.cs.get_count(s), 2)
                 self.assertEqual(self.cs.test_get_auto_split(s), 1)
 
     def test_frontmatter_without_separators_works(self):
-        s = self._load("---\ntheme: dark\nscale: 1.2\n---\n# A\n\n## B\n\ntexto\n")
+        s = self._load("---\ntheme: dark\nscale: 1.2\n---\n# A\n\n# B\n\ntexto\n")
         self.assertEqual(self.cs.get_count(s), 2)
         self.assertEqual(self.cs.test_get_auto_split(s), 1)
         self.assertAlmostEqual(self.cs.get_font_scale(s), 1.2)
@@ -134,6 +134,21 @@ class TestAutosplit(unittest.TestCase):
         self.assertEqual(self.cs.test_get_line_type(s, 0, last), LineType.CODE_END)
         self.assertEqual(self.cs.test_get_line_type(s, 1, 0), LineType.CODE_START)
         self.assertEqual(self.cs.test_get_line_text(s, 1, 0), "python")
+
+    def test_title_with_subtitle_stays_together(self):
+        s = self._load("# Portada\n\n## Subtitulo\n\ntexto\n\n## Seccion\n\nmas\n")
+        self.assertEqual(self.cs.get_count(s), 2)
+        types = [t for t, _ in self._lines(s, 0)]
+        self.assertIn(LineType.TITLE, types)
+        self.assertIn(LineType.SUBTITLE, types)
+
+    def test_dense_list_without_blank_lines_splits(self):
+        items = "\n".join("- item %d" % i for i in range(40))
+        s = self._load("# Lista\n" + items + "\n")
+        self.assertGreaterEqual(self.cs.get_count(s), 3)
+        self.assertEqual(self.cs.test_get_line_text(s, 1, 0), "Lista (cont.)")
+        for i in range(self.cs.get_count(s)):
+            self.assertLessEqual(self.cs.test_get_nlines(s, i), 20)
 
 
 if __name__ == "__main__":
