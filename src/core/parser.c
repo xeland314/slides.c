@@ -287,6 +287,118 @@ static int parse_img_config(const char *raw, ImageConfig *cfg) {
 
 static void theme_assign(Slider *s, const Theme *t);
 
+// ── Auto-división de diapositivas ─────────────────────────────────────────────
+// Solo se activa si el archivo no tiene separadores '---' fuera de bloques de código.
+
+typedef struct {
+    int      active;                       // 1 = auto-división aplicada
+    int      count;                        // líneas no vacías en la diapositiva actual
+    int      pending_break;                // línea vacía vista con count >= límite
+    int      at_start;                     // diapositiva recién creada: descartar vacías
+    int      has_heading;                  // hay un H1/H2 previo
+    LineType last_type;                    // tipo de la última línea almacenada
+    char     heading[MAX_LINE_LEN];        // texto del último H1/H2
+    char     fence_lang[MAX_LINE_LEN];     // info del bloque ``` abierto
+} AutoSplit;
+
+static void slideline_free(SlideLine *ln) {
+    free(ln->cols);
+    free(ln->img_cfg);
+    ln->cols = NULL;
+    ln->img_cfg = NULL;
+}
+
+// Almacena ln al final de sl (toma posesión de ln). Devuelve 0 si no cabe.
+static int slide_store(Slide *sl, SlideLine *ln, AutoSplit *as) {
+    if (sl->nlines >= MAX_LINES) {
+        slideline_free(ln);
+        return 0;
+    }
+    sl->lines[sl->nlines++] = *ln;
+    if (ln->type != LINE_EMPTY) {
+        as->count++;
+        as->at_start = 0;
+    }
+    as->last_type = ln->type;
+    return 1;
+}
+
+// Crea la diapositiva automática siguiente a la actual. Devuelve 0 si se alcanzó MAX_SLIDES.
+static int autosplit_nueva(Slider *s, int *n, AutoSplit *as, const char *subtitulo) {
+    if (*n + 1 >= MAX_SLIDES) return 0;
+    (*n)++;
+    Slide *sl = &s->slides[*n];
+    sl->nlines = 0;
+    sl->transition = TRANS_NONE;
+    as->count = 0;
+    as->pending_break = 0;
+    as->last_type = LINE_EMPTY;
+    if (subtitulo) {
+        SlideLine ln;
+        memset(&ln, 0, sizeof(ln));
+        ln.type = LINE_SUBTITLE;
+        strncpy(ln.text, subtitulo, MAX_LINE_LEN - 1);
+        slide_store(sl, &ln, as);
+    }
+    as->at_start = 1;
+    return 1;
+}
+
+// Decide si ln debe abrir una diapositiva nueva antes de almacenarse.
+// Devuelve 0 si la línea debe descartarse (línea vacía al inicio de una auto-diapositiva).
+static int autosplit_antes(Slider *s, int *n, AutoSplit *as, SlideLine *ln, int in_code) {
+    LineType ty = ln->type;
+    int es_tabla = (ty == LINE_TABLE_ROW || ty == LINE_TABLE_SEP);
+    int cont_tabla = es_tabla && (as->last_type == LINE_TABLE_ROW || as->last_type == LINE_TABLE_SEP);
+
+    if (!in_code && (ty == LINE_TITLE || ty == LINE_SUBTITLE)) {
+        strncpy(as->heading, ln->text, MAX_LINE_LEN - 1);
+        as->has_heading = 1;
+    }
+
+    if (ty == LINE_EMPTY && as->at_start) return 0;
+
+    // Corte forzado (último recurso): cierra y reabre el bloque de código si hace falta
+    if (s->slides[*n].nlines >= AUTOSPLIT_HARD_LINES && *n + 1 < MAX_SLIDES) {
+        SlideLine ln2;
+        if (in_code) {
+            memset(&ln2, 0, sizeof(ln2));
+            ln2.type = LINE_CODE_END;
+            slide_store(&s->slides[*n], &ln2, as);
+        }
+        autosplit_nueva(s, n, as, NULL);
+        if (in_code) {
+            memset(&ln2, 0, sizeof(ln2));
+            ln2.type = LINE_CODE_START;
+            strncpy(ln2.text, as->fence_lang, MAX_LINE_LEN - 1);
+            slide_store(&s->slides[*n], &ln2, as);
+        }
+        if (ty == LINE_EMPTY) return 0;
+    }
+
+    // Títulos H1/H2: siempre inician diapositiva si la actual ya tiene contenido
+    if (!in_code && (ty == LINE_TITLE || ty == LINE_SUBTITLE) && as->count > 0) {
+        autosplit_nueva(s, n, as, NULL);
+    }
+
+    // Corte por longitud: se prefiere una línea vacía como punto de corte
+    if (!in_code) {
+        if (ty == LINE_EMPTY) {
+            if (as->count >= AUTOSPLIT_MAX_CONTENT) as->pending_break = 1;
+        } else if (as->pending_break && as->count >= AUTOSPLIT_MAX_CONTENT &&
+                   ty != LINE_BULLET2 && !cont_tabla) {
+            char sub[MAX_LINE_LEN + 16];
+            if (as->has_heading) {
+                snprintf(sub, sizeof(sub), "%s (cont.)", as->heading);
+                autosplit_nueva(s, n, as, sub);
+            } else {
+                autosplit_nueva(s, n, as, NULL);
+            }
+        }
+    }
+    return 1;
+}
+
 Slider* slider_load(const char *path) {
     struct stat st;
     long long mtime = 0;
@@ -317,6 +429,7 @@ Slider* slider_load(const char *path) {
 
     char line[MAX_LINE_LEN];
     char trimmed[MAX_LINE_LEN];
+    int autosplit_pref = 1;   // frontmatter autosplit: auto|true|on|yes (1) o false|off|no (0)
 
     // Parse Frontmatter si el archivo empieza con "---"
     if (fgets(line, sizeof(line), fp)) {
@@ -342,6 +455,10 @@ Slider* slider_load(const char *path) {
                     } else if (strcmp(key, "scale") == 0 || strcmp(key, "font-scale") == 0) {
                         double sc = atof(val);
                         if (sc > 0.1) s->font_scale = sc;
+                    } else if (strcmp(key, "autosplit") == 0) {
+                        autosplit_pref = !(strcmp(val, "false") == 0 ||
+                                           strcmp(val, "off") == 0 ||
+                                           strcmp(val, "no") == 0);
                     } else if (strcmp(key, "colors") == 0 && val[0] == '\0') {
                         while (fgets(line, sizeof(line), fp)) {
                             strncpy(trimmed, line, MAX_LINE_LEN - 1);
@@ -372,6 +489,25 @@ Slider* slider_load(const char *path) {
             rewind(fp);
         }
     }
+
+    // Pre-escaneo desde la posición donde empieza el bucle principal:
+    // ¿hay separadores '---' fuera de bloques de código?
+    int has_sep = 0;
+    {
+        long pos = ftell(fp);
+        int scan_fence = 0;
+        while (!has_sep && fgets(line, sizeof(line), fp)) {
+            strncpy(trimmed, line, MAX_LINE_LEN - 1);
+            char *pt = trim(trimmed);
+            if (strncmp(pt, "```", 3) == 0) scan_fence = !scan_fence;
+            else if (!scan_fence && strcmp(pt, "---") == 0) has_sep = 1;
+        }
+        fseek(fp, pos, SEEK_SET);
+    }
+
+    AutoSplit as;
+    memset(&as, 0, sizeof(as));
+    as.active = autosplit_pref && !has_sep;
 
     int n = 0;
     int in_code = 0;
@@ -492,47 +628,56 @@ Slider* slider_load(const char *path) {
 
         // Code block triple backticks
         if (strncmp(t, "```", 3) == 0) {
-            Slide *cur = &s->slides[n];
-            if (cur->nlines < MAX_LINES) {
-                if (!in_code) {
-                    cur->lines[cur->nlines].type = LINE_CODE_START;
-                    strncpy(cur->lines[cur->nlines].text, t + 3, MAX_LINE_LEN - 1);
-                    in_code = 1;
-                } else {
-                    cur->lines[cur->nlines].type = LINE_CODE_END;
-                    cur->lines[cur->nlines].text[0] = '\0';
-                    in_code = 0;
-                }
-                cur->nlines++;
+            SlideLine fence;
+            memset(&fence, 0, sizeof(fence));
+            if (!in_code) {
+                fence.type = LINE_CODE_START;
+                strncpy(fence.text, t + 3, MAX_LINE_LEN - 1);
+                strncpy(as.fence_lang, t + 3, MAX_LINE_LEN - 1);
+            } else {
+                fence.type = LINE_CODE_END;
+            }
+            if (as.active) autosplit_antes(s, &n, &as, &fence, in_code);
+            if (slide_store(&s->slides[n], &fence, &as)) {
+                in_code = !in_code;
             }
             continue;
         }
 
+        // Línea de contenido (o línea de código dentro de ```)
+        SlideLine ln;
+        memset(&ln, 0, sizeof(ln));
+        if (in_code) {
+            ln.type = LINE_CODE;
+            char *p = line + strlen(line) - 1;
+            while (p >= line && (*p == '\r' || *p == '\n')) *p-- = '\0';
+            strncpy(ln.text, line, MAX_LINE_LEN - 1);
+        } else {
+            parse_line(line, &ln);
+        }
+        if (as.active && !autosplit_antes(s, &n, &as, &ln, in_code)) {
+            slideline_free(&ln);
+            continue;
+        }
         Slide *cur = &s->slides[n];
         if (cur->nlines < MAX_LINES) {
-            if (in_code) {
-                cur->lines[cur->nlines].type = LINE_CODE;
-                char *p = line + strlen(line) - 1;
-                while (p >= line && (*p == '\r' || *p == '\n')) *p-- = '\0';
-                strncpy(cur->lines[cur->nlines].text, line, MAX_LINE_LEN - 1);
-            } else {
-                parse_line(line, &cur->lines[cur->nlines]);
-                // Aplicar configuración img: pendiente a la siguiente imagen
-                if (pending_img_cfg.active) {
-                    if (cur->lines[cur->nlines].type == LINE_IMAGE) {
-                        cur->lines[cur->nlines].img_cfg = malloc(sizeof(ImageConfig));
-                        if (cur->lines[cur->nlines].img_cfg)
-                            *cur->lines[cur->nlines].img_cfg = pending_img_cfg;
-                        img_config_reset(&pending_img_cfg);
-                    } else if (cur->lines[cur->nlines].type != LINE_EMPTY) {
-                        img_config_reset(&pending_img_cfg);
-                    }
+            // Aplicar configuración img: pendiente a la siguiente imagen
+            if (!in_code && pending_img_cfg.active) {
+                if (ln.type == LINE_IMAGE) {
+                    ln.img_cfg = malloc(sizeof(ImageConfig));
+                    if (ln.img_cfg)
+                        *ln.img_cfg = pending_img_cfg;
+                    img_config_reset(&pending_img_cfg);
+                } else if (ln.type != LINE_EMPTY) {
+                    img_config_reset(&pending_img_cfg);
                 }
             }
-            cur->nlines++;
+            slide_store(cur, &ln, &as);
             if (cur->nlines >= MAX_LINES - 1) {
                 fprintf(stderr, "\033[1;33m[LINTER WARNING] Slide %d en %s tiene demasiadas líneas (> %d). Algunas líneas no se mostrarán.\033[0m\n", n + 1, path, MAX_LINES);
             }
+        } else {
+            slideline_free(&ln);
         }
     }
 
@@ -541,6 +686,10 @@ Slider* slider_load(const char *path) {
     }
 
     s->n_slides = n + 1;
+    if (as.active) {
+        s->auto_split = 1;
+        fprintf(stderr, "[slides] Auto-división: %d slide(s) generados (el archivo no tiene separadores '---')\n", s->n_slides);
+    }
     // Trim de notas final
     for (int idx = 0; idx < s->n_slides; idx++) {
         char *t_notes = trim(s->slides[idx].notes);
@@ -857,6 +1006,10 @@ int slider_test_get_hide_num(Slider *s) {
 
 int slider_test_get_kiosk_interval(Slider *s) {
     return s ? s->kiosk_interval_ms : -1;
+}
+
+int slider_test_get_auto_split(Slider *s) {
+    return s ? s->auto_split : -1;
 }
 
 int slider_test_get_line_has_anim(Slider *s, int slide_idx) {

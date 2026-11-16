@@ -51,6 +51,10 @@ typedef struct {
 #define MAX_COLS      16      // columnas por fila de tabla
 #define MAX_IMG_CACHE 64
 
+// ── Auto-división para archivos sin separadores '---' ─────────────────────────
+#define AUTOSPLIT_MAX_CONTENT 12   // líneas no vacías antes de buscar un corte en línea vacía
+#define AUTOSPLIT_HARD_LINES  (MAX_LINES - 4) // corte forzado (deja margen para cerrar ```)
+
 // ── Definir COL_LABEL para el placeholder ────────────────────────────────────
 #define COL_LABEL_R 0.55
 #define COL_LABEL_G 0.65
@@ -125,6 +129,7 @@ struct Slider {
     TransitionType transition_type;
     int hide_num;    // 1 = ocultar número de slide y barra de progreso
     int kiosk_interval_ms; // 0 = disabled; auto-advance interval in milliseconds
+    int auto_split;        // 1 = se aplicó auto-división (archivo sin separadores '---')
 };
 
 // Cache de imágenes para no recargar en cada frame

@@ -442,5 +442,8 @@ class CSlides:
     def test_get_kiosk_interval(self, slider):
         return self.lib.slider_test_get_kiosk_interval(slider)
 
+    def test_get_auto_split(self, slider):
+        return self.lib.slider_test_get_auto_split(slider)
+
     def test_get_line_has_anim(self, slider, slide_idx):
         return self.lib.slider_test_get_line_has_anim(slider, slide_idx)

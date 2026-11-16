@@ -96,6 +96,17 @@ colors:
 ---
 ```
 
+### Auto-división (archivos sin separadores)
+Si el archivo no tiene ninguna línea `---` fuera de bloques de código, C-Slides lo divide solo para que un README normal se pueda presentar sin modificarlo:
+
+- Cada título `#` o `##` inicia una diapositiva nueva (si la actual ya tiene contenido).
+- Si una diapositiva acumula demasiado contenido sin títulos, se corta en la siguiente línea vacía y la continuación lleva como subtítulo el último título seguido de `(cont.)`.
+- Las tablas, bloques de código y sub-viñetas no se parten en el corte por longitud.
+
+Para desactivarlo, añade `autosplit: false` al frontmatter (también acepta `off` o `no`). Con `auto`, `true`, `on` o `yes` queda activo (valor por defecto). Si el archivo tiene separadores `---`, nunca se aplica.
+
+Al cargar un archivo dividido se muestra en la terminal: `[slides] Auto-división: N slide(s) generados`.
+
 ### Notas del presentador
 - `<!-- notes: texto -->` en una línea
 - `<!-- notes:` ... `-->` multilinea
@@ -225,6 +236,7 @@ Ver la especificación completa en [`docs/images.md`](docs/images.md).
 ./slides examples/custom_colors.md
 ./slides --palette dracula examples/frontmatter.md
 ./slides examples/img_config.md
+./slides examples/autosplit.md            # README sin separadores '---'
 ./slides --export pdf --export-res 1920x1080 presentacion.md
 ./slides --export gif presentacion.md
 ./slides --export jpg --export-res 1920x1080 presentacion.md
