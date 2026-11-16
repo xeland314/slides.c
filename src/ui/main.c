@@ -8,16 +8,45 @@
 #include <string.h>
 #include <stdlib.h>
 
+static const char *palette_name = NULL;
+static const char *font_family = NULL;
+static double font_scale = -1.0;
+static int kiosk_seconds = 0;
+static const char *color_bg = NULL, *color_title = NULL, *color_sub = NULL, *color_text = NULL, *color_bullet = NULL;
+static const char *color_accent = NULL, *color_num = NULL;
+static const char *color_table_hdr = NULL, *color_table_row = NULL, *color_table_alt = NULL, *color_table_bdr = NULL;
+static const char *color_code_bg = NULL, *color_code_txt = NULL, *color_code_kw = NULL, *color_code_com = NULL, *color_code_str = NULL, *color_code_sym = NULL;
+
+// Aplica las opciones de CLI (tema, fuente, colores, kiosk) a un Slider.
+// También se usa para los archivos abiertos luego desde el selector.
+static void apply_cli_overrides(Slider *s) {
+    if (palette_name) slider_set_theme(s, palette_name);
+    if (font_family) strncpy(s->font_family, font_family, sizeof(s->font_family) - 1);
+    if (font_scale > 0.1) s->font_scale = font_scale;
+    if (color_bg) slider_set_color(s, "bg", color_bg);
+    if (color_title) slider_set_color(s, "title", color_title);
+    if (color_sub) slider_set_color(s, "sub", color_sub);
+    if (color_text) slider_set_color(s, "text", color_text);
+    if (color_bullet) slider_set_color(s, "bullet", color_bullet);
+    if (color_accent) slider_set_color(s, "accent", color_accent);
+    if (kiosk_seconds > 0) s->kiosk_interval_ms = kiosk_seconds * 1000;
+    if (color_num) slider_set_color(s, "num", color_num);
+    if (color_table_hdr) slider_set_color(s, "table-hdr", color_table_hdr);
+    if (color_table_row) slider_set_color(s, "table-row", color_table_row);
+    if (color_table_alt) slider_set_color(s, "table-alt", color_table_alt);
+    if (color_table_bdr) slider_set_color(s, "table-bdr", color_table_bdr);
+    if (color_code_bg) slider_set_color(s, "code-bg", color_code_bg);
+    if (color_code_txt) slider_set_color(s, "code-txt", color_code_txt);
+    if (color_code_kw) slider_set_color(s, "code-kw", color_code_kw);
+    if (color_code_com) slider_set_color(s, "code-com", color_code_com);
+    if (color_code_str) slider_set_color(s, "code-str", color_code_str);
+    if (color_code_sym) slider_set_color(s, "code-sym", color_code_sym);
+}
+
 int main(int argc, char *argv[]) {
-    const char *md_path = NULL;
-    const char *palette_name = NULL;
-    const char *font_family = NULL;
-    double font_scale = -1.0;
-    int kiosk_seconds = 0;
-    const char *color_bg = NULL, *color_title = NULL, *color_sub = NULL, *color_text = NULL, *color_bullet = NULL;
-    const char *color_accent = NULL, *color_num = NULL;
-    const char *color_table_hdr = NULL, *color_table_row = NULL, *color_table_alt = NULL, *color_table_bdr = NULL;
-    const char *color_code_bg = NULL, *color_code_txt = NULL, *color_code_kw = NULL, *color_code_com = NULL, *color_code_str = NULL, *color_code_sym = NULL;
+    const char **md_paths = calloc((size_t)argc + 1, sizeof(char *));
+    int n_paths = 0;
+    if (!md_paths) return 1;
     int export_png = 0;
     int export_pdf = 0;
     int export_svg = 0;
@@ -99,38 +128,48 @@ int main(int argc, char *argv[]) {
             print_help(argv[0]);
             return 0;
         } else {
-            md_path = argv[i];
+            md_paths[n_paths++] = argv[i];
         }
     }
 
-    if (!md_path) {
+    int do_export = export_png || export_pdf || export_svg || export_gif || export_jpg;
+
+    // Sin archivos y sin exportación: el backend abre el selector de archivos
+    if (n_paths == 0 && do_export) {
         print_help(argv[0]);
+        free(md_paths);
         return 1;
     }
 
+    if (!do_export) {
+        Slider **sliders = calloc((size_t)n_paths + 1, sizeof(Slider *));
+        int n_ok = 0;
+        for (int i = 0; i < n_paths; i++) {
+            Slider *ls = slider_load(md_paths[i]);
+            if (!ls) continue;
+            apply_cli_overrides(ls);
+            fprintf(stderr, "[slides] %d slide(s) cargados desde %s (tema: %s, font: %s, scale: %.1f)\n",
+                    slider_get_count(ls), md_paths[i], ls->theme->name, ls->font_family, ls->font_scale);
+            sliders[n_ok++] = ls;
+        }
+        // Si se pidieron archivos y ninguno cargó, error (no abrir el selector)
+        if (n_paths > 0 && n_ok == 0) {
+            free(sliders);
+            free(md_paths);
+            return 1;
+        }
+        int rc = backend_run(sliders, n_ok, apply_cli_overrides);
+        free(sliders);
+        free(md_paths);
+        return rc;
+    }
+
+    // Exportación: solo el primer archivo
+    const char *md_path = md_paths[0];
     Slider *s = slider_load(md_path);
+    free(md_paths);
     if (!s) return 1;
-    if (palette_name) slider_set_theme(s, palette_name);
-    if (font_family) strncpy(s->font_family, font_family, sizeof(s->font_family) - 1);
-    if (font_scale > 0.1) s->font_scale = font_scale;
-    if (color_bg) slider_set_color(s, "bg", color_bg);
-    if (color_title) slider_set_color(s, "title", color_title);
-    if (color_sub) slider_set_color(s, "sub", color_sub);
-    if (color_text) slider_set_color(s, "text", color_text);
-    if (color_bullet) slider_set_color(s, "bullet", color_bullet);
-    if (color_accent) slider_set_color(s, "accent", color_accent);
-    if (kiosk_seconds > 0) s->kiosk_interval_ms = kiosk_seconds * 1000;
-    if (color_num) slider_set_color(s, "num", color_num);
-    if (color_table_hdr) slider_set_color(s, "table-hdr", color_table_hdr);
-    if (color_table_row) slider_set_color(s, "table-row", color_table_row);
-    if (color_table_alt) slider_set_color(s, "table-alt", color_table_alt);
-    if (color_table_bdr) slider_set_color(s, "table-bdr", color_table_bdr);
-    if (color_code_bg) slider_set_color(s, "code-bg", color_code_bg);
-    if (color_code_txt) slider_set_color(s, "code-txt", color_code_txt);
-    if (color_code_kw) slider_set_color(s, "code-kw", color_code_kw);
-    if (color_code_com) slider_set_color(s, "code-com", color_code_com);
-    if (color_code_str) slider_set_color(s, "code-str", color_code_str);
-    if (color_code_sym) slider_set_color(s, "code-sym", color_code_sym);
+    apply_cli_overrides(s);
 
     int n_slides = slider_get_count(s);
     fprintf(stderr, "[slides] %d slide(s) cargados desde %s (tema: %s, font: %s, scale: %.1f)\n", 
@@ -242,9 +281,6 @@ int main(int argc, char *argv[]) {
         return 0;
     }
 
-    // Delegar al backend gráfico (X11, Win32, etc.)
-    s = backend_run(s);
-    
     slider_free(s);
     return 0;
 }

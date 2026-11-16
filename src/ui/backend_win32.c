@@ -1,6 +1,7 @@
 #include "backend.h"
 #include "../core/internal.h"
 #include <windows.h>
+#include <commdlg.h>
 #include <cairo/cairo-win32.h>
 #include <stdio.h>
 #include <sys/stat.h>
@@ -391,7 +392,8 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
     return DefWindowProc(hwnd, uMsg, wParam, lParam);
 }
 
-Slider* backend_run(Slider *s) {
+// Presenta una sola presentación (las pestañas no están soportadas en Win32).
+static Slider* run_single(Slider *s) {
     if (!s) return s;
     g_slider = s;
     g_n_slides = slider_get_count(s);
@@ -431,4 +433,38 @@ Slider* backend_run(Slider *s) {
     KillTimer(hwnd, 1);
 
     return g_slider;
+}
+
+// Diálogo nativo para elegir un archivo Markdown. Devuelve 1 si se eligió.
+static int pick_file_dialog(char *out, size_t n) {
+    OPENFILENAMEA ofn;
+    memset(&ofn, 0, sizeof(ofn));
+    out[0] = '\0';
+    ofn.lStructSize = sizeof(ofn);
+    ofn.lpstrFilter = "Markdown (*.md)\0*.md;*.markdown\0Todos los archivos (*.*)\0*.*\0";
+    ofn.lpstrFile = out;
+    ofn.nMaxFile = (DWORD)n;
+    ofn.lpstrTitle = "Abrir presentación";
+    ofn.Flags = OFN_FILEMUSTEXIST | OFN_PATHMUSTEXIST | OFN_NOCHANGEDIR;
+    return GetOpenFileNameA(&ofn) ? 1 : 0;
+}
+
+int backend_run(Slider **initial, int n_initial, void (*configure)(Slider *)) {
+    Slider *first = NULL;
+    for (int i = 0; i < n_initial; i++) {
+        if (!initial[i]) continue;
+        // Solo la primera presentación en Win32; el resto se libera
+        if (!first) first = initial[i];
+        else slider_free(initial[i]);
+    }
+    if (!first) {
+        char path[MAX_PATH];
+        if (!pick_file_dialog(path, sizeof(path))) return 0;
+        first = slider_load(path);
+        if (!first) return 1;
+        if (configure) configure(first);
+    }
+    Slider *final_s = run_single(first);
+    if (final_s) slider_free(final_s);
+    return final_s ? 0 : 1;
 }

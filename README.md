@@ -150,8 +150,10 @@ Si usas Cygwin GCC, el Makefile muestra una advertencia.
 ## Uso
 
 ```bash
-./slides [opciones] presentacion.md
+./slides [opciones] [presentacion.md ...]
 ```
+
+Sin argumentos se abre un selector de archivos gráfico. Con varios archivos, cada uno se abre en una pestaña.
 
 En Linux, la documentación completa está disponible vía `man`:
 ```bash
@@ -196,6 +198,30 @@ de colores y su uso en frontmatter está en [`docs/colors.md`](docs/colors.md).
 | `Q` | Salir |
 
 Ratón: clic izquierdo/rueda-arriba = anterior, clic derecho/rueda-abajo = siguiente.
+
+### Selector de archivos y pestañas (X11)
+
+Si ejecutas `./slides` sin archivo, aparece un selector de archivos Markdown (`.md`, `.markdown`)
+dentro de la propia ventana. Puedes abrir varias presentaciones a la vez como pestañas; la barra
+de pestañas aparece cuando hay 2 o más abiertas (y no estás en pantalla completa). Los archivos
+abiertos desde el selector reciben las mismas opciones de CLI (tema, fuente, colores, kiosk).
+
+| Tecla | Acción |
+| :--- | :--- |
+| `Ctrl+O` | Abrir otro archivo (selector) en una pestaña nueva |
+| `Ctrl+Tab` / `Ctrl+PageDown` | Pestaña siguiente |
+| `Ctrl+Shift+Tab` / `Ctrl+PageUp` | Pestaña anterior |
+| `Ctrl+1` … `Ctrl+9` | Ir a la pestaña N |
+| `Ctrl+W` | Cerrar pestaña (la última abre el selector) |
+| `↑` `↓` `PgUp` `PgDn` `Enter` | Navegar/abrir en el selector |
+| `Backspace` | Selector: borrar filtro o subir de carpeta |
+| (escribir) | Selector: filtrar por nombre |
+| `Ctrl+H` | Selector: mostrar/ocultar archivos ocultos |
+| `Esc` | Selector: limpiar filtro / volver (sale si no hay pestañas) |
+
+También con el ratón: clic en una pestaña para activarla, en `×` para cerrarla y en `+` para abrir el selector;
+en el selector, clic para seleccionar y doble clic para abrir. En Windows se usa el diálogo nativo
+"Abrir archivo" cuando no se indica archivo (sin pestañas).
 
 ### Modo kiosk
 `--kiosk N` avanza automáticamente a la siguiente diapositiva cada N segundos. Al llegar a la última, vuelve a la primera en bucle infinito. Ideal para vitrinas, displays públicos o ferias. La navegación manual resetea el contador.
@@ -255,7 +281,9 @@ src/
     export_svg.c      Exportación a SVG
   ui/
     backend_win32.c   Ventana Win32 (nativa)
-    backend_x11.c     Ventana X11
+    backend_x11.c     Ventana X11 (modo presentador + selector + pestañas)
+    filepicker.c      Selector de archivos Markdown (Cairo/Pango)
+    tabs.c            Pestañas de presentaciones
     help.c            Ayuda (--help / --version)
     help.h
     main.c            CLI + punto de entrada
