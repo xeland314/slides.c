@@ -3,7 +3,15 @@
 #include <stdio.h>
 
 void print_help(const char *prog) {
-    printf("Usage: %s [options] presentation.md\n\n", prog);
+    printf("Usage: %s [options] [presentation.md ...]\n\n", prog);
+    printf("Without files, a file picker window opens. Several files open as tabs.\n\n");
+    printf("Shortcuts (X11):\n");
+    printf("  Ctrl+O                  Open another file (picker) in a new tab\n");
+    printf("  Ctrl+Tab / Ctrl+PgDn    Next tab\n");
+    printf("  Ctrl+Shift+Tab / Ctrl+PgUp  Previous tab\n");
+    printf("  Ctrl+1..9               Jump to tab N\n");
+    printf("  Ctrl+W                  Close tab (last one opens the picker)\n");
+    printf("  Picker: arrows/Enter open, type to filter, Backspace up, Ctrl+H hidden, Esc cancel\n\n");
     printf("Options:\n");
     printf("  -p, --palette <name>    Choose palette (dark, rose, monokai, nord, light, blue, ambercat,\n");
     printf("                          dracula, gruvbox, catppuccin, tokyo-night)\n");
