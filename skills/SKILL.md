@@ -6,7 +6,7 @@ description: >
   el usuario quiera crear una presentación, diapositivas, slides, o un archivo .md para C-Slides. También
   úsala cuando quieran convertir contenido existente (notas, documentos, ideas) en una presentación, cuando
   pidan "hacer slides de X", o cuando necesiten frontmatter, transiciones entre slides, notas del
-  presentador o exportación a PNG/PDF/JPG/SVG/GIF. Si el usuario menciona C-Slides, alguno de sus 11 temas
+  presentador, exportación a PNG/PDF/JPG/SVG/GIF, o presentar un README existente (auto-división). Si el usuario menciona C-Slides, alguno de sus 11 temas
   (dark, rose, monokai, nord, light, blue, ambercat, dracula, gruvbox, catppuccin, tokyo-night), o quiere
   exportar slides, esta skill es la indicada.
 ---
@@ -36,6 +36,13 @@ Si el usuario no da suficiente contexto, haz preguntas breves antes de generar.
 ---
 ```
 Cada `---` en una línea sola crea una nueva diapositiva. La primera slide no necesita `---` antes.
+
+**Auto-división:** si un archivo no tiene ningún `---` (fuera de bloques de código), C-Slides lo
+divide automáticamente: cada `#` o `##` abre una slide (un `##` justo tras un `#` se queda junto,
+como portada), y las slides con más de ~12 líneas se cortan en una línea vacía con el subtítulo
+`<último título> (cont.)`. Sirve para presentar un README existente sin modificarlo.
+Al **generar** presentaciones, usa siempre `---` explícitos: el control de qué va en cada slide es
+mejor que el corte automático. Para desactivarla en un archivo: `autosplit: false` en el frontmatter.
 
 ### Títulos
 ```markdown
@@ -132,6 +139,8 @@ scale: 1.2
 # Primera slide
 ...
 ```
+Claves disponibles: `theme`/`palette`, `font`/`font-family`, `scale`/`font-scale`, `colors:`
+(bloque con colores individuales) y `autosplit: auto|false` (ver auto-división arriba).
 Los flags de la CLI (`-p`, `-f`, `-s`, etc.) sobrescriben lo definido en el frontmatter.
 ⚠️ El primer bloque `---...---` del archivo se interpreta como frontmatter, no como
 separador de slide; la primera diapositiva real empieza justo después de cerrarlo.
@@ -233,6 +242,19 @@ También se pueden fijar colores individuales sin usar un tema completo:
 ./slides --bg 1a1a2e --title ff6b9d --text eaeaea --accent 4ecdc4 archivo.md
 ```
 
+### Abrir presentaciones
+
+```bash
+./slides                         # sin argumentos: selector de archivos gráfico
+./slides archivo.md              # abrir una presentación
+./slides intro.md demo.md        # varias presentaciones, una por pestaña
+./slides README.md               # un README sin '---' se auto-divide en slides
+```
+
+Atajos de pestañas (X11): `Ctrl+O` abrir otro archivo, `Ctrl+Tab` / `Ctrl+Shift+Tab` cambiar,
+`Ctrl+1…9` ir a la pestaña N, `Ctrl+W` cerrar. `Tab` sigue siendo la vista general de slides.
+Los flags de tema/colores de la CLI se aplican también a los archivos abiertos desde el selector.
+
 ### Exportación
 
 ```bash
@@ -260,6 +282,7 @@ También se pueden fijar colores individuales sin usar un tema completo:
 | `--bullet / --num / --table-hdr / --table-row / --table-alt / --table-bdr <hex>` | Colores de tabla |
 | `--code-bg / --code-txt / --code-kw / --code-com / --code-str / --code-sym <hex>` | Colores de código |
 | `--kiosk <sec>` / `--auto-advance <sec>` | Avance automático cada N segundos (loop infinito) |
+| `[archivo.md ...]` | Uno o varios archivos (pestañas); sin archivos abre el selector |
 | `-v, --version` / `-h, --help` | Versión / ayuda |
 
 Los flags de CLI sobrescriben lo definido en el frontmatter del archivo.
@@ -294,7 +317,8 @@ Si el usuario pide algo de esta lista, sugerir la alternativa más cercana sopor
 
 Siempre:
 1. Crear el archivo `.md` y entregarlo con `present_files`.
-2. Incluir el comando de ejecución sugerido (con paleta recomendada según el tema).
+2. Incluir el comando de ejecución sugerido (con paleta recomendada según el tema). Si son
+   varias presentaciones relacionadas, sugerir abrirlas juntas: `./slides a.md b.md` (pestañas).
 3. Mencionar brevemente cuántas slides tiene la presentación.
 4. Si el usuario ya sabe qué tema/fuente/escala quiere usar siempre, ofrecer fijarlo vía
    frontmatter en el propio archivo en lugar de repetir flags de CLI cada vez.

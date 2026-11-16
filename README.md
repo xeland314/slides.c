@@ -100,7 +100,9 @@ colors:
 Si el archivo no tiene ninguna línea `---` fuera de bloques de código, C-Slides lo divide solo para que un README normal se pueda presentar sin modificarlo:
 
 - Cada título `#` o `##` inicia una diapositiva nueva (si la actual ya tiene contenido).
-- Si una diapositiva acumula demasiado contenido sin títulos, se corta en la siguiente línea vacía y la continuación lleva como subtítulo el último título seguido de `(cont.)`.
+- Excepción: un `##` justo después de un `#` se queda en la misma diapositiva (portada título + subtítulo).
+- Si una diapositiva acumula demasiado contenido (más de 12 líneas) sin títulos, se corta en la siguiente línea vacía y la continuación lleva como subtítulo el último título seguido de `(cont.)`.
+- Las listas o párrafos largos sin líneas vacías también se cortan, en un elemento de primer nivel, unas pocas líneas después del límite.
 - Las tablas, bloques de código y sub-viñetas no se parten en el corte por longitud.
 
 Para desactivarlo, añade `autosplit: false` al frontmatter (también acepta `off` o `no`). Con `auto`, `true`, `on` o `yes` queda activo (valor por defecto). Si el archivo tiene separadores `---`, nunca se aplica.
