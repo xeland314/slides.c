@@ -8,60 +8,67 @@
 #define LABEL_H  24.0
 #define PAD      8.0
 
-int thememenu_count(const Tab *t) {
-    return theme_count() + (t->base_custom ? 1 : 0);
+void thememenu_init(ThemeMenu *m, const Slider *s) {
+    m->open = 0;
+    m->sel = 0;
+    m->base = *s->theme;
+    m->base_custom = theme_is_custom(s->theme);
 }
 
-const Theme *thememenu_theme(const Tab *t, int i) {
-    if (t->base_custom) {
-        if (i == 0) return &t->base_theme;
+int thememenu_count(const ThemeMenu *m) {
+    return theme_count() + (m->base_custom ? 1 : 0);
+}
+
+const Theme *thememenu_theme(const ThemeMenu *m, int i) {
+    if (m->base_custom) {
+        if (i == 0) return &m->base;
         i--;
     }
     return theme_at(i);
 }
 
 /* Entrada que corresponde al tema aplicado ahora mismo (o -1) */
-static int current_entry(const Tab *t) {
-    int n = thememenu_count(t);
+static int current_entry(const ThemeMenu *m, const Slider *s) {
+    int n = thememenu_count(m);
     for (int i = 0; i < n; i++)
-        if (theme_same_colors(thememenu_theme(t, i), t->s->theme))
+        if (theme_same_colors(thememenu_theme(m, i), s->theme))
             return i;
     return -1;
 }
 
-void thememenu_open(Tab *t) {
-    int cur = current_entry(t);
-    t->theme_sel = cur >= 0 ? cur : 0;
-    t->theme_menu = 1;
-    t->s->transition_type = TRANS_NONE;
+void thememenu_open(ThemeMenu *m, Slider *s) {
+    int cur = current_entry(m, s);
+    m->sel = cur >= 0 ? cur : 0;
+    m->open = 1;
+    s->transition_type = TRANS_NONE;
 }
 
-void thememenu_apply(Tab *t, int i) {
-    const Theme *th = thememenu_theme(t, i);
+void thememenu_apply(ThemeMenu *m, Slider *s, int i) {
+    const Theme *th = thememenu_theme(m, i);
     if (th) {
-        t->s->theme_storage = *th;
-        t->s->theme = &t->s->theme_storage;
+        s->theme_storage = *th;
+        s->theme = &s->theme_storage;
         fprintf(stderr, "[slides] Tema: %s%s\n",
-                (t->base_custom && i == 0) ? "personalizado, base " : "",
+                (m->base_custom && i == 0) ? "personalizado, base " : "",
                 th->name ? th->name : "?");
     }
-    t->theme_menu = 0;
-    t->s->transition_type = TRANS_NONE;
+    m->open = 0;
+    s->transition_type = TRANS_NONE;
 }
 
-int thememenu_move(Tab *t, int dx, int dy) {
-    int n = thememenu_count(t);
-    int sel = t->theme_sel + dx + dy * THEMEMENU_COLS;
+int thememenu_move(ThemeMenu *m, int dx, int dy) {
+    int n = thememenu_count(m);
+    int sel = m->sel + dx + dy * THEMEMENU_COLS;
     if (dy != 0 && (sel < 0 || sel >= n)) return 0;   /* sin envolver en vertical */
     if (sel < 0) sel = 0;
     if (sel >= n) sel = n - 1;
-    if (sel == t->theme_sel) return 0;
-    t->theme_sel = sel;
+    if (sel == m->sel) return 0;
+    m->sel = sel;
     return 1;
 }
 
-static void geometry(const Tab *t, int w, int h, int *rows, double *cw, double *ch) {
-    int n = thememenu_count(t);
+static void geometry(const ThemeMenu *m, int w, int h, int *rows, double *cw, double *ch) {
+    int n = thememenu_count(m);
     *rows = (n + THEMEMENU_COLS - 1) / THEMEMENU_COLS;
     *cw = (double)w / THEMEMENU_COLS;
     *ch = (h - HEADER_H) / *rows;
@@ -86,13 +93,13 @@ static void label(cairo_t *cr, const char *font, const char *txt, double x,
     g_object_unref(l);
 }
 
-void thememenu_render(Tab *t, cairo_t *cr, int w, int h) {
-    Slider *s = t->s;
-    int n = thememenu_count(t);
+void thememenu_render(const ThemeMenu *m, Slider *s, int current, cairo_t *cr,
+                      int w, int h) {
+    int n = thememenu_count(m);
     int rows;
     double cw, ch;
-    geometry(t, w, h, &rows, &cw, &ch);
-    int cur = current_entry(t);
+    geometry(m, w, h, &rows, &cw, &ch);
+    int cur = current_entry(m, s);
 
     cairo_set_source_rgb(cr, 0.08, 0.08, 0.1);
     cairo_paint(cr);
@@ -111,11 +118,11 @@ void thememenu_render(Tab *t, cairo_t *cr, int w, int h) {
     const Theme *saved_theme = s->theme;
     int saved_from = s->transition_from;
     TransitionType saved_type = s->transition_type;
-    s->transition_from = t->current;
+    s->transition_from = current;
     s->transition_type = TRANS_NONE;
 
     for (int i = 0; i < n; i++) {
-        const Theme *th = thememenu_theme(t, i);
+        const Theme *th = thememenu_theme(m, i);
         int col = i % THEMEMENU_COLS, row = i / THEMEMENU_COLS;
         double cx = col * cw, cy = HEADER_H + row * ch;
         double thumb_h = ch - LABEL_H - 2 * PAD;
@@ -133,11 +140,11 @@ void thememenu_render(Tab *t, cairo_t *cr, int w, int h) {
         cairo_clip(cr);
         cairo_set_source_rgb(cr, COLOR_R(th->bg), COLOR_G(th->bg), COLOR_B(th->bg));
         cairo_paint(cr);
-        slider_render(s, t->current, cr, w, h, 0.0);
+        slider_render(s, current, cr, w, h, 0.0);
         cairo_restore(cr);
 
         cairo_rectangle(cr, ox - 2, oy - 2, tw + 4, tH + 4);
-        if (i == t->theme_sel) {
+        if (i == m->sel) {
             cairo_set_source_rgb(cr, 1, 0.84, 0);
             cairo_set_line_width(cr, 3);
         } else {
@@ -148,7 +155,7 @@ void thememenu_render(Tab *t, cairo_t *cr, int w, int h) {
 
         char name[96];
         const char *tn = th->name ? th->name : "?";
-        if (t->base_custom && i == 0)
+        if (m->base_custom && i == 0)
             snprintf(name, sizeof(name), "personalizado (%s)", tn);
         else
             snprintf(name, sizeof(name), "%s", tn);
@@ -156,8 +163,8 @@ void thememenu_render(Tab *t, cairo_t *cr, int w, int h) {
             size_t len = strlen(name);
             snprintf(name + len, sizeof(name) - len, "  \xE2\x97\x8F"); /* ● */
         }
-        double g = (i == t->theme_sel) ? 0.95 : 0.62;
-        label(cr, i == t->theme_sel ? "Sans Bold 10" : "Sans 10", name, cx + PAD,
+        double g = (i == m->sel) ? 0.95 : 0.62;
+        label(cr, i == m->sel ? "Sans Bold 10" : "Sans 10", name, cx + PAD,
               oy + tH + 2, cw - 2 * PAD, LABEL_H, g, g, g + 0.03);
     }
 
@@ -166,12 +173,12 @@ void thememenu_render(Tab *t, cairo_t *cr, int w, int h) {
     s->transition_type = saved_type;
 }
 
-int thememenu_hit(const Tab *t, int w, int h, int x, int y) {
+int thememenu_hit(const ThemeMenu *m, int w, int h, int x, int y) {
     int rows;
     double cw, ch;
-    geometry(t, w, h, &rows, &cw, &ch);
+    geometry(m, w, h, &rows, &cw, &ch);
     if (y < HEADER_H || x < 0 || x >= w) return -1;
     int col = (int)(x / cw), row = (int)((y - HEADER_H) / ch);
     int i = row * THEMEMENU_COLS + col;
-    return (col >= 0 && col < THEMEMENU_COLS && i >= 0 && i < thememenu_count(t)) ? i : -1;
+    return (col >= 0 && col < THEMEMENU_COLS && i >= 0 && i < thememenu_count(m)) ? i : -1;
 }

@@ -208,7 +208,7 @@ de colores y su uso en frontmatter está en [`docs/colors.md`](docs/colors.md).
 | `→` `←` `↑` `↓` `Enter` | Navegar y seleccionar en vista general |
 | `Esc` | Salir / Cerrar vista general |
 | `N` | Mostrar/ocultar número de slide y barra de progreso |
-| `T` | Menú de temas: cambia el tema en vivo (X11) |
+| `T` | Menú de temas: cambia el tema en vivo |
 | `→` `←` `↑` `↓` `Enter` | Navegar y aplicar en el menú de temas (`Esc`/`T` cierra) |
 | `Q` | Salir |
 
@@ -217,7 +217,7 @@ Ratón: clic izquierdo/rueda-arriba = anterior, clic derecho/rueda-abajo = sigui
 El menú de temas (`T`) muestra la diapositiva actual renderizada con cada paleta. Si la presentación
 se abrió con colores personalizados (bloque `colors:` del frontmatter o flags `--bg`, `--title`, …),
 ese tema base aparece primero como **personalizado** para poder volver a él. El tema elegido se
-conserva en la recarga en caliente y es independiente en cada pestaña.
+conserva en la recarga en caliente y es independiente en cada pestaña. Funciona en X11 y Windows.
 
 ### Selector de archivos y pestañas (X11)
 
@@ -305,6 +305,7 @@ src/
     backend_x11.c     Ventana X11 (modo presentador + selector + pestañas)
     filepicker.c      Selector de archivos Markdown (Cairo/Pango)
     tabs.c            Pestañas de presentaciones
+    thememenu.c       Menú de temas en vivo (tecla T, X11 y Win32)
     help.c            Ayuda (--help / --version)
     help.h
     main.c            CLI + punto de entrada

@@ -2,7 +2,6 @@
 #include "backend.h"
 #include "filepicker.h"
 #include "tabs.h"
-#include "thememenu.h"
 #include <X11/Xatom.h>
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
@@ -306,34 +305,34 @@ int backend_run(Slider **initial, int n_initial, void (*configure)(Slider *)) {
             activate_tab(&ts, idx);
             title_dirty = dirty = 1;
           }
-        } else if (t->theme_menu) {
+        } else if (t->tm.open) {
           // Menú de temas abierto: captura la navegación
           if (ks == XK_Escape || ks == XK_t || ks == XK_T) {
-            t->theme_menu = 0;
+            t->tm.open = 0;
             dirty = 1;
           } else if (ks == XK_Return || ks == XK_KP_Enter || ks == XK_space) {
-            thememenu_apply(t, t->theme_sel);
+            thememenu_apply(&t->tm, s, t->tm.sel);
             dirty = 1;
           } else if (ks == XK_Right || ks == XK_Tab) {
-            dirty |= thememenu_move(t, 1, 0);
+            dirty |= thememenu_move(&t->tm, 1, 0);
           } else if (ks == XK_Left || ks == XK_ISO_Left_Tab) {
-            dirty |= thememenu_move(t, -1, 0);
+            dirty |= thememenu_move(&t->tm, -1, 0);
           } else if (ks == XK_Down) {
-            dirty |= thememenu_move(t, 0, 1);
+            dirty |= thememenu_move(&t->tm, 0, 1);
           } else if (ks == XK_Up) {
-            dirty |= thememenu_move(t, 0, -1);
+            dirty |= thememenu_move(&t->tm, 0, -1);
           } else if (ks == XK_Home) {
-            t->theme_sel = 0;
+            t->tm.sel = 0;
             dirty = 1;
           } else if (ks == XK_End) {
-            t->theme_sel = thememenu_count(t) - 1;
+            t->tm.sel = thememenu_count(&t->tm) - 1;
             dirty = 1;
           } else if (ks == XK_q) {
             running = 0;
           }
         } else if (ks == XK_t || ks == XK_T) {
           t->overview = 0;
-          thememenu_open(t);
+          thememenu_open(&t->tm, s);
           dirty = 1;
         } else if (ks == XK_Tab) {
           t->overview = !t->overview;
@@ -482,18 +481,18 @@ int backend_run(Slider **initial, int n_initial, void (*configure)(Slider *)) {
             }
             title_dirty = dirty = 1;
           }
-        } else if (t->theme_menu) {
+        } else if (t->tm.open) {
           int b = ev.xbutton.button;
           if (b == Button1) {
-            int idx = thememenu_hit(t, win_w, view_h, bx, by - bar_h);
+            int idx = thememenu_hit(&t->tm, win_w, view_h, bx, by - bar_h);
             if (idx >= 0)
-              thememenu_apply(t, idx);
+              thememenu_apply(&t->tm, s, idx);
           } else if (b == Button3) {
-            t->theme_menu = 0;
+            t->tm.open = 0;
           } else if (b == Button4) {
-            thememenu_move(t, 0, -1);
+            thememenu_move(&t->tm, 0, -1);
           } else if (b == Button5) {
-            thememenu_move(t, 0, 1);
+            thememenu_move(&t->tm, 0, 1);
           }
           dirty = 1;
         } else if (t->overview) {
@@ -586,7 +585,7 @@ int backend_run(Slider **initial, int n_initial, void (*configure)(Slider *)) {
       if (animating)
         dirty = 1;
       // Avance automático (modo kiosk)
-      if (s->kiosk_interval_ms > 0 && !t->overview && !t->theme_menu &&
+      if (s->kiosk_interval_ms > 0 && !t->overview && !t->tm.open &&
           elapsed >= (double)s->kiosk_interval_ms) {
         int next = t->current + 1;
         if (next >= n_slides)
@@ -622,8 +621,8 @@ int backend_run(Slider **initial, int n_initial, void (*configure)(Slider *)) {
         cairo_rectangle(cr, 0, 0, win_w, view_h);
         cairo_clip(cr);
 
-        if (t->theme_menu) {
-          thememenu_render(t, cr, win_w, view_h);
+        if (t->tm.open) {
+          thememenu_render(&t->tm, s, t->current, cr, win_w, view_h);
         } else if (t->overview) {
           int n = n_slides;
           int cols = OVERVIEW_COLS;

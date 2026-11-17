@@ -1,5 +1,6 @@
 #include "backend.h"
 #include "../core/internal.h"
+#include "thememenu.h"
 #include <windows.h>
 #include <commdlg.h>
 #include <cairo/cairo-win32.h>
@@ -15,6 +16,7 @@ static DWORD g_slide_start_time = 0;
 static int g_last_printed_slide = -1;
 static int g_overview_active = 0;
 static double g_zoom = 1.0;
+static ThemeMenu g_tm;   // menú de temas (tecla T) y tema base
 
 #define OVERVIEW_COLS 4
 
@@ -155,8 +157,21 @@ static void apply_zoom(cairo_t *cr, int w, int h) {
     cairo_translate(cr, -w / 2.0, -h / 2.0);
 }
 
+static void render_theme_menu(HDC hdc, int w, int h) {
+    cairo_surface_t *surface = cairo_win32_surface_create(hdc);
+    cairo_t *cr = cairo_create(surface);
+    thememenu_render(&g_tm, g_slider, g_current_slide, cr, w, h);
+    cairo_destroy(cr);
+    cairo_surface_destroy(surface);
+}
+
 static void render_frame(HDC hdc, int w, int h) {
     if (!g_slider) return;
+
+    if (g_tm.open) {
+        render_theme_menu(hdc, w, h);
+        return;
+    }
 
     if (g_overview_active) {
         render_overview(hdc, w, h);
@@ -240,7 +255,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
                 InvalidateRect(hwnd, NULL, FALSE);
             }
             // Avance automático (modo kiosk)
-            if (g_slider->kiosk_interval_ms > 0 && !g_overview_active) {
+            if (g_slider->kiosk_interval_ms > 0 && !g_overview_active && !g_tm.open) {
                 if (GetTickCount() - g_slide_start_time >= (DWORD)g_slider->kiosk_interval_ms) {
                     int next = g_current_slide + 1;
                     if (next >= g_n_slides) next = 0;
@@ -251,6 +266,16 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
         return 0;
     }
     case WM_LBUTTONDOWN: {
+        if (g_tm.open) {
+            RECT rect;
+            GetClientRect(hwnd, &rect);
+            int idx = thememenu_hit(&g_tm, rect.right, rect.bottom,
+                                    (short)LOWORD(lParam), (short)HIWORD(lParam));
+            if (idx >= 0)
+                thememenu_apply(&g_tm, g_slider, idx);
+            InvalidateRect(hwnd, NULL, FALSE);
+            return 0;
+        }
         if (g_overview_active) {
             RECT rect;
             GetClientRect(hwnd, &rect);
@@ -289,6 +314,11 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
         break;
     }
     case WM_RBUTTONDOWN: {
+        if (g_tm.open) {
+            g_tm.open = 0;
+            InvalidateRect(hwnd, NULL, FALSE);
+            return 0;
+        }
         if (g_overview_active) {
             g_overview_active = 0;
             g_slider->transition_type = TRANS_NONE;
@@ -300,6 +330,11 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
     }
     case WM_MOUSEWHEEL: {
         short delta = (short)HIWORD(wParam);
+        if (g_tm.open) {
+            if (thememenu_move(&g_tm, 0, delta > 0 ? -1 : 1))
+                InvalidateRect(hwnd, NULL, FALSE);
+            return 0;
+        }
         if (delta > 0) {
             navigate_to(g_current_slide - 1, &dirty, hwnd);
         } else if (delta < 0) {
@@ -308,6 +343,42 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
         break;
     }
     case WM_KEYDOWN:
+        // Menú de temas abierto: captura la navegación
+        if (g_tm.open) {
+            int redraw = 0;
+            int shift = (GetKeyState(VK_SHIFT) & 0x8000) != 0;
+            if (wParam == VK_ESCAPE || wParam == 'T') {
+                g_tm.open = 0;
+                redraw = 1;
+            } else if (wParam == VK_RETURN || wParam == VK_SPACE) {
+                thememenu_apply(&g_tm, g_slider, g_tm.sel);
+                redraw = 1;
+            } else if (wParam == VK_RIGHT || (wParam == VK_TAB && !shift)) {
+                redraw = thememenu_move(&g_tm, 1, 0);
+            } else if (wParam == VK_LEFT || (wParam == VK_TAB && shift)) {
+                redraw = thememenu_move(&g_tm, -1, 0);
+            } else if (wParam == VK_DOWN) {
+                redraw = thememenu_move(&g_tm, 0, 1);
+            } else if (wParam == VK_UP) {
+                redraw = thememenu_move(&g_tm, 0, -1);
+            } else if (wParam == VK_HOME) {
+                g_tm.sel = 0;
+                redraw = 1;
+            } else if (wParam == VK_END) {
+                g_tm.sel = thememenu_count(&g_tm) - 1;
+                redraw = 1;
+            } else if (wParam == 'Q') {
+                PostQuitMessage(0);
+            }
+            if (redraw) InvalidateRect(hwnd, NULL, FALSE);
+            return 0;
+        }
+        if (wParam == 'T' && !(GetKeyState(VK_CONTROL) & 0x8000)) {
+            g_overview_active = 0;
+            thememenu_open(&g_tm, g_slider);
+            InvalidateRect(hwnd, NULL, FALSE);
+            return 0;
+        }
         if (wParam == VK_TAB) {
             g_overview_active = !g_overview_active;
             if (g_overview_active) g_slider->transition_type = TRANS_NONE;
@@ -398,6 +469,7 @@ static Slider* run_single(Slider *s) {
     g_slider = s;
     g_n_slides = slider_get_count(s);
     g_current_slide = 0;
+    thememenu_init(&g_tm, s);
     g_start_time = GetTickCount();
     g_slide_start_time = g_start_time;
 
