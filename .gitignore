@@ -1,5 +1,6 @@
 slides
 *.o
+*.d
 run_tests
 run_tests_integration
 run_tests_parser

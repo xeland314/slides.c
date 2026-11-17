@@ -69,6 +69,11 @@ CORE_OBJ = $(CORE_SRC:.c=.o)
 MAIN_SRC = src/ui/main.c src/ui/help.c
 MAIN_OBJ = $(MAIN_SRC:.c=.o)
 
+# Dependencias de cabeceras generadas por el compilador (.d junto a cada .o):
+# un cambio en un .h recompila todos los .c que lo incluyen.
+DEPFLAGS = -MMD -MP
+DEPS = $(CORE_OBJ:.o=.d) $(MAIN_OBJ:.o=.d)
+
 all: $(TARGET_EXE) $(TARGET_DLL)
 
 $(TARGET_EXE): $(CORE_OBJ) $(MAIN_OBJ)
@@ -118,10 +123,12 @@ src/core/lexer_%.c: src/core/lexer_%.l
 
 # --- Regla genérica de compilación ---
 %.o: %.c
-	$(CC) $(CFLAGS) -c $< -o $@
+	$(CC) $(CFLAGS) $(DEPFLAGS) -c $< -o $@
+
+-include $(DEPS)
 
 clean:
-	$(RM) $(CORE_OBJ) $(MAIN_OBJ) $(TARGET_EXE) $(TARGET_DLL)
+	$(RM) $(CORE_OBJ) $(MAIN_OBJ) $(DEPS) $(TARGET_EXE) $(TARGET_DLL)
 	$(RM) slides libslider.so
 	$(RM) slides.1
 	$(RM) src/core/lexer_c.c src/core/lexer_py.c src/core/lexer_go.c src/core/lexer_js.c src/core/lexer_ts.c src/core/lexer_tsx.c src/core/lexer_html.c src/core/lexer_css.c src/core/lexer_sh.c
