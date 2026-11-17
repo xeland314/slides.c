@@ -27,6 +27,11 @@ Jump to tab N.
 .B Ctrl+W
 Close the current tab; closing the last one opens the picker.
 .TP
+.B T
+Theme menu: a grid with the current slide rendered in every palette. Arrows move,
+Enter or click applies, Esc or T closes. If the presentation was opened with custom
+colors (frontmatter or CLI), that base theme is listed first as "personalizado".
+.TP
 .B Picker
 Arrows, PageUp/PageDown, Home/End and Enter navigate and open; typing filters by name;
 Backspace clears the filter or goes to the parent directory; Ctrl+H toggles hidden entries;

@@ -2,6 +2,7 @@
 #define TABS_H
 
 #include "../../slider.h"
+#include "../core/theme.h"
 #include <cairo/cairo.h>
 
 /* Pestañas: varias presentaciones abiertas a la vez (independiente de la plataforma). */
@@ -16,6 +17,10 @@ typedef struct {
     double  zoom;
     int     overview;
     int     last_printed_slide;
+    int     theme_menu;          /* 1 = menú de temas abierto (tecla T) */
+    int     theme_sel;           /* entrada seleccionada en el menú */
+    Theme   base_theme;          /* tema con el que se abrió (incluye overrides) */
+    int     base_custom;         /* 1 si base_theme difiere de su tema integrado */
 } Tab;
 
 typedef struct {

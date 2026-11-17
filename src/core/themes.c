@@ -171,3 +171,27 @@ const Theme* theme_find(const char *name) {
 const Theme* theme_default(void) {
     return &THEME_DARK;
 }
+
+int theme_count(void) {
+    return (int)(sizeof(ALL_THEMES) / sizeof(ALL_THEMES[0]));
+}
+
+const Theme* theme_at(int i) {
+    if (i < 0 || i >= theme_count()) return NULL;
+    return ALL_THEMES[i];
+}
+
+int theme_same_colors(const Theme *a, const Theme *b) {
+    if (!a || !b) return 0;
+    size_t n = offsetof(Theme, code_sym) + sizeof(a->code_sym) - offsetof(Theme, bg);
+    return memcmp(&a->bg, &b->bg, n) == 0;
+}
+
+int theme_is_custom(const Theme *t) {
+    if (!t) return 0;
+    if (!t->name) return 1;
+    for (int i = 0; i < theme_count(); i++)
+        if (strcmp(ALL_THEMES[i]->name, t->name) == 0)
+            return !theme_same_colors(t, ALL_THEMES[i]);
+    return 1;
+}

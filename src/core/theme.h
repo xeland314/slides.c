@@ -31,5 +31,12 @@ typedef struct {
 
 const Theme* theme_find(const char *name);
 const Theme* theme_default(void);
+/* Catálogo de temas integrados (para menús de selección) */
+int          theme_count(void);
+const Theme* theme_at(int i);
+/* 1 si ambos temas tienen exactamente los mismos colores (ignora el nombre) */
+int          theme_same_colors(const Theme *a, const Theme *b);
+/* 1 si los colores difieren del tema integrado con su mismo nombre (overrides) */
+int          theme_is_custom(const Theme *t);
 
 #endif

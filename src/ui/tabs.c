@@ -53,6 +53,10 @@ int tabs_add(TabSet *ts, Slider *s, double now_ms) {
     t->zoom = 1.0;
     t->overview = 0;
     t->last_printed_slide = -1;
+    t->theme_menu = 0;
+    t->theme_sel = 0;
+    t->base_theme = *s->theme;
+    t->base_custom = theme_is_custom(s->theme);
     ts->active = ts->n++;
     return ts->active;
 }

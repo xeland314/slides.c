@@ -62,7 +62,7 @@ LIBS = $(PKG_LIBS) $(PLATFORM_LIBS)
 # Fuentes y Objetos
 CORE_COMMON_SRC = src/core/parser.c src/core/themes.c src/core/highlighter.c src/render/renderer.c src/render/render_util.c src/render/render_table.c src/render/render_code.c src/render/render_transition.c src/render/export_png.c src/render/export_jpg.c src/render/export_pdf.c src/render/export_gif.c src/render/export_svg.c src/core/lexer_c.c src/core/lexer_py.c src/core/lexer_go.c src/core/lexer_js.c src/core/lexer_ts.c src/core/lexer_tsx.c src/core/lexer_html.c src/core/lexer_css.c src/core/lexer_sh.c
 # Selector de archivos y pestañas (solo cairo/pango; usados por el backend X11)
-UI_COMMON_SRC = src/ui/filepicker.c src/ui/tabs.c
+UI_COMMON_SRC = src/ui/filepicker.c src/ui/tabs.c src/ui/thememenu.c
 CORE_SRC = $(CORE_COMMON_SRC) $(UI_COMMON_SRC) $(BACKEND_SRC)
 CORE_OBJ = $(CORE_SRC:.c=.o)
 

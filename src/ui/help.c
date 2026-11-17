@@ -11,6 +11,7 @@ void print_help(const char *prog) {
     printf("  Ctrl+Shift+Tab / Ctrl+PgUp  Previous tab\n");
     printf("  Ctrl+1..9               Jump to tab N\n");
     printf("  Ctrl+W                  Close tab (last one opens the picker)\n");
+    printf("  T                       Theme menu (arrows/Enter apply, Esc close; custom base theme kept)\n");
     printf("  Picker: arrows/Enter open, type to filter, Backspace up, Ctrl+H hidden, Esc cancel\n\n");
     printf("Options:\n");
     printf("  -p, --palette <name>    Choose palette (dark, rose, monokai, nord, light, blue, ambercat,\n");

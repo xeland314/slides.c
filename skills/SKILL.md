@@ -253,6 +253,8 @@ También se pueden fijar colores individuales sin usar un tema completo:
 
 Atajos de pestañas (X11): `Ctrl+O` abrir otro archivo, `Ctrl+Tab` / `Ctrl+Shift+Tab` cambiar,
 `Ctrl+1…9` ir a la pestaña N, `Ctrl+W` cerrar. `Tab` sigue siendo la vista general de slides.
+`T` abre el menú de temas para cambiar la paleta en vivo; si el archivo usa colores personalizados,
+ese tema base aparece primero como "personalizado" para poder volver a él.
 Los flags de tema/colores de la CLI se aplican también a los archivos abiertos desde el selector.
 
 ### Exportación
